@@ -1,9 +1,6 @@
-import { CONFIG, CLOTHING_DB, SHOP_ITEMS, COMMON_SETS, EQUIPMENT_RARITY, CLOTHING_SLOTS, generateRandomEffect, HOUSES, HOUSE_UPGRADE_ORDER } from '../config/cfg.js'
+import { CONFIG, CLOTHING_DB, SHOP_ITEMS, COMMON_SETS, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, generateRandomEffect, HOUSES, HOUSE_UPGRADE_ORDER } from '../config/cfg.js'
 import { calculateDays } from './utils.js'
 
-const SLOT_NAMES = {
-  head: '头饰', upper: '上装', lower: '下装', bra: '胸罩', panty: '内裤', accessory: '饰品', shoes: '鞋子'
-}
 
 class ShopSystem {
   constructor(dataManager) {

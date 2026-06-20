@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { CONFIG, CLOTHING_DB, CLOTHING_PRESETS, CLOTHING_SLOTS, LOCATIONS, EQUIPMENT_RARITY, HOUSES, COMMON_SETS } from '../config/cfg.js'
+import { CONFIG, CLOTHING_DB, CLOTHING_PRESETS, CLOTHING_SLOTS, SLOT_NAMES, LOCATIONS, EQUIPMENT_RARITY, HOUSES, COMMON_SETS } from '../config/cfg.js'
 import { calculateDays, beijingNow } from './utils.js'
 import { injectAssets } from './html-inject.js'
 
@@ -120,14 +120,14 @@ class DataManager {
         bondedAt: null
       },
       stats: {
-        satiety: Math.floor(Math.random() * 51) + 30,
-        energy: Math.floor(Math.random() * 51) + 40,
-        hygiene: Math.floor(Math.random() * 51) + 40,
+        satiety: Math.floor(Math.random() * 61) + 20,
+        energy: Math.floor(Math.random() * 61) + 20,
+        hygiene: Math.floor(Math.random() * 61) + 20,
         pain: 0,
-        sensitivity: Math.floor(Math.random() * 30) + 5,
-        lewd: 0,
-        obedience: 0,
-        intimacy: 0
+        sensitivity: Math.floor(Math.random() * 41) + 5,
+        lewd: Math.floor(Math.random() * 30),
+        obedience: Math.floor(Math.random() * 30),
+        intimacy: Math.floor(Math.random() * 30)
       },
       clothes,
       house: 'broken',
@@ -397,6 +397,21 @@ class DataManager {
 
   replaceOwnerName(text, data) {
     return text.replace(/宠物/g, data.relation.petName || '宠物').replace(/主人/g, data.relation.ownerName || '主人')
+  }
+
+  computeDiffParts(statsBefore, statsAfter) {
+    const pctNames = { satiety: '饱', energy: '体', hygiene: '洁', pain: '疼', sensitivity: '敏' }
+    const progNames = { lewd: '涩', obedience: '服', intimacy: '亲' }
+    const parts = []
+    for (const [k, label] of Object.entries(pctNames)) {
+      const d = Math.round((statsAfter[k] - statsBefore[k]) * 10) / 10
+      if (Math.abs(d) > 0.01) parts.push(`${label}${d > 0 ? '+' : ''}${d}%`)
+    }
+    for (const [k, label] of Object.entries(progNames)) {
+      const d = Math.round(statsAfter[k] - statsBefore[k])
+      if (d !== 0) parts.push(`${label}${d > 0 ? '+' : ''}${d}`)
+    }
+    return parts
   }
 
   formatTime(mins) {

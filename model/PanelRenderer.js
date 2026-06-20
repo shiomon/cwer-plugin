@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { CONFIG, EQUIPMENT_RARITY, CLOTHING_SLOTS, HOUSES, LOCATIONS, getUserColor } from '../config/cfg.js'
+import { CONFIG, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, HOUSES, LOCATIONS, getUserColor } from '../config/cfg.js'
 import { calculateDays } from './utils.js'
 import { injectAssets } from './html-inject.js'
 import Version from '../components/Version.js'
@@ -12,9 +12,6 @@ const htmlSrc = path.join(pluginRoot, 'resources', 'panel.html')
 const tempDir = path.join(pluginRoot, 'data')
 const tempHtmlPath = path.join(tempDir, '_panel_temp.html')
 
-const SLOT_NAMES = {
-  head: '头饰', upper: '上装', lower: '下装', bra: '胸罩', panty: '内裤', accessory: '饰品', shoes: '鞋子'
-}
 
 const STAT_NAMES = {
   lewd: '涩', obedience: '服', intimacy: '亲', pain: '痛', sensitivity: '敏', satiety: '饱', energy: '体', hygiene: '洁'

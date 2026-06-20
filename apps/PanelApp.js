@@ -1,4 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
+import { CONFIG } from '../config/cfg.js'
 
 class PanelApp extends plugin {
   constructor() {
@@ -29,7 +30,7 @@ class PanelApp extends plugin {
     }
 
     if (!data) {
-      return e.reply('你还没有任何宠物关系，先领养一个吧！')
+      return e.reply('请先领养宠物或者做别人的宠物，领养发送$领养或者@群友$抢')
     }
 
     await this.sys.renderer.renderPanel(e, data)

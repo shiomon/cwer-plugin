@@ -39,7 +39,9 @@ class AchievementApp extends plugin {
       data = this.sys.dm.readData(groupId, asPet.ownerId, asPet.petId)
     }
 
-    if (!data) return e.reply('你还没有任何宠物关系')
+    if (!data) {
+      return e.reply('请先领养宠物或者做别人的宠物，领养发送$领养或者@群友$抢')
+    }
 
     const unlocked = data.sys.achievements || []
     const total = Object.keys(CONFIG.ACHIEVEMENTS).length
@@ -87,20 +89,12 @@ class AchievementApp extends plugin {
       if (img) {
         await e.reply(img)
       } else {
-        await e.reply(this.formatTextAch(achievements, unlocked.length, total))
+        await e.reply('成就面板渲染失败，请稍后再试')
       }
     } catch (error) {
       console.error('[Cwer] 成就面板渲染失败:', error)
-      await e.reply(this.formatTextAch(achievements, unlocked.length, total))
+      await e.reply('成就面板渲染失败，请稍后再试')
     }
-  }
-
-  formatTextAch(achievements, unlockedCount, total) {
-    let msg = `【宠物成就】(${unlockedCount}/${total})\n\n`
-    for (const a of achievements) {
-      msg += `${a.unlocked ? '✅' : '❌'} ${a.name} - ${a.desc}（奖励${a.reward}金币）\n`
-    }
-    return msg
   }
 }
 

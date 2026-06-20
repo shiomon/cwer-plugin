@@ -89,11 +89,11 @@ const CONFIG = {
     { min: 0, name: '陌生人' },
     { min: 29, name: '熟悉' },
     { min: 99, name: '信赖' },
-    { min: 299, name: '依恋' },
-    { min: 520, name: '告白' },
+    { min: 299, name: '依恋之心' },
+    { min: 520, name: '告白时刻' },
     { min: 666, name: '非你不可' },
-    { min: 999, name: '深爱' },
-    { min: 1314, name: '永恒' }
+    { min: 999, name: '深情不悔' },
+    { min: 1314, name: '一生一世' }
   ],
   BOND_TIERS: {
     bonded: { minIntimacy: 299, label: '缔约' }
@@ -192,14 +192,14 @@ const CONFIG = {
     }
   },
   PET_ACTIONS: {
-    撒娇: { intimacyGain: 5, cooldown: 30 * 60 * 1000 },
-    生气气: { intimacyLoss: 3, satietyGain: 10, cooldown: 30 * 60 * 1000 },
-    讨好: { intimacyGain: 5, painLoss: 5, cooldown: 30 * 60 * 1000 },
-    献媚: { intimacyGain: 3, lewdGain: 5, cooldown: 30 * 60 * 1000 },
-    求关注: { intimacyBonus: 3, cooldown: 30 * 60 * 1000 },
+    撒娇: { intimacyGain: 5, cooldown: 30 * 1000 },
+    生气气: { intimacyLoss: 3, satietyGain: 10, cooldown: 30 * 1000 },
+    讨好: { intimacyGain: 5, painLoss: 5, cooldown: 30 * 1000 },
+    献媚: { intimacyGain: 3, lewdGain: 5, cooldown: 30 * 1000 },
+    求关注: { intimacyBonus: 3, cooldown: 30 * 1000 },
     告状: { intimacyLoss: 2, cooldown: 0 },
-    勾引: { lewdGain: 5, intimacyGain: 3, ownerGoldReward: 8, cooldown: 30 * 60 * 1000 },
-    冷战: { intimacyLoss: 5, duration: 30 * 60 * 1000, cooldown: 30 * 60 * 1000 }
+    勾引: { lewdGain: 5, intimacyGain: 3, ownerGoldReward: 8, cooldown: 30 * 1000 },
+    冷战: { intimacyLoss: 5, duration: 30 * 60 * 1000, cooldown: 30 * 1000 }
   },
   INTERACTION_TIME_COST: 15,
   SHOP_TIME_COST: 5,
@@ -344,6 +344,10 @@ function generateRandomEffect(count) {
 
 const CLOTHING_SLOTS = ['head', 'upper', 'lower', 'bra', 'panty', 'accessory', 'shoes']
 
+const SLOT_NAMES = {
+  head: '头饰', upper: '上装', lower: '下装', bra: '胸罩', panty: '内裤', accessory: '饰品', shoes: '鞋子'
+}
+
 const CLOTHING_DB = {
   head: [
     { name: '发夹', dur: 100, rarity: 'common' },
@@ -441,19 +445,19 @@ const CLOTHING_PRESETS = [
 
 const COMMON_SETS = {
   t1: {
-    name: '日常套装', cost: 40,
+    name: '日常套装', cost: 200,
     items: { head: 0, upper: 0, lower: 0, bra: 0, panty: 0, accessory: 0, shoes: 0 }
   },
   t2: {
-    name: '睡衣套装', cost: 45,
+    name: '睡衣套装', cost: 250,
     items: { head: 1, upper: 3, lower: 3, bra: 1, panty: 2, accessory: 1, shoes: 1 }
   },
   t3: {
-    name: '校园套装', cost: 45,
+    name: '校园套装', cost: 240,
     items: { head: 2, upper: 1, lower: 1, bra: 3, panty: 1, accessory: 2, shoes: 2 }
   },
   t4: {
-    name: '运动套装', cost: 40,
+    name: '运动套装', cost: 230,
     items: { head: 3, upper: 2, lower: 2, bra: 2, panty: 3, accessory: 3, shoes: 3 }
   }
 }
@@ -555,7 +559,7 @@ function getUserColor(userId) {
 }
 
 export {
-  CONFIG, LOCATIONS, EQUIPMENT_RARITY, CLOTHING_SLOTS, CLOTHING_DB,
+  CONFIG, LOCATIONS, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, CLOTHING_DB,
   CLOTHING_PRESETS, COMMON_SETS, SHOP_ITEMS, HOUSES, HOUSE_UPGRADE_ORDER,
   RANDOM_EVENTS, generateRandomEffect, getUserColor
 }

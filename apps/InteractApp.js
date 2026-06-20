@@ -39,16 +39,17 @@ class InteractApp extends plugin {
     const isPetCare = PET_CARE_ACTIONS.has(action)
 
     if (isTrainOrForce) {
+      if (!asOwner.length && !asPet) {
+        return e.reply('请先领养宠物或者做别人的宠物，领养发送$领养或者@群友$抢')
+      }
       if (!asOwner.length) {
-        const taunts = CONFIG.TAUNT_MESSAGES.noPet
-        return e.reply(`请先 #宠物领养 或 @群友 #宠物领养 ${taunts[Math.floor(Math.random() * taunts.length)]}`)
+        return e.reply('请先提升亲密度后缔约')
       }
       const rel = asOwner[0]
       const data = this.sys.dm.readData(groupId, rel.ownerId, rel.petId)
       if (!data) return e.reply('数据异常')
       if (data.relation.status !== 'bonded') {
-        const taunts = CONFIG.TAUNT_MESSAGES.notBonded
-        return e.reply(`请先 #宠物领养 提升亲密度后缔约 ${taunts[Math.floor(Math.random() * taunts.length)]}`)
+        return e.reply('请先提升亲密度后缔约')
       }
       return this.executeAction(e, data, action, userName, userId, groupId, false)
     }
@@ -67,7 +68,7 @@ class InteractApp extends plugin {
           return this.executeAction(e, data, action, userName, userId, groupId, true)
         }
       }
-      return e.reply(`请先 #宠物领养 或 @群友 #宠物领养 ${CONFIG.TAUNT_MESSAGES.noPet[Math.floor(Math.random() * CONFIG.TAUNT_MESSAGES.noPet.length)]}`)
+      return e.reply('请先领养宠物或者做别人的宠物，领养发送$领养或者@群友$抢')
     }
 
     return e.reply('未知的互动方式')
@@ -141,17 +142,7 @@ class InteractApp extends plugin {
     this.sys.dm.applyHouseBonus(data)
     this.sys.shop.checkAchievements(data)
 
-    const diffParts = []
-    const pctNames = { satiety: '饱', energy: '体', hygiene: '洁', pain: '疼', sensitivity: '敏' }
-    const progNames = { lewd: '涩', obedience: '服', intimacy: '亲' }
-    for (const [k, label] of Object.entries(pctNames)) {
-      const d = Math.round((data.stats[k] - statsBefore[k]) * 10) / 10
-      if (Math.abs(d) > 0.01) diffParts.push(`${label}${d > 0 ? '+' : ''}${d}%`)
-    }
-    for (const [k, label] of Object.entries(progNames)) {
-      const d = Math.round(data.stats[k] - statsBefore[k])
-      if (d !== 0) diffParts.push(`${label}${d > 0 ? '+' : ''}${d}`)
-    }
+    const diffParts = this.sys.dm.computeDiffParts(statsBefore, data.stats)
     if (diffParts.length > 0) {
       result.logText += ` | ${diffParts.join(', ')}`
     }

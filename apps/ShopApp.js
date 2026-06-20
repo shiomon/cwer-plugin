@@ -57,15 +57,11 @@ class ShopApp extends plugin {
       if (img) {
         await e.reply(img)
       } else {
-        const data = this.findAnyData(groupId)
-        const msg = this.sys.shop.formatShopMessage(data?.sys?.goldCoins || 0, data?.stats?.intimacy || 0)
-        await e.reply(msg)
+        await e.reply('商店面板渲染失败，请稍后再试')
       }
     } catch (error) {
       console.error('[Cwer] 商店面板渲染失败:', error)
-      const data = this.findAnyData(groupId)
-      const msg = this.sys.shop.formatShopMessage(data?.sys?.goldCoins || 0, data?.stats?.intimacy || 0)
-      await e.reply(msg)
+      await e.reply('商店面板渲染失败，请稍后再试')
     }
   }
 
@@ -84,7 +80,9 @@ class ShopApp extends plugin {
       data = this.sys.dm.readData(groupId, asPet.ownerId, asPet.petId)
     }
 
-    if (!data) return e.reply('你还没有任何宠物关系')
+    if (!data) {
+      return e.reply('请先领养宠物或者做别人的宠物，领养发送$领养或者@群友$抢')
+    }
 
     const item = this.sys.shop.findShopItemByCode(itemText) || this.sys.shop.findShopItem(itemText)
     if (!item) return e.reply('商店里没有这件商品，发送 #宠物商店 查看目录。')
@@ -112,14 +110,7 @@ class ShopApp extends plugin {
     await e.reply(`${result.message}\n(花费 ${item.cost} 金币，剩余 ${data.sys.goldCoins} 金币)`)
   }
 
-  findAnyData(groupId) {
-    const rels = this.sys.dm.findAllRelations(groupId)
-    for (const rel of rels) {
-      const data = this.sys.dm.readData(groupId, rel.ownerId, rel.petId)
-      if (data) return data
-    }
-    return null
-  }
+
 }
 
 export default ShopApp

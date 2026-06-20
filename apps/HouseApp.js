@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { HOUSES, HOUSE_UPGRADE_ORDER } from '../config/cfg.js'
+import { HOUSES, HOUSE_UPGRADE_ORDER, CONFIG } from '../config/cfg.js'
 
 const FLOOR_MAP = { 'f1': 'cozy', 'f2': 'luxury', 'f3': 'palace' }
 
@@ -32,7 +32,9 @@ class HouseApp extends plugin {
       data = this.sys.dm.readData(groupId, asPet.ownerId, asPet.petId)
     }
 
-    if (!data) return e.reply('你还没有任何宠物关系')
+    if (!data) {
+      return e.reply('请先领养宠物或者做别人的宠物，领养发送$领养或者@群友$抢')
+    }
 
     let targetKey = FLOOR_MAP[input] || null
     if (!targetKey) {

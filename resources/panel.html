@@ -44,6 +44,7 @@
             text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         .card-title-left { color: #4527a0; }
+        .card-title-right { font-size: 11px; color: #999; font-weight: 400; letter-spacing: 0.5px; }
 
         h1 { font-size: 18px; font-weight: 600; color: #ad1457; margin: 0; padding: 0; }
         h2 { font-size: 18px; font-weight: 600; color: #4527a0; margin: 0; padding: 0; border: none; }
@@ -233,7 +234,7 @@
         </div>
     </div>
     <div class="card" style="padding: 0 20px 16px 20px; margin-bottom: 0; margin-left: 0; width: 469px;">
-        <div class="card-title"><span class="card-title-left" style="color: #ad1457;">🐾 {{petName}}</span></div>
+        <div class="card-title"><span class="card-title-left" style="color: #ad1457;">🐾 {{petName}}</span><span class="card-title-right">$面板 $商店 $帮助 $成就 $列表</span></div>
         <div class="card-inner" style="padding: 12px 20px 12px 20px;">
 
         <div class="stat-row" style="margin-bottom: 6px;">
@@ -256,25 +257,18 @@
         <div class="card-title"><span class="card-title-left" style="color: #2e7d32;">📍 状态</span></div>
         <div class="card-inner">
 
-        {{if location}}
         <div style="margin-bottom: 6px; padding-left: 4px;">
+            {{if location}}
             <div style="display: flex; gap: 16px; margin-bottom: 2px;">
                 <span style="font-size: 14px; font-weight: 600;">地点：{{location}}</span>
                 {{if locationModifier}}<span style="font-size: 14px; color: #42a5f5;">效果：{{locationModifier}}</span>{{/if}}
             </div>
+            {{/if}}
             <div style="font-size: 14px; line-height: 1.5;">
                 <strong style="color: #66bb6a;">加成:</strong> {{trainBonusDetail}} = x{{trainBonus.toFixed(2)}}<br>
                 <strong style="color: #66bb6a;">攻略:</strong> 首先提升状态, 状态好有加成, 着装效果也会提升加成, 调教会大增
             </div>
         </div>
-        {{else}}
-        <div style="margin-bottom: 6px; padding-left: 4px;">
-            <div style="font-size: 14px; line-height: 1.5;">
-                <strong style="color: #66bb6a;">加成:</strong> {{trainBonusDetail}} = x{{trainBonus.toFixed(2)}}<br>
-                <strong style="color: #66bb6a;">攻略:</strong> 首先提升状态, 状态好有加成, 着装效果也会提升加成, 调教会大增
-            </div>
-        </div>
-        {{/if}}
 
         <div class="circle-row">
             <div class="li">
@@ -426,7 +420,7 @@
 
     <div class="footer-box">
         <div class="footer-inner">
-            Created By {{yunzaiName}} {{yunzaiVer}} &amp; cwer-plugin v{{pluginVer}}
+            <!-- FOOTER -->
         </div>
     </div>
 

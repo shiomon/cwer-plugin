@@ -16,11 +16,17 @@ try {
 } catch {}
 
 let yunzaiName = 'Yunzai'
+let yunzaiVer = 'v3'
 try {
   const cfg = (await import('../../../lib/config/config.js')).default
   if (cfg?.name) yunzaiName = cfg.name
 } catch {}
 
-export const ver = currentVersion
+try {
+  const pkg = JSON.parse(fs.readFileSync(path.join(pluginRoot, '../../../package.json'), 'utf8'))
+  if (pkg?.version) yunzaiVer = 'v' + pkg.version
+} catch {}
+
+export const ver = 'v' + currentVersion
 export const name = yunzaiName
-export const yunzai = yunzaiName
+export const yunzai = yunzaiVer

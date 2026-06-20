@@ -23,7 +23,6 @@ const ACTION_META = {
   强制羞辱: { critColor: '#ff0000', normalColor: '#cc0000' }
 }
 
-const TRAIN_STATS = new Set(['lewd', 'obedience', 'intimacy'])
 
 class InteractionEngine {
   constructor(eventSystem, dataManager) {
@@ -123,7 +122,8 @@ class InteractionEngine {
 
     if (config.intimacyGain) {
       const gain = isCrit ? (config.critIntimacyGain || config.intimacyGain) : config.intimacyGain
-      data.stats.intimacy += Math.round(gain * (TRAIN_STATS.has('intimacy') ? bonus : 1))
+      const isTrainAction = config.type === 'train' || config.type === 'force'
+      data.stats.intimacy += Math.round(gain * (isTrainAction ? bonus : 1))
     }
     if (config.intimacyLoss) {
       const loss = isCrit ? (config.critIntimacyLoss || config.intimacyLoss) : config.intimacyLoss

@@ -90,20 +90,12 @@ class ListApp extends plugin {
       if (img) {
         await e.reply(img)
       } else {
-        await e.reply(this.getTextList(relList))
+        await e.reply('列表面板渲染失败，请稍后再试')
       }
     } catch (error) {
       console.error('[Cwer] 列表面板渲染失败:', error)
-      await e.reply(this.getTextList(relList))
+      await e.reply('列表面板渲染失败，请稍后再试')
     }
-  }
-
-  getTextList(relations) {
-    let msg = `【本群宠物关系】(共${relations.length}对)\n\n`
-    for (const r of relations) {
-      msg += `${r.ownerName} 🐾 ${r.petName}  [${r.status}]  亲密：${r.intimacyLevel}(${r.intimacy})\n`
-    }
-    return msg
   }
 }
 

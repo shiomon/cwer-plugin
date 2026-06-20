@@ -76,9 +76,7 @@ class PetActionApp extends plugin {
       }
       case '讨好': {
         data.stats.intimacy += config.intimacyGain
-        if (data.relation.status === 'bonded') {
-          data.stats.pain -= config.painLoss
-        }
+        data.stats.pain -= config.painLoss
         this.sys.dm.addLog(data, `<span style="color:${getUserColor(userId)};font-weight:600">${userName}</span> 讨好${ownerName}~`, '#ffcc00')
         await e.reply(`${userName} 讨好${ownerName}~ 亲密+${config.intimacyGain}，疼痛-${config.painLoss}`)
         break
@@ -132,17 +130,7 @@ class PetActionApp extends plugin {
     this.sys.dm.applyHouseBonus(data)
     this.sys.shop.checkAchievements(data)
 
-    const diffParts = []
-    const pctNames = { satiety: '饱', energy: '体', hygiene: '洁', pain: '疼', sensitivity: '敏' }
-    const progNames = { lewd: '涩', obedience: '服', intimacy: '亲' }
-    for (const [k, label] of Object.entries(pctNames)) {
-      const d = Math.round((data.stats[k] - statsBefore[k]) * 10) / 10
-      if (Math.abs(d) > 0.01) diffParts.push(`${label}${d > 0 ? '+' : ''}${d}%`)
-    }
-    for (const [k, label] of Object.entries(progNames)) {
-      const d = Math.round(data.stats[k] - statsBefore[k])
-      if (d !== 0) diffParts.push(`${label}${d > 0 ? '+' : ''}${d}`)
-    }
+    const diffParts = this.sys.dm.computeDiffParts(statsBefore, data.stats)
 
     this.sys.dm.saveData(data, groupId)
   }
@@ -155,6 +143,13 @@ class PetActionApp extends plugin {
     const asPet = this.sys.dm.findRelationByPet(groupId, userId)
     if (!asPet) {
       return e.reply('你不是任何人的宠物，无法嘲讽！')
+    }
+
+    const data = this.sys.dm.readData(groupId, asPet.ownerId, asPet.petId)
+    if (!data) return e.reply('数据异常')
+
+    if (data.relation.status !== 'bonded') {
+      return e.reply('需要缔约后才能使用嘲讽！')
     }
 
     const taunts = CONFIG.TAUNT_MESSAGES.taunt
