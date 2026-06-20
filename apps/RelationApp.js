@@ -12,8 +12,7 @@ class RelationApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|\\$)领养(@|\\s)', fnc: 'adopt' },
-        { reg: '^([#＃]宠物|\\$)领养', fnc: 'adoptRandom' },
+        { reg: '^([#＃]宠物|\\$)领养', fnc: 'adopt' },
 
         { reg: '^([#＃]宠物|\\$)抢(@|\\s)', fnc: 'steal' },
         { reg: '^([#＃]宠物|\\$)缔约.*', fnc: 'bond' },
@@ -28,12 +27,13 @@ class RelationApp extends plugin {
   async adopt(e) {
     const at = e.message?.find(m => m.type === 'at')
     const targetId = String(e.at || at?.qq || at?.id || '')
-    if (!targetId || targetId === '0') {
-      return e.reply('请@目标群友，格式：#宠物领养@群友')
+    if (targetId && targetId !== '0' && targetId !== String(e.user_id)) {
+      return this.adoptTarget(e, targetId)
     }
-    if (targetId === String(e.user_id)) {
-      return e.reply('不能领养自己！')
-    }
+    return this.adoptRandom(e)
+  }
+
+  async adoptTarget(e, targetId) {
 
     const groupId = String(e.group_id)
     const ownerId = String(e.user_id)
@@ -88,7 +88,7 @@ class RelationApp extends plugin {
     data.sys.startTimestamp = Date.now()
     this.sys.dm.saveData(data, groupId)
 
-    await e.reply(`成功将 ${petName} 领养为宠物！快去宠爱ta吧~\n💡 宠物可以发 #宠物解除 解除关系`)
+    await e.reply([`成功将 ${petName} 领养为宠物！快去宠爱ta吧~\n💡 宠物可以发 #宠物解除 解除关系`, segment.at(Number(targetId))])
   }
 
   async adoptRandom(e) {
@@ -148,7 +148,7 @@ class RelationApp extends plugin {
     data.sys.startTimestamp = Date.now()
     this.sys.dm.saveData(data, groupId)
 
-    await e.reply(`命运选择了 ${target.name}！领养成功~`)
+    await e.reply([`命运选择了 ${target.name}！领养成功~`, segment.at(Number(target.id))])
   }
 
   async steal(e) {
@@ -197,7 +197,7 @@ class RelationApp extends plugin {
     data.sys.startTimestamp = Date.now()
     this.sys.dm.saveData(data, groupId)
 
-    await e.reply(`成功从 ${oldOwnerName} 手中抢走了 ${data.relation.petName}！`)
+    await e.reply([`成功从 ${oldOwnerName} 手中抢走了 ${data.relation.petName}！`, segment.at(Number(targetId))])
   }
 
   async bond(e) {
