@@ -1,8 +1,10 @@
-# cwer-plugin v1.0.0
+# cwer-plugin v1.0.3
 
 宠物养成插件 —— 基于 Yunzai 框架的1对1宠物养成系统
 
-领养群友做宠物，通过宠爱与调教培养专属关系。缔约后解锁更多互动与玩法。
+领养群友做宠物，通过宠爱与调教培养专属关系，缔约后解锁更多互动与玩法。
+
+还有姐妹插件《猫娘调教》,如下
 
 ## 安装
 
@@ -15,11 +17,19 @@ git clone --depth=1 https://github.com/shiomon/cwer-plugin.git ./plugins/cwer-pl
 git clone --depth=1 https://ghfast.top/https://github.com/shiomon/cwer-plugin.git ./plugins/cwer-plugin/
 ```
 
-2. 将 cwer-plugin 文件夹放入 `Miao-Yunzai/plugins/` 或 `Yunzai/plugins/` 目录下，重启即可。
+2. 姐妹插件《猫娘调教》N对1，默认群主
+```
+git clone --depth=1 https://github.com/shiomon/smer-plugin.git ./plugins/smer-plugin/
+```
+国内环境：
+```
+git clone --depth=1 https://ghfast.top/https://github.com/shiomon/smer-plugin.git ./plugins/smer-plugin/
+```
+
 
 ## 功能概览
 
-在群聊中领养宠物，通过宠爱与调教培养亲密度，缔约后解锁更深层的互动。包含状态管理、服装系统、房子系统、成就系统等完整养成玩法。
+在群聊中领养自己的宠物，通过宠爱与调教培养亲密度，缔约后解锁更深层的互动。包含状态管理、服装系统、房子系统、成就系统等完整养成玩法。
 
 ## 指令一览
 
@@ -35,15 +45,15 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/cwer-plugin.gi
 | `$缔约` | 缔约（亲密≥299，宠物需30秒内`$同意`） |
 | `$同意` | 同意缔约请求 |
 | `$不同意` | 拒绝缔约请求 |
-| `$解除` | 解除关系（30分钟冷却） |
+| `$解除` | 解除关系 |
 
 ### 互动指令
 
-| 分类 | 指令 | 权限 |
+| 分类 | 权限 | 指令 |
 |------|------|------|
-| 宠爱 | `$投喂` `$洗澡` `$陪玩` `$摸头` `$拥抱` `$送礼物` | 主人对宠物全效，宠物对主人减半 |
-| 调教 | `$挠痒` `$狗叫` `$羞辱` `$鞭打` `$打脸` `$打屁股` `$禁闭` `$振动` `$滴蜡` | 仅主人+需缔约 |
-| 强制 | `$强制鞭打` `$强制禁闭` `$强制羞辱` | 仅主人+需缔约 |
+| 宠爱 | 主人对宠物全效，宠物对主人减半 |`$投喂` `$洗澡` `$陪玩` `$摸头` `$拥抱` `$送礼物` 
+| 调教 | 仅主人+需缔约 |  `$挠痒` `$狗叫` `$羞辱` `$鞭打` `$打脸` `$打屁股` `$禁闭` `$振动` `$滴蜡`
+| 强制 | 仅主人+需缔约 | `$强制鞭打` `$强制禁闭` `$强制羞辱`
 
 ### 宠物自主指令
 
