@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>宠物成就</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- COMMON_CSS -->
+    <script>
+        window.__cwerReady = false;
+        Promise.all([
+            document.fonts.ready,
+            new Promise(r => { window.addEventListener('load', r); })
+        ]).then(() => {
+            requestAnimationFrame(() => { window.__cwerReady = true; });
+        });
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', 'Noto Color Emoji', 'SF Pro', 'Inter', sans-serif;
+        }
+        #container { width: 850px; padding: 24px 28px; margin: 0; }
+        .card {
+            background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3); border-radius: 16px; padding: 12px 16px; margin-bottom: 12px;
+            box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2);
+        }
+        .header-card-wrap {
+            display: inline-block;
+            background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3); border-radius: 16px; padding: 8px 24px;
+            box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2);
+            margin-bottom: 12px;
+        }
+        .header-card-inner {
+            background: rgba(255,255,255,0.92); border-radius: 12px; padding: 12px 20px;
+            box-shadow: 0 0 12px 4px rgba(0,0,0,0.15), 0 0 20px rgba(0,0,0,0.1);
+        }
+        .card-inner {
+            background: rgba(255,255,255,0.92); border-radius: 12px; padding: 10px 14px;
+            box-shadow: 0 0 12px 4px rgba(0,0,0,0.15), 0 0 20px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            display: flex; align-items: center; font-size: 18px; font-weight: 600;
+            padding: 4px 0 8px 2px; margin: 0 0 8px 0;
+            border-bottom: 1px solid rgba(69,39,160,0.15);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .header-card { text-align: center; padding: 10px 0 4px 0; }
+        .header-card .cat-icon { font-size: 48px; line-height: 1; margin-bottom: 4px; }
+        .header-card .title { font-size: 22px; font-weight: 700; color: #e91e63; }
+        .header-card .subtitle { font-size: 14px; color: #555; margin-top: 4px; letter-spacing: 0.5px; font-weight: 600; }
+        .row-wrap { display: flex; gap: 12px; }
+        .row-wrap .card { flex: 1; margin-bottom: 12px; }
+        .footer-box { text-align: center; padding: 20px 28px 16px 28px; }
+        .footer-inner { display: inline-block; background: rgba(255,255,255,0.92); border-radius: 10px; padding: 10px 28px; box-shadow: 0 0 12px 4px rgba(0,0,0,0.15), 0 0 20px rgba(0,0,0,0.1); font-size: 14px; color: #888; }
+
+        .ach-row {
+            display: flex; align-items: center; padding: 5px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+        .ach-row:last-child { border-bottom: none; }
+        .ach-name {
+            font-weight: 600; font-size: 16px; color: #000;
+            min-width: 90px; text-align: right; padding-right: 12px;
+        }
+        .ach-desc { font-size: 15px; color: #444; flex: 1; }
+        .ach-reward {
+            font-size: 13px; padding: 2px 8px; border-radius: 10px; font-weight: 500; margin-left: 8px;
+            white-space: nowrap; background: #fff3e0; color: #e65100;
+        }
+        .ach-status {
+            font-size: 13px; padding: 2px 6px; border-radius: 10px; font-weight: 600; margin-left: 6px;
+            white-space: nowrap;
+        }
+        .ach-status.done { background: #e8f5e9; color: #2e7d32; }
+        .ach-status.pending { background: #f5f5f5; color: #9e9e9e; }
+
+        .section-pet .ach-name { color: #43a047; }
+        .section-obey .ach-name { color: #1565c0; }
+        .section-lewd .ach-name { color: #ad1457; }
+        .section-intimacy .ach-name { color: #e91e63; }
+        .section-special .ach-name { color: #f57f17; }
+        .section-survive .ach-name { color: #2e7d32; }
+        .section-shop .ach-name { color: #00838f; }
+        .section-charm .ach-name { color: #e91e63; }
+    </style>
+</head>
+<body id="container">
+    <div class="bg-image" id="bgImage"></div>
+    <!-- BG_LOADER -->
+
+    <div style="text-align: center;">
+        <div class="header-card-wrap">
+            <div class="header-card-inner">
+                <div class="header-card">
+                    <div class="cat-icon">🏆</div>
+                    <div class="title">宠物成就 ({{unlockedCount}}/{{achievementCount}})</div>
+                    <div class="subtitle">#宠物面板 #宠物商店 #宠物帮助</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row-wrap">
+    <div class="card">
+        <div class="card-title" style="color: #00838f;">�️ 商店</div>
+        <div class="card-inner">
+            <div class="section-shop">
+                {{each achievements a}}{{if a.key.startsWith('breaker_') || a.key.startsWith('shop_') || a.key.startsWith('house_')}}
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                {{/if}}{{/each}}
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title" style="color: #f57f17;">⭐ 特殊</div>
+        <div class="card-inner">
+            <div class="section-special">
+                {{each achievements a}}{{if a.key === 'pain_m_awaken' || a.key === 'pain_collapse' || a.key === 'sensitivity_stone' || a.key === 'sensitivity_fly' || a.key === 'energy_dying' || a.key === 'energy_revive' || a.key === 'satiety_starving' || a.key === 'satiety_starve_to_death' || a.key === 'satiety_overfeed' || a.key === 'hygiene_cinderella' || a.key === 'hygiene_lotus'}}
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                {{/if}}{{/each}}
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="row-wrap">
+    <div class="card">
+        <div class="card-title" style="color: #e91e63;">✨ 魅力</div>
+        <div class="card-inner">
+            <div class="section-charm">
+                {{each achievements a}}{{if a.key.startsWith('charm_')}}
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                {{/if}}{{/each}}
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title" style="color: #43a047;">� 宠爱</div>
+        <div class="card-inner">
+            <div class="section-pet">
+                {{each achievements a}}{{if a.key === 'first_pet' || a.key === 'pet_200' || a.key === 'pet_500'}}
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                {{/if}}{{/each}}
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="row-wrap">
+    <div class="card">
+        <div class="card-title" style="color: #1565c0;">💙 服从</div>
+        <div class="card-inner">
+            <div class="section-obey">
+                {{each achievements a}}{{if a.key.startsWith('obedience_')}}
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                {{/if}}{{/each}}
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title" style="color: #ad1457;">💜 涩气</div>
+        <div class="card-inner">
+            <div class="section-lewd">
+                {{each achievements a}}{{if a.key.startsWith('lewd_')}}
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                {{/if}}{{/each}}
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="row-wrap">
+    <div class="card">
+        <div class="card-title" style="color: #e91e63;">� 亲密</div>
+        <div class="card-inner">
+            <div class="section-intimacy">
+                {{each achievements a}}{{if a.key.startsWith('intimacy_')}}
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                {{/if}}{{/each}}
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title" style="color: #2e7d32;">🌱 陪伴</div>
+        <div class="card-inner">
+            <div class="section-survive">
+                {{each achievements a}}{{if a.key.startsWith('survivor_')}}
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                {{/if}}{{/each}}
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="footer-box">
+        <div class="footer-inner">
+            Created By {{yunzaiName}} {{yunzaiVer}} &amp; cwer-plugin v{{pluginVer}}
+        </div>
+    </div>
+
+</body>
+</html>

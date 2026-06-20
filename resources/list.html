@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>宠物关系列表</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- COMMON_CSS -->
+    <script>
+        window.__cwerReady = false;
+        Promise.all([
+            document.fonts.ready,
+            new Promise(r => { window.addEventListener('load', r); })
+        ]).then(() => {
+            requestAnimationFrame(() => { window.__cwerReady = true; });
+        });
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', 'Noto Color Emoji', 'SF Pro', 'Inter', sans-serif;
+        }
+        #container { width: 850px; padding: 24px 28px; margin: 0; }
+        .card {
+            background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3); border-radius: 16px; padding: 12px 16px; margin-bottom: 12px;
+            box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2);
+        }
+        .header-card-wrap {
+            display: inline-block;
+            background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3); border-radius: 16px; padding: 8px 24px;
+            box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2);
+            margin-bottom: 12px;
+        }
+        .header-card-inner {
+            background: rgba(255,255,255,0.92); border-radius: 12px; padding: 12px 20px;
+            box-shadow: 0 0 12px 4px rgba(0,0,0,0.15), 0 0 20px rgba(0,0,0,0.1);
+        }
+        .card-inner {
+            background: rgba(255,255,255,0.92); border-radius: 12px; padding: 10px 14px;
+            box-shadow: 0 0 12px 4px rgba(0,0,0,0.15), 0 0 20px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            display: flex; align-items: center; font-size: 18px; font-weight: 600;
+            padding: 4px 0 8px 2px; margin: 0 0 8px 0;
+            border-bottom: 1px solid rgba(69,39,160,0.15);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .header-card { text-align: center; padding: 10px 0 4px 0; }
+        .header-card .cat-icon { font-size: 48px; line-height: 1; margin-bottom: 4px; }
+        .header-card .title { font-size: 22px; font-weight: 700; color: #e91e63; }
+        .header-card .subtitle { font-size: 14px; color: #555; margin-top: 4px; letter-spacing: 0.5px; font-weight: 600; }
+        .footer-box { text-align: center; padding: 20px 28px 16px 28px; }
+        .footer-inner { display: inline-block; background: rgba(255,255,255,0.92); border-radius: 10px; padding: 10px 28px; box-shadow: 0 0 12px 4px rgba(0,0,0,0.15), 0 0 20px rgba(0,0,0,0.1); font-size: 14px; color: #888; }
+
+        .rel-row {
+            display: flex; align-items: center; padding: 8px 4px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .rel-row:last-child { border-bottom: none; }
+        .rel-left {
+            display: flex; align-items: center; width: 70%;
+        }
+        .rel-rank {
+            font-weight: 700; font-size: 18px; color: #f57f17;
+            min-width: 40px; text-align: center; padding-right: 4px;
+        }
+        .rel-rank.top1 { color: #ffd700; }
+        .rel-rank.top2 { color: #c0c0c0; }
+        .rel-rank.top3 { color: #cd7f32; }
+        .rel-owner {
+            font-weight: 600; font-size: 16px; color: #1565c0;
+            min-width: 70px; text-align: right; padding-right: 6px;
+        }
+        .rel-paw {
+            font-size: 18px; padding: 0 4px;
+        }
+        .rel-pet {
+            font-weight: 600; font-size: 16px; color: #e91e63;
+            white-space: nowrap;
+        }
+        .rel-right {
+            width: 45%; display: flex; align-items: center; gap: 12px; justify-content: flex-start;
+        }
+        .rel-status {
+            font-size: 13px; padding: 2px 8px; border-radius: 10px; font-weight: 500;
+            white-space: nowrap;
+        }
+        .rel-status.bonded { background: #fce4ec; color: #c62828; }
+        .rel-status.adopted { background: #e3f2fd; color: #1565c0; }
+        .rel-info .level { font-weight: 600; color: #f57f17; font-size: 13px; }
+        .rel-info .value { color: #999; font-size: 13px; }
+        .rel-info .house { color: #666; font-size: 13px; }
+        .rel-info .days { color: #999; font-size: 13px; }
+    </style>
+</head>
+<body id="container">
+    <div class="bg-image" id="bgImage"></div>
+    <!-- BG_LOADER -->
+
+    <div style="text-align: center;">
+        <div class="header-card-wrap">
+            <div class="header-card-inner">
+                <div class="header-card">
+                    <div class="cat-icon">�</div>
+                    <div class="title">宠物关系 ({{totalCount}}对)</div>
+                    <div class="subtitle">#宠物面板 #宠物商店 #宠物帮助</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title" style="color: #e91e63;">🐾 亲密度排行</div>
+        <div class="card-inner">
+            {{each relations r}}
+            <div class="rel-row">
+                <div class="rel-left">
+                    <span class="rel-rank {{if r.rank <= 3}}top{{r.rank}}{{/if}}">{{if r.rank === 1}}🥇{{else if r.rank === 2}}🥈{{else if r.rank === 3}}🥉{{else}}{{r.rank}}{{/if}}</span>
+                    <span class="rel-owner">{{r.ownerName}}</span>
+                    <span class="rel-paw">🐾</span>
+                    <span class="rel-pet">{{r.rank}}. {{r.petName}}</span>
+                </div>
+                <div class="rel-right">
+                    <span class="rel-status {{if r.status === '缔约'}}bonded{{else}}adopted{{/if}}">{{r.status}}</span>
+                    <span class="house">{{r.house}}</span>
+                    <span class="rel-info">
+                        <span class="level">{{r.intimacyLevel}}</span> <span class="value">{{r.intimacy}}</span>
+                        <span class="days">📅{{r.survivalDays}}天</span>
+                    </span>
+                </div>
+            </div>
+            {{/each}}
+            {{if relations.length === 0}}
+            <div style="text-align: center; padding: 30px 0; font-size: 16px; color: #999;">本群还没有任何宠物关系~</div>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="footer-box">
+        <div class="footer-inner">
+            Created By {{yunzaiName}} {{yunzaiVer}} &amp; cwer-plugin v{{pluginVer}}
+        </div>
+    </div>
+
+</body>
+</html>

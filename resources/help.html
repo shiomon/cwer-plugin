@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>宠物养成指南</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- COMMON_CSS -->
+    <script>
+        window.__cwerReady = false;
+        Promise.all([
+            document.fonts.ready,
+            new Promise(r => { window.addEventListener('load', r); })
+        ]).then(() => {
+            requestAnimationFrame(() => { window.__cwerReady = true; });
+        });
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', 'Noto Color Emoji', 'SF Pro', 'Inter', sans-serif;
+        }
+        #container { width: 850px; padding: 24px 28px; margin: 0; }
+        .card {
+            background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3); border-radius: 16px; padding: 12px 16px; margin-bottom: 12px;
+            box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2);
+        }
+        .header-card-wrap {
+            display: inline-block;
+            background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3); border-radius: 16px; padding: 8px 24px;
+            box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2);
+            margin-bottom: 12px;
+        }
+        .header-card-inner {
+            background: rgba(255,255,255,0.92); border-radius: 12px; padding: 12px 20px;
+            box-shadow: 0 0 12px 4px rgba(0,0,0,0.15), 0 0 20px rgba(0,0,0,0.1);
+        }
+        .card-inner {
+            background: rgba(255,255,255,0.92); border-radius: 12px; padding: 10px 14px;
+            box-shadow: 0 0 12px 4px rgba(0,0,0,0.15), 0 0 20px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            display: flex; align-items: center; font-size: 18px; font-weight: 600;
+            padding: 4px 0 8px 2px; margin: 0 0 8px 0;
+            border-bottom: 1px solid rgba(69,39,160,0.15);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .header-card { text-align: center; padding: 10px 0 4px 0; }
+        .header-card .cat-icon { font-size: 48px; line-height: 1; margin-bottom: 4px; }
+        .header-card .title { font-size: 22px; font-weight: 700; color: #e91e63; }
+        .header-card .subtitle { font-size: 14px; color: #555; margin-top: 4px; letter-spacing: 0.5px; font-weight: 600; }
+        .row-wrap { display: flex; gap: 12px; }
+        .row-wrap .card { flex: 1; margin-bottom: 12px; }
+        .footer-box { text-align: center; padding: 20px 28px 16px 28px; }
+        .footer-inner { display: inline-block; background: rgba(255,255,255,0.92); border-radius: 10px; padding: 10px 28px; box-shadow: 0 0 12px 4px rgba(0,0,0,0.15), 0 0 20px rgba(0,0,0,0.1); font-size: 14px; color: #888; }
+
+        .cmd-row {
+            display: flex; align-items: center; padding: 5px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+        .cmd-row:last-child { border-bottom: none; }
+        .cmd-name {
+            font-weight: 600; font-size: 16px; color: #000;
+            min-width: 100px; text-align: right; padding-right: 12px;
+        }
+        .cmd-desc { font-size: 15px; color: #444; flex: 1; }
+        .cmd-tag {
+            font-size: 13px; padding: 2px 8px; border-radius: 10px; font-weight: 500; margin-left: 8px;
+            white-space: nowrap;
+        }
+        .tag-relation { background: #e3f2fd; color: #1565c0; }
+        .tag-pet { background: #e8f5e9; color: #2e7d32; }
+        .tag-train { background: #fce4ec; color: #c62828; }
+        .tag-action { background: #f3e5f5; color: #7b1fa2; }
+        .tag-shop { background: #fff3e0; color: #e65100; }
+        .tag-view { background: #e0f2f1; color: #00695c; }
+
+        .section-relation .cmd-name { color: #1565c0; }
+        .section-pet .cmd-name { color: #2e7d32; }
+        .section-train .cmd-name { color: #c62828; }
+        .section-action .cmd-name { color: #7b1fa2; }
+        .section-shop .cmd-name { color: #e65100; }
+        .section-view .cmd-name { color: #00695c; }
+
+        .tip-box {
+            border-radius: 8px; padding: 10px 14px;
+            font-size: 15px; color: #555; line-height: 1.6;
+        }
+        .tip-box strong { color: #6a1b9a; }
+    </style>
+</head>
+<body id="container">
+    <div class="bg-image" id="bgImage"></div>
+    <!-- BG_LOADER -->
+
+    <div style="text-align: center;">
+        <div class="header-card-wrap">
+            <div class="header-card-inner">
+                <div class="header-card">
+                    <div class="cat-icon">🐾</div>
+                    <div class="title">宠物养成</div>
+                    <div class="subtitle">所有指令均支持 #宠物xxx 和 $xxx 两种前缀</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row-wrap">
+    <div class="card">
+        <div class="card-title" style="color: #1565c0;">📋 关系指令</div>
+        <div class="card-inner">
+            <div class="section-relation">
+                <div class="cmd-row"><span class="cmd-name">$领养@群友</span><span class="cmd-desc">指定领养(70%概率)</span><span class="cmd-tag tag-relation">主人</span></div>
+                <div class="cmd-row"><span class="cmd-name">$领养</span><span class="cmd-desc">随机领养(70%概率)</span><span class="cmd-tag tag-relation">主人</span></div>
+                <div class="cmd-row"><span class="cmd-name">$抢@群友</span><span class="cmd-desc">抢别人宠物(仅领养阶段)</span><span class="cmd-tag tag-relation">主人</span></div>
+                <div class="cmd-row"><span class="cmd-name">$缔约</span><span class="cmd-desc">缔约(亲密≥299)</span><span class="cmd-tag tag-relation">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$同意</span><span class="cmd-desc">同意缔约请求(30秒内)</span><span class="cmd-tag tag-relation">宠物</span></div>
+                <div class="cmd-row"><span class="cmd-name">$不同意</span><span class="cmd-desc">拒绝缔约请求(30秒内)</span><span class="cmd-tag tag-relation">宠物</span></div>
+                <div class="cmd-row"><span class="cmd-name">$解除</span><span class="cmd-desc">解除关系(30分钟冷却)</span><span class="cmd-tag tag-relation">双方</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title" style="color: #2e7d32;">💕 宠爱指令</div>
+        <div class="card-inner">
+            <div class="section-pet">
+                <div class="cmd-row"><span class="cmd-name">$投喂</span><span class="cmd-desc">+饱食/体力，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$洗澡</span><span class="cmd-desc">+清洁/体力，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$陪玩</span><span class="cmd-desc">+亲密/敏感，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$摸头</span><span class="cmd-desc">+亲密/敏感，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$拥抱</span><span class="cmd-desc">+亲密/敏感，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$送礼物</span><span class="cmd-desc">+亲密/服从</span><span class="cmd-tag tag-pet">双方</span></div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="row-wrap">
+    <div class="card">
+        <div class="card-title" style="color: #c62828;">🔥 调教指令</div>
+        <div class="card-inner">
+            <div class="section-train">
+                <div class="cmd-row"><span class="cmd-name">$挠痒</span><span class="cmd-desc">+敏感/涩气/服从</span><span class="cmd-tag tag-train">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$狗叫</span><span class="cmd-desc">+敏感/涩气/服从</span><span class="cmd-tag tag-train">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$羞辱</span><span class="cmd-desc">+服从/涩气，-亲密</span><span class="cmd-tag tag-train">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$鞭打</span><span class="cmd-desc">+疼痛/服从，-亲密，掉耐久</span><span class="cmd-tag tag-train">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$打脸</span><span class="cmd-desc">+疼痛/服从，-亲密，掉耐久</span><span class="cmd-tag tag-train">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$打屁股</span><span class="cmd-desc">+疼痛/涩气，-亲密，掉耐久</span><span class="cmd-tag tag-train">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$禁闭</span><span class="cmd-desc">+服从/涩气</span><span class="cmd-tag tag-train">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$振动</span><span class="cmd-desc">+疼痛/敏感/涩气，掉耐久</span><span class="cmd-tag tag-train">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$滴蜡</span><span class="cmd-desc">+疼痛/敏感/涩气，掉耐久</span><span class="cmd-tag tag-train">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$强制鞭打</span><span class="cmd-desc">强制执行，无视逃避</span><span class="cmd-tag tag-train">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$强制禁闭</span><span class="cmd-desc">强制执行，无视逃避</span><span class="cmd-tag tag-train">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$强制羞辱</span><span class="cmd-desc">强制执行，无视逃避</span><span class="cmd-tag tag-train">缔约</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title" style="color: #7b1fa2;">🐾 宠物自主</div>
+        <div class="card-inner">
+            <div class="section-action">
+                <div class="cmd-row"><span class="cmd-name">$撒娇</span><span class="cmd-desc">+亲密，向主人撒娇~</span><span class="cmd-tag tag-action">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$生气气</span><span class="cmd-desc">-服从，向主人发脾气！</span><span class="cmd-tag tag-action">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$讨好</span><span class="cmd-desc">+服从/亲密，讨好主人</span><span class="cmd-tag tag-action">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$献媚</span><span class="cmd-desc">+涩气/服从，献媚主人</span><span class="cmd-tag tag-action">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$求关注</span><span class="cmd-desc">+亲密，求主人关注</span><span class="cmd-tag tag-action">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$告状</span><span class="cmd-desc">+服从，向主人告状</span><span class="cmd-tag tag-action">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$勾引</span><span class="cmd-desc">+涩气/敏感，勾引主人</span><span class="cmd-tag tag-action">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$冷战</span><span class="cmd-desc">-亲密/服从，和主人冷战</span><span class="cmd-tag tag-action">缔约</span></div>
+                <div class="cmd-row"><span class="cmd-name">$嘲讽</span><span class="cmd-desc">嘲讽主人！</span><span class="cmd-tag tag-action">缔约</span></div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="row-wrap">
+    <div class="card">
+        <div class="card-title" style="color: #e65100;">🛒 商店/房子</div>
+        <div class="card-inner">
+            <div class="section-shop">
+                <div class="cmd-row"><span class="cmd-name">$商店</span><span class="cmd-desc">查看商店面板</span><span class="cmd-tag tag-shop">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$购买t1~t4</span><span class="cmd-desc">购买普通套装(耐久刷新)</span><span class="cmd-tag tag-shop">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$购买y序号</span><span class="cmd-desc">购买调教装(全曝衣后解锁)</span><span class="cmd-tag tag-shop">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$买房f1~f3</span><span class="cmd-desc">温馨/豪华/奢华，可跳级</span><span class="cmd-tag tag-shop">双方</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title" style="color: #00695c;">📊 查看</div>
+        <div class="card-inner">
+            <div class="section-view">
+                <div class="cmd-row"><span class="cmd-name">$面板</span><span class="cmd-desc">查看宠物状态面板</span><span class="cmd-tag tag-view">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$成就</span><span class="cmd-desc">查看成就进度和奖励</span><span class="cmd-tag tag-view">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$列表</span><span class="cmd-desc">群关系总览</span><span class="cmd-tag tag-view">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$帮助</span><span class="cmd-desc">查看帮助指南</span><span class="cmd-tag tag-view">双方</span></div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title" style="color: #6a1b9a;">💡 攻略提示</div>
+        <div class="card-inner">
+            <div class="tip-box">
+                <strong>领养阶段：</strong>宠物有逃避概率(服从越高越低)，疼痛未解锁(显示0%)<br>
+                <strong>缔约后：</strong>逃避归零，解锁全部调教和强制，疼痛正常运作(80-100最佳)<br>
+                <strong>宠物互动：</strong>宠物也可发宠爱互动(效果减半)，双方都加金币<br>
+                <strong>调教装：</strong>所有普通装耐久归零后解锁调教装商店，购买普通套装刷新耐久<br>
+                <strong>房子加成：</strong>温馨+1金/次，豪华+2金+5%亲/次，奢华+5金+10%亲/次<br>
+                <strong>买房折旧：</strong>旧房原价60%抵扣新房，可跳级购买<br>
+                <strong>初始状态：</strong>金币99，默认穿t1日常套装(随机2空槽)
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-box">
+        <div class="footer-inner">
+            Created By {{yunzaiName}} {{yunzaiVer}} &amp; cwer-plugin v{{pluginVer}}
+        </div>
+    </div>
+
+</body>
+</html>
