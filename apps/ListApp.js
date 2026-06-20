@@ -17,7 +17,7 @@ class ListApp extends plugin {
     super({
       name: 'Cwer-列表',
       dsc: '群关系总览',
-      event: 'message.group',
+      event: 'message',
       priority: 5000,
       rule: [
         { reg: '^(?:#宠物|\\$)列表$', fnc: 'showList' }

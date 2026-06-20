@@ -23,13 +23,18 @@ global.cwerSys = { dm, es, ie, shop, renderer }
 dm.initData()
 
 const apps = {}
-const files = fs.readdirSync(appsDir).filter(f => f.endsWith('.js'))
 for (const file of files) {
-  const mod = await import(`./apps/${file}`)
-  if (mod.default) {
-    const inst = new mod.default()
-    apps[inst.name || file] = inst
+  try {
+    const mod = await import(`./apps/${file}`)
+    if (mod.default) {
+      apps[file.replace('.js', '')] = mod.default
+    }
+  } catch (err) {
+    logger.error(`cwer-plugin 加载失败: ${file}`)
+    logger.error(err)
   }
 }
+
+logger.info(`cwer-plugin v1.0.3 加载完成`)
 
 export { apps }
