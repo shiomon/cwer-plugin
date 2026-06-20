@@ -15,7 +15,7 @@ class HelpApp extends plugin {
     super({
       name: 'Cwer-帮助',
       dsc: '帮助指南',
-      event: 'message.group',
+
       priority: 5000,
       rule: [
         { reg: '^(?:#宠物|\\$)帮助$', fnc: 'showHelp' }
