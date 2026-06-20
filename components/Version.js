@@ -6,7 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const pluginRoot = path.resolve(__dirname, '..')
 const packagePath = path.join(pluginRoot, 'package.json')
 
-let currentVersion = '1.0.0'
+let currentVersion = '1.0.3'
 
 try {
   if (fs.existsSync(packagePath)) {
@@ -17,11 +17,6 @@ try {
 
 let yunzaiName = 'Yunzai'
 let yunzaiVer = 'v3'
-try {
-  const cfg = (await import('../../../lib/config/config.js')).default
-  if (cfg?.name) yunzaiName = cfg.name
-} catch {}
-
 try {
   const pkg = JSON.parse(fs.readFileSync(path.join(pluginRoot, '../../../package.json'), 'utf8'))
   if (pkg?.version) yunzaiVer = 'v' + pkg.version
