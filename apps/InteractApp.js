@@ -112,11 +112,12 @@ class InteractApp extends plugin {
 
     const warnings = []
     const zeroStats = []
+    const isBonded = data.relation.status === 'bonded'
     if (data.stats.satiety <= 0) zeroStats.push('饱食')
     if (data.stats.energy <= 0) zeroStats.push('体力')
     if (data.stats.hygiene <= 0) zeroStats.push('清洁')
     if (data.stats.sensitivity <= 0) zeroStats.push('敏感')
-    if (data.stats.pain <= 0) zeroStats.push('疼痛')
+    if (isBonded && data.stats.pain <= 0) zeroStats.push('疼痛')
     if (zeroStats.length > 0) {
       warnings.push(`${zeroStats.join('、')}已归零，互动效果将大幅降低！`)
     }
