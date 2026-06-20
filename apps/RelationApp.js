@@ -14,7 +14,7 @@ class RelationApp extends plugin {
       rule: [
         { reg: '^([#＃]宠物|\\$)领养', fnc: 'adopt' },
 
-        { reg: '^([#＃]宠物|\\$)抢(@|\\s)', fnc: 'steal' },
+        { reg: '^([#＃]宠物|\\$)抢.*', fnc: 'steal' },
         { reg: '^([#＃]宠物|\\$)缔约.*', fnc: 'bond' },
         { reg: '^([#＃]宠物|\\$)同意.*', fnc: 'agreeBond' },
         { reg: '^([#＃]宠物|\\$)不同意.*', fnc: 'rejectBond' },
@@ -154,13 +154,13 @@ class RelationApp extends plugin {
   async steal(e) {
     const at = e.message?.find(m => m.type === 'at')
     const targetId = String(e.at || at?.qq || at?.id || '')
-    if (!targetId || targetId === '0') {
-      return e.reply('请@目标群友，格式：#宠物抢@群友')
+    if (targetId && targetId !== '0' && targetId !== String(e.user_id)) {
+      return this.stealTarget(e, targetId)
     }
-    if (targetId === String(e.user_id)) {
-      return e.reply('不能抢自己！')
-    }
+    return this.stealRandom(e)
+  }
 
+  async stealTarget(e, targetId) {
     const groupId = String(e.group_id)
     const ownerId = String(e.user_id)
     const ownerName = e.sender.card || e.sender.nickname
@@ -171,14 +171,95 @@ class RelationApp extends plugin {
     }
 
     const petRel = this.sys.dm.findRelationByPet(groupId, targetId)
-    if (!petRel) {
-      return e.reply('这个人还没有被领养，直接用 #宠物领养 吧！')
+    if (petRel) {
+      const petData = this.sys.dm.readData(groupId, petRel.ownerId, petRel.petId)
+      if (petData && petData.relation.status.startsWith('bonded')) {
+        return e.reply('该宠物已缔约，无法抢夺！')
+      }
+
+      if (Math.random() > CONFIG.ADOPT_CHANCE) {
+        const taunts = CONFIG.TAUNT_MESSAGES.stealFail
+        const fail = taunts[Math.floor(Math.random() * taunts.length)]
+        return e.reply(`抢夺失败！${fail}`)
+      }
+
+      const oldOwnerName = petData?.relation.ownerName || '某人'
+      this.sys.dm.deleteData(groupId, petRel.ownerId, petRel.petId)
+
+      const data = this.sys.dm.resetData(groupId, ownerId, targetId)
+      data.relation.ownerName = ownerName
+      data.relation.petName = petData?.relation.petName || targetId
+      data.relation.petAvatar = petData?.relation.petAvatar || `https://q1.qlogo.cn/g?b=qq&s=100&nk=${targetId}`
+      data.relation.ownerAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${ownerId}`
+      data.sys.startTimestamp = Date.now()
+      this.sys.dm.saveData(data, groupId)
+
+      return e.reply([`成功从 ${oldOwnerName} 手中抢走了 ${data.relation.petName}！`, segment.at(Number(targetId))])
     }
 
-    const petData = this.sys.dm.readData(groupId, petRel.ownerId, petRel.petId)
-    if (petData && petData.relation.status.startsWith('bonded')) {
-      return e.reply('该宠物已缔约，无法抢夺！')
+    const ownerRel = this.sys.dm.findRelationByOwner(groupId, targetId)
+    if (ownerRel.length > 0) {
+      const stealable = ownerRel.filter(r => {
+        const d = this.sys.dm.readData(groupId, r.ownerId, r.petId)
+        return d && !d.relation.status.startsWith('bonded')
+      })
+      if (stealable.length === 0) {
+        return e.reply('该主人的宠物已全部缔约，无法抢夺！')
+      }
+      const target = stealable[Math.floor(Math.random() * stealable.length)]
+      const targetData = this.sys.dm.readData(groupId, target.ownerId, target.petId)
+
+      if (Math.random() > CONFIG.ADOPT_CHANCE) {
+        const taunts = CONFIG.TAUNT_MESSAGES.stealFail
+        const fail = taunts[Math.floor(Math.random() * taunts.length)]
+        return e.reply(`抢夺失败！${fail}`)
+      }
+
+      const oldOwnerName = targetData?.relation.ownerName || '某人'
+      const petName = targetData?.relation.petName || target.petId
+      const petAvatar = targetData?.relation.petAvatar || `https://q1.qlogo.cn/g?b=qq&s=100&nk=${target.petId}`
+      this.sys.dm.deleteData(groupId, target.ownerId, target.petId)
+
+      const data = this.sys.dm.resetData(groupId, ownerId, target.petId)
+      data.relation.ownerName = ownerName
+      data.relation.petName = petName
+      data.relation.petAvatar = petAvatar
+      data.relation.ownerAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${ownerId}`
+      data.sys.startTimestamp = Date.now()
+      this.sys.dm.saveData(data, groupId)
+
+      return e.reply([`成功从 ${oldOwnerName} 手中抢走了 ${petName}！`, segment.at(Number(target.petId))])
     }
+
+    return e.reply('这个人还没有宠物关系，直接用 #宠物领养 吧！')
+  }
+
+  async stealRandom(e) {
+    const groupId = String(e.group_id)
+    const ownerId = String(e.user_id)
+    const ownerName = e.sender.card || e.sender.nickname
+
+    const existingPet = this.sys.dm.findRelationByOwner(groupId, ownerId)
+    if (existingPet.length > 0) {
+      return e.reply('你已经养了宠物了，先解除关系再抢别人的吧！')
+    }
+
+    const allRels = this.sys.dm.findAllRelations(groupId)
+    const stealable = []
+    for (const rel of allRels) {
+      if (rel.ownerId === ownerId) continue
+      const d = this.sys.dm.readData(groupId, rel.ownerId, rel.petId)
+      if (d && !d.relation.status.startsWith('bonded') && d.relation.ownerId !== ownerId) {
+        stealable.push(rel)
+      }
+    }
+
+    if (stealable.length === 0) {
+      return this.adoptRandom(e)
+    }
+
+    const target = stealable[Math.floor(Math.random() * stealable.length)]
+    const targetData = this.sys.dm.readData(groupId, target.ownerId, target.petId)
 
     if (Math.random() > CONFIG.ADOPT_CHANCE) {
       const taunts = CONFIG.TAUNT_MESSAGES.stealFail
@@ -186,18 +267,20 @@ class RelationApp extends plugin {
       return e.reply(`抢夺失败！${fail}`)
     }
 
-    const oldOwnerName = petData?.relation.ownerName || '某人'
-    this.sys.dm.deleteData(groupId, petRel.ownerId, petRel.petId)
+    const oldOwnerName = targetData?.relation.ownerName || '某人'
+    const petName = targetData?.relation.petName || target.petId
+    const petAvatar = targetData?.relation.petAvatar || `https://q1.qlogo.cn/g?b=qq&s=100&nk=${target.petId}`
+    this.sys.dm.deleteData(groupId, target.ownerId, target.petId)
 
-    const data = this.sys.dm.resetData(groupId, ownerId, targetId)
+    const data = this.sys.dm.resetData(groupId, ownerId, target.petId)
     data.relation.ownerName = ownerName
-    data.relation.petName = petData?.relation.petName || targetId
-    data.relation.petAvatar = petData?.relation.petAvatar || `https://q1.qlogo.cn/g?b=qq&s=100&nk=${targetId}`
+    data.relation.petName = petName
+    data.relation.petAvatar = petAvatar
     data.relation.ownerAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${ownerId}`
     data.sys.startTimestamp = Date.now()
     this.sys.dm.saveData(data, groupId)
 
-    await e.reply([`成功从 ${oldOwnerName} 手中抢走了 ${data.relation.petName}！`, segment.at(Number(targetId))])
+    await e.reply([`成功从 ${oldOwnerName} 手中抢走了 ${petName}！`, segment.at(Number(target.petId))])
   }
 
   async bond(e) {
