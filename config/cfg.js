@@ -45,14 +45,14 @@ const CONFIG = {
       '就这还想抢人？回去练练吧~'
     ],
     noPet: [
-      '你连宠物都没有，还想互动？',
-      '先去找个宠物再来吧，可怜虫~',
-      '单身狗还想调教？先领养再说！'
+      '连宠物都没有还想互动？可怜~',
+      '先去领养个宠物再来吧，没人要的单身狗~',
+      '没有宠物还在这晃悠？快去领养啊，废物~'
     ],
     notBonded: [
-      '还没缔约就想调教？想得美！',
-      '你的亲密度太低了，宠物不答应~',
-      '先提升亲密度缔约了再来吧！'
+      '还没缔约就想调教？做梦！',
+      '亲密度不够还想来这套？宠物不答应~',
+      '先提升亲密度缔约了再说吧，心急吃不了热豆腐~'
     ],
     evasion: [
       '你的宠物不乖，挣脱了你的手！',
@@ -87,11 +87,12 @@ const CONFIG = {
   ],
   INTIMACY_LEVELS: [
     { min: 0, name: '陌生人' },
-    { min: 30, name: '熟悉' },
-    { min: 100, name: '信赖' },
+    { min: 29, name: '熟悉' },
+    { min: 99, name: '信赖' },
     { min: 299, name: '依恋' },
     { min: 520, name: '告白' },
-    { min: 888, name: '深爱' },
+    { min: 666, name: '非你不可' },
+    { min: 999, name: '深爱' },
     { min: 1314, name: '永恒' }
   ],
   BOND_TIERS: {
@@ -228,7 +229,8 @@ const CONFIG = {
     'lewd_1314': { name: '极欲化身', desc: '涩气值达到1314', target: 1314, reward: 200 },
     'intimacy_299': { name: '依恋之心', desc: '亲密度达到299', target: 299, reward: 60 },
     'intimacy_520': { name: '告白时刻', desc: '亲密度达到520', target: 520, reward: 80 },
-    'intimacy_888': { name: '深情不悔', desc: '亲密度达到888', target: 888, reward: 120 },
+    'intimacy_666': { name: '非你不可', desc: '亲密度达到666', target: 666, reward: 100 },
+    'intimacy_999': { name: '深情不悔', desc: '亲密度达到999', target: 999, reward: 120 },
     'intimacy_1314': { name: '一生一世', desc: '亲密度达到1314', target: 1314, reward: 200 },
     'pain_m_awaken': { name: 'M显现', desc: '疼痛首次达到100', type: 'first_reach', stat: 'pain', value: 100, reward: 100 },
     'pain_collapse': { name: '濒临崩溃', desc: '连续3次疼痛为100', type: 'consecutive', stat: 'pain', value: 100, count: 3, reward: 80 },
@@ -274,6 +276,7 @@ const CONFIG = {
     { priority: 75, condition: 'pain >= 50 && sensitivity >= 50', text: '身体火热，渴望更多刺激...' },
     { priority: 70, condition: 'lewd >= 1314', text: '极欲化身' },
     { priority: 68, condition: 'lewd >= 666', text: '气息紊乱，欲念缠身...' },
+    { priority: 66, condition: 'intimacy >= 999', text: '深爱着主人，无法自拔...' },
     { priority: 65, condition: 'intimacy >= 520', text: '深深依恋着主人...' },
     { priority: 62, condition: 'intimacy >= 299', text: '对主人充满依恋' },
     { priority: 60, condition: 'obedience >= 520', text: '温顺乖巧，等待主人指令...' },
@@ -292,7 +295,8 @@ const CONFIG = {
     { priority: 60, condition: 'lewd >= 299 && lewd < 666', name: '欲念渐起', css: 'trait-lewd' },
     { priority: 55, condition: 'obedience >= 666', name: '绝对服从', css: 'trait-good' },
     { priority: 50, condition: 'obedience >= 299 && obedience < 666', name: '顺从', css: 'trait-good' },
-    { priority: 45, condition: 'intimacy >= 520', name: '深爱', css: 'trait-good' },
+    { priority: 46, condition: 'intimacy >= 666 && intimacy < 999', name: '非你不可', css: 'trait-good' },
+    { priority: 45, condition: 'intimacy >= 520 && intimacy < 666', name: '深爱', css: 'trait-good' },
     { priority: 40, condition: 'intimacy >= 299 && intimacy < 520', name: '依恋', css: 'trait-good' },
     { priority: 35, condition: 'energy >= 80 && satiety >= 80', name: '状态良好', css: 'trait-good' },
     { priority: 30, condition: 'hygiene >= 80', name: '洁净', css: 'trait-good' }

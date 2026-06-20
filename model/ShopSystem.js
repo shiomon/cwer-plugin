@@ -273,7 +273,8 @@ class ShopSystem {
             break
           case 'intimacy_299':
           case 'intimacy_520':
-          case 'intimacy_888':
+          case 'intimacy_666':
+          case 'intimacy_999':
           case 'intimacy_1314':
             unlocked = (data.stats.intimacy || 0) >= ach.target
             break
