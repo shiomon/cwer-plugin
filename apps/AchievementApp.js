@@ -3,7 +3,7 @@ import { CONFIG } from '../config/cfg.js'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import Version from '../components/Version.js'
+import { ver, name, yunzai } from '../components/Version.js'
 import { injectAssets } from '../model/html-inject.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -68,9 +68,9 @@ class AchievementApp extends plugin {
         achievements,
         unlockedCount: unlocked.length,
         achievementCount: total,
-        pluginVer: Version.ver,
-        yunzaiName: Version.name,
-        yunzaiVer: Version.yunzai,
+        pluginVer: ver,
+        yunzaiName: name,
+        yunzaiVer: yunzai,
         imgType: 'jpeg',
         quality: 100,
         pageGotoParams: { waitUntil: 'networkidle0' },

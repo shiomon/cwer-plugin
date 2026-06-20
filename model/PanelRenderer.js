@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 import { CONFIG, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, HOUSES, LOCATIONS, getUserColor } from '../config/cfg.js'
 import { calculateDays } from './utils.js'
 import { injectAssets } from './html-inject.js'
-import Version from '../components/Version.js'
+import { ver, name, yunzai } from '../components/Version.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const pluginRoot = path.resolve(__dirname, '..')
@@ -101,9 +101,9 @@ class PanelRenderer {
       locationModifier,
       trainBonus,
       trainBonusDetail,
-      pluginVer: Version.ver,
-      yunzaiName: Version.name,
-      yunzaiVer: Version.yunzai
+      pluginVer: ver,
+      yunzaiName: name,
+      yunzaiVer: yunzai
     }
   }
 

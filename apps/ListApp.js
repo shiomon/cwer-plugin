@@ -3,7 +3,7 @@ import { CONFIG, HOUSES } from '../config/cfg.js'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import Version from '../components/Version.js'
+import { ver, name, yunzai } from '../components/Version.js'
 import { injectAssets } from '../model/html-inject.js'
 import { calculateDays } from '../model/utils.js'
 
@@ -69,9 +69,9 @@ class ListApp extends plugin {
         tplFile: tempListPath,
         relations: relList,
         totalCount: relList.length,
-        pluginVer: Version.ver,
-        yunzaiName: Version.name,
-        yunzaiVer: Version.yunzai,
+        pluginVer: ver,
+        yunzaiName: name,
+        yunzaiVer: yunzai,
         imgType: 'jpeg',
         quality: 100,
         pageGotoParams: { waitUntil: 'networkidle0' },
