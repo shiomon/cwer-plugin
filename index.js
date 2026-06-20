@@ -23,6 +23,7 @@ global.cwerSys = { dm, es, ie, shop, renderer }
 dm.initData()
 
 const apps = {}
+const files = fs.readdirSync(appsDir).filter(f => f.endsWith('.js'))
 for (const file of files) {
   try {
     const mod = await import(`./apps/${file}`)
