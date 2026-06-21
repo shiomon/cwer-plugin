@@ -51,7 +51,7 @@ class InteractionEngine {
     const ownerName = data.relation.ownerName || '主人'
     const petName = data.relation.petName || '宠物'
     let logText = this.getLogText(userName, isCrit, isForce, petName, action, userId)
-    let replyText = this.getLogText(userName, isCrit, isForce, ownerName, action, userId)
+    let replyText = this.getLogText(userName, isCrit, isForce, isPetSender ? ownerName : petName, action, userId)
 
     if (DUR_LOSS_ACTIONS.has(action)) {
       const broken = this.damageRandomCommonClothing(data)
