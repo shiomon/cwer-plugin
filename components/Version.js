@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import cfg from '../../../lib/config/config.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const pluginRoot = path.resolve(__dirname, '..')
@@ -15,12 +16,18 @@ try {
   }
 } catch {}
 
-let yunzaiName = 'Yunzai'
-let yunzaiVer = 'v3'
-try {
-  const pkg = JSON.parse(fs.readFileSync(path.join(pluginRoot, '../../../package.json'), 'utf8'))
-  if (pkg?.version) yunzaiVer = 'v' + pkg.version
-} catch {}
+const yunzaiVer = `v${cfg.package.version}`
+
+let yunzaiName = cfg.package.name
+if (yunzaiName === 'miao-yunzai') {
+  yunzaiName = 'Miao-Yunzai'
+} else if (yunzaiName === 'yunzai') {
+  yunzaiName = 'Yunzai-Bot'
+} else if (yunzaiName === 'trss-yunzai') {
+  yunzaiName = 'TRSS-Yunzai'
+} else {
+  yunzaiName = yunzaiName.charAt(0).toUpperCase() + yunzaiName.slice(1)
+}
 
 export const ver = 'v' + currentVersion
 export const name = yunzaiName
