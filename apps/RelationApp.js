@@ -88,7 +88,7 @@ class RelationApp extends plugin {
     data.sys.startTimestamp = Date.now()
     this.sys.dm.saveData(data, groupId)
 
-    await e.reply([`成功将 ${petName} 领养为宠物！快去宠爱ta吧~\n💡 宠物可以发 #宠物解除 解除关系`, segment.at(Number(targetId))])
+    await e.reply([`成功将 ${petName} 领养为宠物！快去宠爱ta吧~`, segment.at(Number(targetId))])
   }
 
   async adoptRandom(e) {
