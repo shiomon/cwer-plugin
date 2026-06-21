@@ -8,7 +8,7 @@ const cssPath = path.join(pluginRoot, 'resources', 'common.css')
 const jsPath = path.join(pluginRoot, 'resources', 'bg-loader.js')
 
 const SUBTITLE = '$面板 $商店 $帮助 $成就 $列表丨#宠物面板/商店/帮助/成就/列表'
-const FOOTER = `<div class="footer-box"><div class="footer-inner">Created By ${name} ${yunzai} &amp; cwer-plugin ${ver}</div></div>`
+const FOOTER = `Created By ${name} ${yunzai} &amp; cwer-plugin ${ver}`
 
 export function injectAssets(htmlContent) {
   let css = ''
