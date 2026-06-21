@@ -2,7 +2,7 @@ import plugin from '../../../lib/plugins/plugin.js'
 import { CONFIG, getUserColor } from '../config/cfg.js'
 
 const PET_ACTIONS = '投喂|洗澡|陪玩|摸头|拥抱|送礼物|鞭打|打脸|打屁股|羞辱|禁闭|振动|狗叫|滴蜡|挠痒|强制鞭打|强制禁闭|强制羞辱'
-const ACTION_REG = new RegExp(`^([#＃]宠物|\\$)(${PET_ACTIONS}).*`)
+const ACTION_REG = new RegExp(`^([#＃]宠物|[\\$＄])(${PET_ACTIONS}).*`)
 const ACTION_EXTRACT = new RegExp(`(${PET_ACTIONS})`)
 
 const PET_CARE_ACTIONS = new Set(['投喂', '洗澡', '陪玩', '摸头', '拥抱', '送礼物'])

@@ -9,7 +9,7 @@ class PanelApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|\\$)面板.*', fnc: 'showPanel' }
+        { reg: '^([#＃]宠物|[\\$＄])面板.*', fnc: 'showPanel' }
       ]
     })
     this.sys = global.cwerSys

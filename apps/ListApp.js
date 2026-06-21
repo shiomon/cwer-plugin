@@ -20,7 +20,7 @@ class ListApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|\\$)列表.*', fnc: 'showList' }
+        { reg: '^([#＃]宠物|[\\$＄])列表.*', fnc: 'showList' }
       ]
     })
     this.sys = global.cwerSys

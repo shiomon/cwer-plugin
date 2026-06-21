@@ -19,8 +19,8 @@ class ShopApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|\\$)商店.*', fnc: 'showShop' },
-        { reg: '^([#＃]宠物|\\$)购买.*', fnc: 'buyItem' }
+        { reg: '^([#＃]宠物|[\\$＄])商店.*', fnc: 'showShop' },
+        { reg: '^([#＃]宠物|[\\$＄])购买.*', fnc: 'buyItem' }
       ]
     })
     this.sys = global.cwerSys
@@ -66,7 +66,7 @@ class ShopApp extends plugin {
   }
 
   async buyItem(e) {
-    const itemText = e.msg.replace(/^(?:#宠物|\$)购买/, '').trim()
+    const itemText = e.msg.replace(/^([#＃]宠物|[\$＄])购买/, '').trim()
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 

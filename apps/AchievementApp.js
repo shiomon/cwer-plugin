@@ -19,7 +19,7 @@ class AchievementApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|\\$)成就.*', fnc: 'showAchievements' }
+        { reg: '^([#＃]宠物|[\\$＄])成就.*', fnc: 'showAchievements' }
       ]
     })
     this.sys = global.cwerSys

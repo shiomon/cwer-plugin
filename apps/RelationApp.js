@@ -12,13 +12,13 @@ class RelationApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|\\$)领养', fnc: 'adopt' },
+        { reg: '^([#＃]宠物|[\\$＄])领养', fnc: 'adopt' },
 
-        { reg: '^([#＃]宠物|\\$)抢.*', fnc: 'steal' },
-        { reg: '^([#＃]宠物|\\$)缔约.*', fnc: 'bond' },
-        { reg: '^([#＃]宠物|\\$)同意.*', fnc: 'agreeBond' },
-        { reg: '^([#＃]宠物|\\$)不同意.*', fnc: 'rejectBond' },
-        { reg: '^([#＃]宠物|\\$)解除.*', fnc: 'release' }
+        { reg: '^([#＃]宠物|[\\$＄])抢.*', fnc: 'steal' },
+        { reg: '^([#＃]宠物|[\\$＄])缔约.*', fnc: 'bond' },
+        { reg: '^([#＃]宠物|[\\$＄])同意.*', fnc: 'agreeBond' },
+        { reg: '^([#＃]宠物|[\\$＄])不同意.*', fnc: 'rejectBond' },
+        { reg: '^([#＃]宠物|[\\$＄])解除.*', fnc: 'release' }
       ]
     })
     this.sys = global.cwerSys

@@ -11,14 +11,14 @@ class HouseApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|\\$)买房.*', fnc: 'buyHouse' }
+        { reg: '^([#＃]宠物|[\\$＄])买房.*', fnc: 'buyHouse' }
       ]
     })
     this.sys = global.cwerSys
   }
 
   async buyHouse(e) {
-    const input = e.msg.replace(/^(?:#宠物|\$)买房/, '').trim().toLowerCase()
+    const input = e.msg.replace(/^([#＃]宠物|[\$＄])买房/, '').trim().toLowerCase()
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 

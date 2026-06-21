@@ -18,7 +18,7 @@ class HelpApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|\\$)帮助.*', fnc: 'showHelp' }
+        { reg: '^([#＃]宠物|[\\$＄])帮助.*', fnc: 'showHelp' }
       ]
     })
     this.sys = global.cwerSys
