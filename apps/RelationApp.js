@@ -296,7 +296,7 @@ class RelationApp extends plugin {
       const data = this.sys.dm.readData(groupId, rel.ownerId, rel.petId)
       if (!data) return e.reply('数据异常')
       if (data.relation.status.startsWith('bonded')) return e.reply('已经缔约了！')
-      if (data.stats.intimacy < 299) return e.reply(`亲密度不足299，当前等级：${this.sys.dm.getIntimacyLevel(data.stats.intimacy)}`)
+      if (data.stats.intimacy < 99) return e.reply(`亲密度不足99，当前等级：${this.sys.dm.getIntimacyLevel(data.stats.intimacy)}`)
 
       const petId = rel.petId
       activeBondRequests.set(`${groupId}_${petId}`, { requesterId: userId, requesterName: userName, type: 'owner', time: Date.now() })
@@ -312,7 +312,7 @@ class RelationApp extends plugin {
       const data = this.sys.dm.readData(groupId, rel.ownerId, rel.petId)
       if (!data) return e.reply('数据异常')
       if (data.relation.status.startsWith('bonded')) return e.reply('已经缔约了！')
-      if (data.stats.intimacy < 299) return e.reply(`亲密度不足299，当前等级：${this.sys.dm.getIntimacyLevel(data.stats.intimacy)}`)
+      if (data.stats.intimacy < 99) return e.reply(`亲密度不足99，当前等级：${this.sys.dm.getIntimacyLevel(data.stats.intimacy)}`)
 
       data.relation.status = 'bonded'
       data.relation.bondedAt = Date.now()
