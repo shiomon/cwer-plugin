@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG } from '../config/cfg.js'
+import { CONFIG, CMD_PREFIX } from '../config/cfg.js'
 
 class PanelApp extends plugin {
   constructor() {
@@ -9,7 +9,7 @@ class PanelApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|[\\$＄])面板.*', fnc: 'showPanel' }
+        { reg: `^${CMD_PREFIX}面板.*`, fnc: 'showPanel' }
       ]
     })
     this.sys = global.cwerSys

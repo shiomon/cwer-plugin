@@ -2,6 +2,7 @@ import plugin from '../../../lib/plugins/plugin.js'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { CMD_PREFIX } from '../config/cfg.js'
 import { ver, name, yunzai } from '../components/Version.js'
 import { injectAssets } from '../model/html-inject.js'
 
@@ -18,7 +19,7 @@ class HelpApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|[\\$＄])帮助.*', fnc: 'showHelp' }
+        { reg: `^${CMD_PREFIX}帮助.*`, fnc: 'showHelp' }
       ]
     })
     this.sys = global.cwerSys

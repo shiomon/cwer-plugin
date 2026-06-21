@@ -1,8 +1,8 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG, getUserColor } from '../config/cfg.js'
+import { CONFIG, getUserColor, CMD_PREFIX } from '../config/cfg.js'
 
 const PET_ACTIONS = '撒娇|生气气|讨好|献媚|求关注|告状|勾引|冷战'
-const ACTION_REG = new RegExp(`^([#＃]宠物|[\\$＄])(${PET_ACTIONS})`)
+const ACTION_REG = new RegExp(`^${CMD_PREFIX}(${PET_ACTIONS})`)
 const ACTION_EXTRACT = new RegExp(`(${PET_ACTIONS})`)
 
 class PetActionApp extends plugin {
@@ -14,7 +14,7 @@ class PetActionApp extends plugin {
       priority: 5000,
       rule: [
         { reg: ACTION_REG, fnc: 'petAction' },
-        { reg: '^([#＃]宠物|[\\$＄])嘲讽.*', fnc: 'taunt' }
+        { reg: `^${CMD_PREFIX}嘲讽.*`, fnc: 'taunt' }
       ]
     })
     this.sys = global.cwerSys

@@ -1,7 +1,8 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { HOUSES, HOUSE_UPGRADE_ORDER, CONFIG } from '../config/cfg.js'
+import { HOUSES, HOUSE_UPGRADE_ORDER, CONFIG, CMD_PREFIX } from '../config/cfg.js'
 
 const FLOOR_MAP = { 'f1': 'cozy', 'f2': 'luxury', 'f3': 'palace' }
+const BUY_HOUSE_REG = new RegExp(`^${CMD_PREFIX}买房`)
 
 class HouseApp extends plugin {
   constructor() {
@@ -11,14 +12,14 @@ class HouseApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|[\\$＄])买房.*', fnc: 'buyHouse' }
+        { reg: `^${CMD_PREFIX}买房.*`, fnc: 'buyHouse' }
       ]
     })
     this.sys = global.cwerSys
   }
 
   async buyHouse(e) {
-    const input = e.msg.replace(/^([#＃]宠物|[\$＄])买房/, '').trim().toLowerCase()
+    const input = e.msg.replace(BUY_HOUSE_REG, '').trim().toLowerCase()
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 

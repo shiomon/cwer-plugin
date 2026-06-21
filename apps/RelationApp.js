@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG } from '../config/cfg.js'
+import { CONFIG, CMD_PREFIX } from '../config/cfg.js'
 
 const activeBondRequests = new Map()
 const releaseCooldowns = new Map()
@@ -12,13 +12,13 @@ class RelationApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|[\\$＄])领养', fnc: 'adopt' },
+        { reg: `^${CMD_PREFIX}领养`, fnc: 'adopt' },
 
-        { reg: '^([#＃]宠物|[\\$＄])抢.*', fnc: 'steal' },
-        { reg: '^([#＃]宠物|[\\$＄])缔约.*', fnc: 'bond' },
-        { reg: '^([#＃]宠物|[\\$＄])同意.*', fnc: 'agreeBond' },
-        { reg: '^([#＃]宠物|[\\$＄])不同意.*', fnc: 'rejectBond' },
-        { reg: '^([#＃]宠物|[\\$＄])解除.*', fnc: 'release' }
+        { reg: `^${CMD_PREFIX}抢.*`, fnc: 'steal' },
+        { reg: `^${CMD_PREFIX}缔约.*`, fnc: 'bond' },
+        { reg: `^${CMD_PREFIX}同意.*`, fnc: 'agreeBond' },
+        { reg: `^${CMD_PREFIX}不同意.*`, fnc: 'rejectBond' },
+        { reg: `^${CMD_PREFIX}解除.*`, fnc: 'release' }
       ]
     })
     this.sys = global.cwerSys

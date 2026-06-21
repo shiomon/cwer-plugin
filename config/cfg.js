@@ -558,8 +558,10 @@ function getUserColor(userId) {
   return colors[Math.abs(hash) % colors.length]
 }
 
+const CMD_PREFIX = '([#＃]宠物|[\\$＄])'
+
 export {
   CONFIG, LOCATIONS, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, CLOTHING_DB,
   CLOTHING_PRESETS, COMMON_SETS, SHOP_ITEMS, HOUSES, HOUSE_UPGRADE_ORDER,
-  RANDOM_EVENTS, generateRandomEffect, getUserColor
+  RANDOM_EVENTS, generateRandomEffect, getUserColor, CMD_PREFIX
 }

@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG, HOUSES } from '../config/cfg.js'
+import { CONFIG, HOUSES, CMD_PREFIX } from '../config/cfg.js'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -20,7 +20,7 @@ class ListApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|[\\$＄])列表.*', fnc: 'showList' }
+        { reg: `^${CMD_PREFIX}列表.*`, fnc: 'showList' }
       ]
     })
     this.sys = global.cwerSys

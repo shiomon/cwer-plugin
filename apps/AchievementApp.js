@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG } from '../config/cfg.js'
+import { CONFIG, CMD_PREFIX } from '../config/cfg.js'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -19,7 +19,7 @@ class AchievementApp extends plugin {
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: '^([#＃]宠物|[\\$＄])成就.*', fnc: 'showAchievements' }
+        { reg: `^${CMD_PREFIX}成就.*`, fnc: 'showAchievements' }
       ]
     })
     this.sys = global.cwerSys
