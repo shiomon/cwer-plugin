@@ -93,7 +93,7 @@
         <div class="header-card-wrap">
             <div class="header-card-inner">
                 <div class="header-card">
-                    <div class="cat-icon">🏆</div>
+                    <div class="cat-icon">&#x1F3C6;</div>
                     <div class="title">宠物成就 ({{unlockedCount}}/{{achievementCount}})</div>
                     <div class="subtitle"><!-- SUBTITLE --></div>
                 </div>
@@ -103,21 +103,21 @@
 
     <div class="row-wrap">
     <div class="card">
-        <div class="card-title" style="color: #00838f;">️ 商店</div>
+        <div class="card-title" style="color: #00838f;">&#x1F6D2; 商店</div>
         <div class="card-inner">
             <div class="section-shop">
                 {{each achievements a}}{{if a.key.startsWith('breaker_') || a.key.startsWith('shop_') || a.key.startsWith('house_')}}
-                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}&#x2713;{{else}}&#x2717;{{/if}}</span></div>
                 {{/if}}{{/each}}
             </div>
         </div>
     </div>
     <div class="card">
-        <div class="card-title" style="color: #f57f17;">⭐ 特殊</div>
+        <div class="card-title" style="color: #f57f17;">&#x26A0; 特殊</div>
         <div class="card-inner">
             <div class="section-special">
                 {{each achievements a}}{{if a.key === 'pain_m_awaken' || a.key === 'pain_collapse' || a.key === 'sensitivity_stone' || a.key === 'sensitivity_fly' || a.key === 'energy_dying' || a.key === 'energy_revive' || a.key === 'satiety_starving' || a.key === 'satiety_starve_to_death' || a.key === 'satiety_overfeed' || a.key === 'hygiene_cinderella' || a.key === 'hygiene_lotus'}}
-                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}&#x2713;{{else}}&#x2717;{{/if}}</span></div>
                 {{/if}}{{/each}}
             </div>
         </div>
@@ -126,21 +126,21 @@
 
     <div class="row-wrap">
     <div class="card">
-        <div class="card-title" style="color: #e91e63;">✨ 魅力</div>
+        <div class="card-title" style="color: #e91e63;">&#x2728; 魅力</div>
         <div class="card-inner">
             <div class="section-charm">
                 {{each achievements a}}{{if a.key.startsWith('charm_')}}
-                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}&#x2713;{{else}}&#x2717;{{/if}}</span></div>
                 {{/if}}{{/each}}
             </div>
         </div>
     </div>
     <div class="card">
-        <div class="card-title" style="color: #43a047;">💕 宠爱</div>
+        <div class="card-title" style="color: #43a047;">&#x1F490; 宠爱</div>
         <div class="card-inner">
             <div class="section-pet">
                 {{each achievements a}}{{if a.key === 'first_pet' || a.key === 'pet_200' || a.key === 'pet_500'}}
-                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}&#x2713;{{else}}&#x2717;{{/if}}</span></div>
                 {{/if}}{{/each}}
             </div>
         </div>
@@ -149,21 +149,21 @@
 
     <div class="row-wrap">
     <div class="card">
-        <div class="card-title" style="color: #1565c0;">💙 服从</div>
+        <div class="card-title" style="color: #1565c0;">&#x1F514; 服从</div>
         <div class="card-inner">
             <div class="section-obey">
                 {{each achievements a}}{{if a.key.startsWith('obedience_')}}
-                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}&#x2713;{{else}}&#x2717;{{/if}}</span></div>
                 {{/if}}{{/each}}
             </div>
         </div>
     </div>
     <div class="card">
-        <div class="card-title" style="color: #ad1457;">💜 涩气</div>
+        <div class="card-title" style="color: #ad1457;">&#x1F525; 涩气</div>
         <div class="card-inner">
             <div class="section-lewd">
                 {{each achievements a}}{{if a.key.startsWith('lewd_')}}
-                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}&#x2713;{{else}}&#x2717;{{/if}}</span></div>
                 {{/if}}{{/each}}
             </div>
         </div>
@@ -172,21 +172,21 @@
 
     <div class="row-wrap">
     <div class="card">
-        <div class="card-title" style="color: #e91e63;">💗 亲密</div>
+        <div class="card-title" style="color: #e91e63;">&#x1F48C; 亲密</div>
         <div class="card-inner">
             <div class="section-intimacy">
                 {{each achievements a}}{{if a.key.startsWith('intimacy_')}}
-                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}&#x2713;{{else}}&#x2717;{{/if}}</span></div>
                 {{/if}}{{/each}}
             </div>
         </div>
     </div>
     <div class="card">
-        <div class="card-title" style="color: #2e7d32;">🌱 陪伴</div>
+        <div class="card-title" style="color: #2e7d32;">&#x23F0; 陪伴</div>
         <div class="card-inner">
             <div class="section-survive">
                 {{each achievements a}}{{if a.key.startsWith('survivor_')}}
-                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}✓{{else}}✗{{/if}}</span></div>
+                <div class="ach-row"><span class="ach-name">{{a.name}}</span><span class="ach-desc">{{a.desc}}</span><span class="ach-reward">{{a.reward}}币</span><span class="ach-status {{if a.unlocked}}done{{else}}pending{{/if}}">{{if a.unlocked}}&#x2713;{{else}}&#x2717;{{/if}}</span></div>
                 {{/if}}{{/each}}
             </div>
         </div>
