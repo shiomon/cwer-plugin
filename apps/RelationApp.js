@@ -88,7 +88,7 @@ class RelationApp extends plugin {
     data.sys.startTimestamp = Date.now()
     this.sys.dm.saveData(data, groupId)
 
-    await e.reply([`成功将 ${petName} 领养为宠物！快去宠爱ta吧~`, segment.at(Number(targetId))])
+    await e.reply([`成功领养为宠物！快去宠爱ta吧~`, segment.at(Number(targetId))])
   }
 
   async adoptRandom(e) {
@@ -148,7 +148,7 @@ class RelationApp extends plugin {
     data.sys.startTimestamp = Date.now()
     this.sys.dm.saveData(data, groupId)
 
-    await e.reply([`命运选择了 ${target.name}！领养成功~`, segment.at(Number(target.id))])
+    await e.reply([`命运选择了你！领养成功~`, segment.at(Number(target.id))])
   }
 
   async steal(e) {
@@ -194,7 +194,7 @@ class RelationApp extends plugin {
       data.sys.startTimestamp = Date.now()
       this.sys.dm.saveData(data, groupId)
 
-      return e.reply([`成功从 ${oldOwnerName} 手中抢走了 ${data.relation.petName}！`, segment.at(Number(targetId))])
+      return e.reply([`成功从 ${oldOwnerName} 手中抢走了！`, segment.at(Number(targetId))])
     }
 
     const ownerRel = this.sys.dm.findRelationByOwner(groupId, targetId)
@@ -228,7 +228,7 @@ class RelationApp extends plugin {
       data.sys.startTimestamp = Date.now()
       this.sys.dm.saveData(data, groupId)
 
-      return e.reply([`成功从 ${oldOwnerName} 手中抢走了 ${petName}！`, segment.at(Number(target.petId))])
+      return e.reply([`成功从 ${oldOwnerName} 手中抢走了！`, segment.at(Number(target.petId))])
     }
 
     return e.reply('这个人还没有宠物关系，直接用 #宠物领养 吧！')
