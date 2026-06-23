@@ -22,7 +22,7 @@ export function injectAssets(htmlContent) {
   return htmlContent
 }
 
-const tempDir = path.join(pluginRoot, 'data')
+const tempDir = path.join(pluginRoot, 'html')
 
 export async function renderTemplate(e, htmlSrcPath, tempFileName, renderData, screenshotKey) {
   let htmlContent = fs.readFileSync(htmlSrcPath, 'utf8')
