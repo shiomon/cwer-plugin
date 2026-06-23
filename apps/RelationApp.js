@@ -43,7 +43,8 @@ class RelationApp extends plugin {
     const ownerData = this.sys.dm.readUserData(groupId, ownerId) || this.sys.dm.resetUserData(groupId, ownerId)
     ownerData._userId = ownerId
     if (ownerData.owner && ownerData.owner.petId) {
-      return e.reply('你已经养了宠物了，先解除关系再领养新的吧！')
+      const msg = ownerData.owner.status === 'bonded' ? '你已经缔约了，无法再领养！' : '你已经养了宠物了，先解除关系再领养新的吧！'
+      return e.reply(msg)
     }
 
 
@@ -105,7 +106,8 @@ class RelationApp extends plugin {
     const ownerData = this.sys.dm.readUserData(groupId, ownerId) || this.sys.dm.resetUserData(groupId, ownerId)
     ownerData._userId = ownerId
     if (ownerData.owner && ownerData.owner.petId) {
-      return e.reply('你已经养了宠物了，先解除关系再领养新的吧！')
+      const msg = ownerData.owner.status === 'bonded' ? '你已经缔约了，无法再领养！' : '你已经养了宠物了，先解除关系再领养新的吧！'
+      return e.reply(msg)
     }
 
     const bot = e.bot ?? Bot
@@ -182,7 +184,8 @@ class RelationApp extends plugin {
     const ownerData = this.sys.dm.readUserData(groupId, ownerId) || this.sys.dm.resetUserData(groupId, ownerId)
     ownerData._userId = ownerId
     if (ownerData.owner && ownerData.owner.petId) {
-      return e.reply('你已经养了宠物了，先解除关系再抢别人的吧！')
+      const msg = ownerData.owner.status === 'bonded' ? '你已经缔约了，无法再抢夺！' : '你已经养了宠物了，先解除关系再抢别人的吧！'
+      return e.reply(msg)
     }
 
 
@@ -234,7 +237,8 @@ class RelationApp extends plugin {
     const ownerData = this.sys.dm.readUserData(groupId, ownerId) || this.sys.dm.resetUserData(groupId, ownerId)
     ownerData._userId = ownerId
     if (ownerData.owner && ownerData.owner.petId) {
-      return e.reply('你已经养了宠物了，先解除关系再抢别人的吧！')
+      const msg = ownerData.owner.status === 'bonded' ? '你已经缔约了，无法再抢夺！' : '你已经养了宠物了，先解除关系再抢别人的吧！'
+      return e.reply(msg)
     }
 
     const allRels = this.sys.dm.findAllRelations(groupId)
