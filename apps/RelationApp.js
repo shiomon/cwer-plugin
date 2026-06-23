@@ -519,7 +519,8 @@ class RelationApp extends plugin {
     userData._userId = userId
 
     if (userData.owner && userData.owner.petId) {
-      const petData = this.sys.dm.readUserData(groupId, userData.owner.petId)
+      const petId = userData.owner.petId
+      const petData = this.sys.dm.readUserData(groupId, petId)
       const petName = userData.owner.petName || '宠物'
       const statusText = userData.owner.status === 'bonded' ? '缔约' : '领养'
 
@@ -527,7 +528,7 @@ class RelationApp extends plugin {
       this.sys.dm.saveUserData(userData, groupId)
 
       if (petData) {
-        petData._userId = userData.owner.petId
+        petData._userId = petId
         this.sys.dm.clearPetRelation(petData)
         this.sys.dm.saveUserData(petData, groupId)
       }
