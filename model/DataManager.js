@@ -196,6 +196,7 @@ class DataManager {
     if (data.pet && data.pet.lewd === undefined) data.pet.lewd = 0
     if (data.pet && data.pet.petName === undefined) data.pet.petName = null
     if (data.pet && data.pet.petAvatar === undefined) data.pet.petAvatar = null
+
   }
 
   saveUserData(data, groupId) {

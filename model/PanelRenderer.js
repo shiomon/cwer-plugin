@@ -78,8 +78,9 @@ class PanelRenderer {
     return {
 
       petName: pet?.petName || '宠物',
-      petAvatar: pet?.petAvatar || '',
+      petAvatar: pet?.petAvatar || (data._userId ? `https://q1.qlogo.cn/g?b=qq&s=100&nk=${data._userId}` : ''),
       ownerName: pet?.ownerName || '主人',
+      ownerAvatar: pet?.ownerAvatar || (pet?.ownerId ? `https://q1.qlogo.cn/g?b=qq&s=100&nk=${pet.ownerId}` : ''),
       statusText,
       traits,
       stats: st,
