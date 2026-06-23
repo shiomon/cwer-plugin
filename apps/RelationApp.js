@@ -348,12 +348,15 @@ class RelationApp extends plugin {
     }
 
     const ownerId = userData.pet.ownerId
-    activeBondRequests.set(`${groupId}_${ownerId}`, { requesterId: userId, requesterName: userName, type: 'pet', time: Date.now() })
-    return e.reply([
-      `向主人发起了缔约请求！\n`,
-      segment.at(Number(ownerId)),
-      ` 请在30秒内回复 #宠物同意 或 #宠物不同意`
-    ])
+    const ownerData = this.sys.dm.readUserData(groupId, ownerId)
+    if (!ownerData) return e.reply('数据异常')
+    ownerData._userId = ownerId
+
+    const notifications = this.executeBond(groupId, ownerData, userData, ownerId, userId)
+    let msg = '缔约成功！解锁更多姿势了呢'
+    if (notifications.length > 0) msg += '\n' + notifications.join('\n')
+    await e.reply(msg)
+    await this.sys.renderer.renderPanel(e, userData)
   }
 
   async agreeBond(e) {
