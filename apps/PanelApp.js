@@ -25,12 +25,12 @@ class PanelApp extends plugin {
     }
 
     let petData = null
-    if (userData.owner && userData.owner.petId) {
-      petData = this.sys.dm.readUserData(groupId, userData.owner.petId)
-      if (petData) petData._userId = userData.owner.petId
-    } else if (userData.pet && userData.pet.ownerId) {
+    if (userData.pet && userData.pet.ownerId) {
       petData = userData
       petData._userId = userId
+    } else if (userData.owner && userData.owner.petId) {
+      petData = this.sys.dm.readUserData(groupId, userData.owner.petId)
+      if (petData) petData._userId = userData.owner.petId
     }
 
     if (!petData) {

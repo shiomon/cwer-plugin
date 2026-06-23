@@ -321,7 +321,7 @@ class RelationApp extends plugin {
       const notifications = this.executeBond(groupId, userData, ownerData, userId, userData.pet.ownerId)
       let msg = '缔约成功！解锁更多姿势了呢'
       if (notifications.length > 0) msg += '\n' + notifications.join('\n')
-      await e.reply(msg)
+      await e.reply([msg, segment.at(Number(userData.pet.ownerId))])
       await this.sys.renderer.renderPanel(e, userData)
       return
     }
@@ -355,7 +355,7 @@ class RelationApp extends plugin {
     const notifications = this.executeBond(groupId, ownerData, userData, ownerId, userId)
     let msg = '缔约成功！解锁更多姿势了呢'
     if (notifications.length > 0) msg += '\n' + notifications.join('\n')
-    await e.reply(msg)
+    await e.reply([msg, segment.at(Number(ownerId))])
     await this.sys.renderer.renderPanel(e, userData)
   }
 
@@ -395,7 +395,7 @@ class RelationApp extends plugin {
     activeBondRequests.delete(key)
     let msg = '缔约成功！解锁更多姿势了呢'
     if (notifications.length > 0) msg += '\n' + notifications.join('\n')
-    await e.reply(msg)
+    await e.reply([msg, segment.at(Number(request.requesterId))])
     await this.sys.renderer.renderPanel(e, userData)
   }
 
