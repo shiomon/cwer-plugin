@@ -76,17 +76,14 @@ class RelationApp extends plugin {
 
     const bot = e.bot ?? Bot
     const group = bot.pickGroup?.(e.group_id) || e.group
-    let petName = ''
-    let petAvatar = ''
+    let petName = null
+    let petAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${targetId}`
     try {
       const member = group?.pickMember?.(Number(targetId))
       let info = member?.info
       if (!info?.nickname) { try { info = await member?.getInfo?.() } catch {} }
-      petName = info?.card || info?.nickname || targetId
-      petAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${targetId}`
-    } catch {
-      petName = targetId
-    }
+      petName = info?.card || info?.nickname || null
+    } catch {}
 
     const ownerAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${ownerId}`
     const petData = this.sys.dm.readUserData(groupId, targetId) || this.sys.dm.resetUserData(groupId, targetId)
@@ -131,7 +128,7 @@ class RelationApp extends plugin {
         if (d && d.pet && d.pet.status === 'bonded') continue
       }
 
-      candidates.push({ id: uid, name: info?.card || info?.nickname || uid })
+      candidates.push({ id: uid, name: info?.card || info?.nickname || null })
     }
 
     if (candidates.length === 0) {
@@ -143,7 +140,7 @@ class RelationApp extends plugin {
     if (Math.random() > CONFIG.ADOPT_CHANCE) {
       const taunts = CONFIG.TAUNT_MESSAGES.adoptFail
       const fail = taunts[Math.floor(Math.random() * taunts.length)]
-      return e.reply(`随机到了 ${target.name}，但领养失败！${fail}`)
+      return e.reply(`随机到了 ${target.name || '某人'}，但领养失败！${fail}`)
     }
 
     const petExisting = this.sys.dm.findRelationByPet(groupId, target.id)
@@ -204,11 +201,11 @@ class RelationApp extends plugin {
 
       const oldOwnerName = petData?.pet?.ownerName || '某人'
       const oldOwnerId = petData?.pet?.ownerId
-      let petName = targetId
+      let petName = null
       if (oldOwnerId) {
         const oldOwnerData = this.sys.dm.readUserData(groupId, oldOwnerId)
         if (oldOwnerData) {
-          petName = oldOwnerData.owner?.petName || targetId
+          petName = oldOwnerData.owner?.petName || null
           oldOwnerData._userId = oldOwnerId
           this.sys.dm.clearOwnerRelation(oldOwnerData)
           this.sys.dm.saveUserData(oldOwnerData, groupId)
@@ -265,11 +262,11 @@ class RelationApp extends plugin {
 
     const oldOwnerName = petData?.pet?.ownerName || '某人'
     const oldOwnerId = petData?.pet?.ownerId
-    let petName = target.petId
+    let petName = null
     if (oldOwnerId) {
       const oldOwnerData = this.sys.dm.readUserData(groupId, oldOwnerId)
       if (oldOwnerData) {
-        petName = oldOwnerData.owner?.petName || target.petId
+        petName = oldOwnerData.owner?.petName || null
         oldOwnerData._userId = oldOwnerId
         this.sys.dm.clearOwnerRelation(oldOwnerData)
         this.sys.dm.saveUserData(oldOwnerData, groupId)
@@ -418,8 +415,8 @@ class RelationApp extends plugin {
   executeBond(groupId, ownerSideData, petSideData, ownerId, petId) {
     const notifications = []
 
-    const savedPetName = ownerSideData.owner?.petName || petId
-    const savedOwnerName = petSideData.pet?.ownerName || ownerId
+    const savedPetName = ownerSideData.owner?.petName || null
+    const savedOwnerName = petSideData.pet?.ownerName || null
 
     if (petSideData.pet && petSideData.pet.ownerId && petSideData.pet.ownerId !== ownerId) {
       const oldOwnerId = petSideData.pet.ownerId
