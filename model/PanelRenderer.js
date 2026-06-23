@@ -1,16 +1,12 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { CONFIG, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, HOUSES, LOCATIONS, getUserColor } from '../config/cfg.js'
+import { CONFIG, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, HOUSES, LOCATIONS } from '../config/cfg.js'
 import { calculateDays } from './utils.js'
-import { injectAssets } from './html-inject.js'
-import { ver, name, yunzai } from '../components/Version.js'
+import { renderTemplate } from './html-inject.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const pluginRoot = path.resolve(__dirname, '..')
-const htmlSrc = path.join(pluginRoot, 'resources', 'panel.html')
-const tempDir = path.join(pluginRoot, 'data')
-const tempHtmlPath = path.join(tempDir, '_panel_temp.html')
+const htmlSrc = path.join(__dirname, '..', 'resources', 'panel.html')
 
 const STAT_NAMES = {
   lewd: '涩', obedience: '服', intimacy: '亲', pain: '痛', sensitivity: '敏', satiety: '饱', energy: '体', hygiene: '洁'
@@ -21,7 +17,7 @@ class PanelRenderer {
     this.dm = dataManager
   }
 
-  buildRenderData(data, htmlPath) {
+  buildRenderData(data) {
     const st = data.stats
     const pet = data.pet
     const isBonded = pet?.status === 'bonded'
@@ -72,8 +68,7 @@ class PanelRenderer {
       locationModifier = Object.entries(locationObj.modifier).map(([k, v]) => `${STAT_NAMES[k] || k}${v > 0 ? '+' : ''}${v}`).join(' ')
     }
 
-    const trainBonus = this.dm.getTrainBonusSync(data)
-    const bonusParts = this.dm.getTrainBonusDetail(data)
+    const { bonus: trainBonus, detail: bonusParts } = this.dm.getTrainBonusSync(data)
     const trainBonusDetail = bonusParts.join('×')
 
     const intimacy = pet?.intimacy || 0
@@ -81,9 +76,9 @@ class PanelRenderer {
     const lewd = pet?.lewd || 0
 
     return {
-      tplFile: htmlPath,
+
       petName: pet?.petName || '宠物',
-      petAvatar: pet?.ownerAvatar || '',
+      petAvatar: pet?.petAvatar || '',
       ownerName: pet?.ownerName || '主人',
       statusText,
       traits,
@@ -106,10 +101,7 @@ class PanelRenderer {
       location: data.sys.location || '',
       locationModifier,
       trainBonus,
-      trainBonusDetail,
-      pluginVer: ver,
-      yunzaiName: name,
-      yunzaiVer: yunzai
+      trainBonusDetail
     }
   }
 
@@ -140,35 +132,8 @@ class PanelRenderer {
 
   async renderPanel(e, data) {
     try {
-      let htmlContent = fs.readFileSync(htmlSrc, 'utf8')
-      htmlContent = injectAssets(htmlContent)
-
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true })
-      }
-      fs.writeFileSync(tempHtmlPath, htmlContent, 'utf8')
-
-      const renderData = this.buildRenderData(data, tempHtmlPath)
-      renderData.imgType = 'jpeg'
-      renderData.quality = 100
-      renderData.pageGotoParams = { waitUntil: 'networkidle0' }
-      renderData.beforeScreenshot = async (page) => {
-        await page.waitForFunction('window.__cwerReady === true', { timeout: 10000 }).catch(() => {})
-        const body = await page.$('#container') || await page.$('body')
-        const box = await body.boundingBox()
-        if (box) {
-          await page.setViewport({ width: Math.ceil(box.width) + 60, height: Math.ceil(box.height) + 100 })
-        }
-      }
-
-      const puppeteer = (await import('../../../lib/puppeteer/puppeteer.js')).default
-      const img = await puppeteer.screenshot('cwerPanel', renderData)
-
-      if (img) {
-        await e.reply(img)
-      } else {
-        await e.reply('面板出图失败，请检查 Puppeteer 配置。')
-      }
+      const renderData = this.buildRenderData(data)
+      await renderTemplate(e, htmlSrc, '_panel_temp.html', renderData, 'cwerPanel')
     } catch (error) {
       console.error('[Cwer] 面板渲染失败:', error)
       await e.reply('面板渲染失败，请稍后再试。')

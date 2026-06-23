@@ -9,7 +9,6 @@ const shopHtmlPath = path.resolve(__dirname, '../resources/shop.html')
 
 const BUY_ITEM_REG = new RegExp(`^${CMD_PREFIX}购买`)
 
-
 class ShopApp extends plugin {
   constructor() {
     super({
@@ -66,7 +65,6 @@ class ShopApp extends plugin {
 
     await e.reply(`${result.message}\n(花费 ${item.cost} 金币，剩余 ${petData.sys.goldCoins} 金币)`)
   }
-
 }
 
 export default ShopApp

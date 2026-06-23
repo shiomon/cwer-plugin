@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG, getUserColor, CMD_PREFIX } from '../config/cfg.js'
+import { CONFIG, getUserColor, CMD_PREFIX, NO_OWNER_MSG } from '../config/cfg.js'
 
 const PET_ACTIONS = '撒娇|生气气|讨好|献媚|求关注|告状|勾引|冷战'
 const ACTION_REG = new RegExp(`^${CMD_PREFIX}(${PET_ACTIONS})`)
@@ -31,7 +31,7 @@ class PetActionApp extends plugin {
 
     const userData = this.sys.dm.readUserData(groupId, userId)
     if (!userData || !userData.pet || !userData.pet.ownerId) {
-      return e.reply('你好像没主人呢，让别人领养你吧')
+      return e.reply(NO_OWNER_MSG)
     }
     userData._userId = userId
 
@@ -144,7 +144,7 @@ class PetActionApp extends plugin {
 
     const userData = this.sys.dm.readUserData(groupId, userId)
     if (!userData || !userData.pet || !userData.pet.ownerId) {
-      return e.reply('你好像没主人呢，让别人领养你吧')
+      return e.reply(NO_OWNER_MSG)
     }
 
     if (userData.pet.status !== 'bonded') {

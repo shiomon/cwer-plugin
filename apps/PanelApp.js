@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CMD_PREFIX } from '../config/cfg.js'
+import { CMD_PREFIX, NO_PET_MSG } from '../config/cfg.js'
 
 class PanelApp extends plugin {
   constructor() {
@@ -21,7 +21,7 @@ class PanelApp extends plugin {
 
     const userData = this.sys.dm.readUserData(groupId, userId)
     if (!userData) {
-      return e.reply('你还没有宠物哦，\n可发 $领养 随机或 $领养@群友 也可 $抢@群友，\n如已被领养可发 $缔约主人')
+      return e.reply(NO_PET_MSG)
     }
 
     let petData = null
@@ -34,7 +34,7 @@ class PanelApp extends plugin {
     }
 
     if (!petData) {
-      return e.reply('你还没有宠物哦，\n可发 $领养 随机或 $领养@群友 也可 $抢@群友，\n如已被领养可发 $缔约主人')
+      return e.reply(NO_PET_MSG)
     }
 
     await this.sys.renderer.renderPanel(e, petData)

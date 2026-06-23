@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG, CMD_PREFIX } from '../config/cfg.js'
+import { CONFIG, CMD_PREFIX, NO_PET_MSG, NO_OWNER_MSG } from '../config/cfg.js'
 
 const activeBondRequests = new Map()
 const releaseCooldowns = new Map()
@@ -295,7 +295,7 @@ class RelationApp extends plugin {
     const userName = e.sender.card || e.sender.nickname
 
     const userData = this.sys.dm.readUserData(groupId, userId)
-    if (!userData) return e.reply('你还没有宠物哦，\n可发 $领养 随机或 $领养@群友 也可 $抢@群友，\n如已被领养可发 $缔约主人')
+    if (!userData) return e.reply(NO_PET_MSG)
 
     if (userData.owner && userData.owner.petId && userData.owner.status !== 'bonded') {
       const petData = this.sys.dm.readUserData(groupId, userData.owner.petId)
@@ -329,7 +329,7 @@ class RelationApp extends plugin {
       return
     }
 
-    return e.reply('你还没有宠物哦，\n可发 $领养 随机或 $领养@群友 也可 $抢@群友，\n如已被领养可发 $缔约主人')
+    return e.reply(NO_PET_MSG)
   }
 
   async bondMaster(e) {
@@ -339,7 +339,7 @@ class RelationApp extends plugin {
 
     const userData = this.sys.dm.readUserData(groupId, userId)
     if (!userData || !userData.pet || !userData.pet.ownerId) {
-      return e.reply('你好像没主人呢，让别人领养你吧')
+      return e.reply(NO_OWNER_MSG)
     }
 
     if (userData.pet.status === 'bonded') {
@@ -483,6 +483,7 @@ class RelationApp extends plugin {
       ownerName: savedOwnerName,
       ownerAvatar: `https://q1.qlogo.cn/g?b=qq&s=100&nk=${ownerId}`,
       petName: savedPetName,
+      petAvatar: `https://q1.qlogo.cn/g?b=qq&s=100&nk=${petId}`,
       status: 'bonded',
       createdAt: petSideData.pet?.createdAt || Date.now(),
       bondedAt: Date.now(),
@@ -509,7 +510,7 @@ class RelationApp extends plugin {
     }
 
     const userData = this.sys.dm.readUserData(groupId, userId)
-    if (!userData) return e.reply('你还没有宠物哦，\n可发 $领养 随机或 $领养@群友 也可 $抢@群友，\n如已被领养可发 $缔约主人')
+    if (!userData) return e.reply(NO_PET_MSG)
     userData._userId = userId
 
     if (userData.owner && userData.owner.petId) {
@@ -550,7 +551,7 @@ class RelationApp extends plugin {
       return e.reply(`已解除与 ${ownerName} 的缔约关系`)
     }
 
-    return e.reply('你还没有宠物哦，\n可发 $领养 随机或 $领养@群友 也可 $抢@群友，\n如已被领养可发 $缔约主人')
+    return e.reply(NO_PET_MSG)
   }
 
   async escape(e) {
@@ -566,7 +567,7 @@ class RelationApp extends plugin {
 
     const userData = this.sys.dm.readUserData(groupId, userId)
     if (!userData || !userData.pet || !userData.pet.ownerId) {
-      return e.reply('你好像没主人呢，让别人领养你吧')
+      return e.reply(NO_OWNER_MSG)
     }
     userData._userId = userId
 

@@ -39,30 +39,26 @@ class InteractionEngine {
     const roll = isForce ? 0 : Math.floor(Math.random() * 100) + 1
     const isCrit = !isForce && config.critThreshold > 0 && roll >= config.critThreshold
 
-    const baseBonus = this.dm.getTrainBonusSync(petData)
+    const { bonus: baseBonus } = this.dm.getTrainBonusSync(petData)
 
     const locationModifier = this.es.getLocationModifier(petData, action)
 
-    this.applyAction(petData, action, config, isCrit, baseBonus, locationModifier, false)
+    this.applyAction(petData, action, config, isCrit, baseBonus, locationModifier)
 
     const meta = ACTION_META[action]
     const logColor = isCrit ? meta.critColor : meta.normalColor
-    const ownerName = petData.pet?.ownerName || '主人'
-    const petName = petData._userId || '宠物'
+    const petName = petData.pet?.petName || petData._userId || '宠物'
     let logText = this.getLogText(userName, isCrit, isForce, petName, action, userId)
-    let replyText = this.getLogText(userName, isCrit, isForce, petName, action, userId)
 
     if (DUR_LOSS_ACTIONS.has(action)) {
       const broken = this.damageRandomCommonClothing(petData)
       if (broken.length > 0) {
         const names = broken.map(c => c.name).join('、')
-        const msg = `\n【爆衣警告】${names} 被彻底撕碎了！`
-        logText += msg
-        replyText += msg
+        logText += `\n【爆衣警告】${names} 被彻底撕碎了！`
       }
     }
 
-    return { logText, replyText, logColor, roll }
+    return { logText, replyText: logText, logColor, roll }
   }
 
   executePetInteraction(ownerData, action, userName, userId) {
@@ -94,7 +90,7 @@ class InteractionEngine {
     return { logText, replyText, logColor: '#aaffaa', roll: 0 }
   }
 
-  applyAction(data, action, config, isCrit, bonus, modifier, isPetSender) {
+  applyAction(data, action, config, isCrit, bonus, modifier) {
     const isBonded = data.pet?.status === 'bonded'
     const st = data.stats
     const pet = data.pet

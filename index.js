@@ -9,6 +9,9 @@ import PanelRenderer from './model/PanelRenderer.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const appsDir = path.join(__dirname, 'apps')
+const pkgPath = path.join(__dirname, 'package.json')
+let pkgVersion = ''
+try { pkgVersion = JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version || '' } catch {}
 
 const dm = new DataManager()
 const es = new EventSystem(dm)
@@ -44,6 +47,6 @@ for (const file of files) {
   }
 }
 
-logger.info(`cwer-plugin v2.0.0 加载完成`)
+logger.info(`cwer-plugin v${pkgVersion} 加载完成`)
 
 export { apps }

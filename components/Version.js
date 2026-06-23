@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const pluginRoot = path.resolve(__dirname, '..')
 const packagePath = path.join(pluginRoot, 'package.json')
 
-let currentVersion = '2.0.0'
+let currentVersion = '0.0.0'
 
 try {
   if (fs.existsSync(packagePath)) {

@@ -2,49 +2,12 @@ import { CONFIG, CLOTHING_DB, SHOP_ITEMS, COMMON_SETS, EQUIPMENT_RARITY, CLOTHIN
 import { calculateDays } from './utils.js'
 
 
+
 class ShopSystem {
   constructor(dataManager) {
     this.dm = dataManager
   }
 
-  formatShopMessage(goldCoins, intimacy) {
-    let msg = `【宠物商店】(当前金币: ${goldCoins})\n`
-    msg += `指令格式: #宠物购买[商品名] / #宠物购买t[1-4]套装 / #宠物购买y[序号]换装\n\n`
-
-    const allCommonBroken = this.allCommonBroken({ clothes: {} })
-
-    msg += `【普通套装】\n`
-    for (const [code, set] of Object.entries(COMMON_SETS)) {
-      msg += `${code}: ${set.name} - ${set.cost}金币\n`
-    }
-    msg += `\n`
-
-    if (allCommonBroken) {
-      const clothingItems = []
-      for (const [name, item] of Object.entries(SHOP_ITEMS)) {
-        if (item.type === 'clothing') {
-          const [firstSlot, firstIdx] = item.items[0].split(':')
-          const clothingData = CLOTHING_DB[firstSlot][parseInt(firstIdx)]
-          const rarity = EQUIPMENT_RARITY[clothingData.rarity]
-          clothingItems.push({ name, cost: item.cost, desc: `${rarity.name}` })
-        }
-      }
-      msg += `【稀有+换装】\n`
-      clothingItems.forEach((item, index) => {
-        msg += `y${index + 1}. ${item.name} (${item.desc}) - ${item.cost}币\n`
-      })
-    } else {
-      msg += `【稀有+换装】🔒 需所有普通装破损后解锁\n`
-    }
-
-    msg += `\n【房子】\n`
-    for (const [key, house] of Object.entries(HOUSES)) {
-      if (key === 'broken') continue
-      msg += `${house.emoji} ${house.name} - ${house.cost}金币\n`
-    }
-
-    return msg
-  }
 
   allCommonBroken(data) {
     return CLOTHING_SLOTS.every(slot => {

@@ -149,6 +149,7 @@ class DataManager {
       ownerName,
       ownerAvatar,
       petName,
+      petAvatar,
       status: 'claimed',
       createdAt: Date.now(),
       bondedAt: null,
@@ -194,6 +195,7 @@ class DataManager {
     if (data.pet && data.pet.obedience === undefined) data.pet.obedience = 0
     if (data.pet && data.pet.lewd === undefined) data.pet.lewd = 0
     if (data.pet && data.pet.petName === undefined) data.pet.petName = ''
+    if (data.pet && data.pet.petAvatar === undefined) data.pet.petAvatar = ''
   }
 
   saveUserData(data, groupId) {
@@ -223,17 +225,6 @@ class DataManager {
       fs.writeFileSync(dataPath, JSON.stringify(saveData, null, 2))
     } catch (error) {
       console.error('[Cwer] 保存数据失败:', error)
-    }
-  }
-
-  deleteUserData(groupId, userId) {
-    try {
-      const dataPath = this.getDataPath(groupId, userId)
-      if (fs.existsSync(dataPath)) {
-        fs.unlinkSync(dataPath)
-      }
-    } catch (error) {
-      console.error('[Cwer] 删除数据失败:', error)
     }
   }
 
@@ -321,37 +312,16 @@ class DataManager {
   }
 
   getTrainBonusSync(data) {
-    let bonus = 1.0
     const s = data.stats
     const isBonded = data.pet?.status === 'bonded'
-    bonus += this._statBonus(s.satiety, CONFIG.SATIETY_OPTIMAL_MIN, CONFIG.SATIETY_OPTIMAL_MAX, 2)
-    bonus += this._statBonus(s.energy, CONFIG.ENERGY_OPTIMAL_MIN, CONFIG.ENERGY_OPTIMAL_MAX, 1)
-    if (isBonded) {
-      bonus += this._statBonus(s.pain, CONFIG.PAIN_OPTIMAL_MIN, CONFIG.PAIN_OPTIMAL_MAX, 1)
-    }
-    bonus += this._statBonus(s.sensitivity, CONFIG.SENSITIVITY_OPTIMAL_MIN, CONFIG.SENSITIVITY_OPTIMAL_MAX, 1)
-    bonus += this._statBonus(s.hygiene, CONFIG.HYGIENE_OPTIMAL_MIN, CONFIG.HYGIENE_OPTIMAL_MAX, 1)
-    for (const slot of CLOTHING_SLOTS) {
-      const item = data.clothes[slot]
-      if (item && item.rarity !== 'none' && item.rarity !== 'common' && item.effect) {
-        const rarity = EQUIPMENT_RARITY[item.rarity]
-        if (rarity) bonus += (rarity.multiplier - 1.0) * 0.1
-      }
-    }
-    return bonus
-  }
-
-  getTrainBonusDetail(data) {
     const parts = []
-    const s = data.stats
-    const isBonded = data.pet?.status === 'bonded'
-    parts.push((1 + this._statBonus(s.satiety, CONFIG.SATIETY_OPTIMAL_MIN, CONFIG.SATIETY_OPTIMAL_MAX, 2)).toFixed(2))
-    parts.push((1 + this._statBonus(s.energy, CONFIG.ENERGY_OPTIMAL_MIN, CONFIG.ENERGY_OPTIMAL_MAX, 1)).toFixed(2))
+    parts.push(this._statBonus(s.satiety, CONFIG.SATIETY_OPTIMAL_MIN, CONFIG.SATIETY_OPTIMAL_MAX, 2))
+    parts.push(this._statBonus(s.energy, CONFIG.ENERGY_OPTIMAL_MIN, CONFIG.ENERGY_OPTIMAL_MAX, 1))
     if (isBonded) {
-      parts.push((1 + this._statBonus(s.pain, CONFIG.PAIN_OPTIMAL_MIN, CONFIG.PAIN_OPTIMAL_MAX, 1)).toFixed(2))
+      parts.push(this._statBonus(s.pain, CONFIG.PAIN_OPTIMAL_MIN, CONFIG.PAIN_OPTIMAL_MAX, 1))
     }
-    parts.push((1 + this._statBonus(s.sensitivity, CONFIG.SENSITIVITY_OPTIMAL_MIN, CONFIG.SENSITIVITY_OPTIMAL_MAX, 1)).toFixed(2))
-    parts.push((1 + this._statBonus(s.hygiene, CONFIG.HYGIENE_OPTIMAL_MIN, CONFIG.HYGIENE_OPTIMAL_MAX, 1)).toFixed(2))
+    parts.push(this._statBonus(s.sensitivity, CONFIG.SENSITIVITY_OPTIMAL_MIN, CONFIG.SENSITIVITY_OPTIMAL_MAX, 1))
+    parts.push(this._statBonus(s.hygiene, CONFIG.HYGIENE_OPTIMAL_MIN, CONFIG.HYGIENE_OPTIMAL_MAX, 1))
     let clothingBonus = 0
     for (const slot of CLOTHING_SLOTS) {
       const item = data.clothes[slot]
@@ -360,8 +330,10 @@ class DataManager {
         if (rarity) clothingBonus += (rarity.multiplier - 1.0) * 0.1
       }
     }
-    parts.push((1 + clothingBonus).toFixed(2))
-    return parts
+    parts.push(clothingBonus)
+    const bonus = 1 + parts.reduce((a, b) => a + b, 0)
+    const detail = parts.map(p => (1 + p).toFixed(2))
+    return { bonus, detail }
   }
 
   getIntimacyLevel(intimacy) {
@@ -372,10 +344,6 @@ class DataManager {
     return level.name
   }
 
-  getBondTier(intimacy) {
-    if (intimacy >= CONFIG.BOND_TIERS.bonded.minIntimacy) return 'bonded'
-    return null
-  }
 
   getEvasionChance(obedience) {
     for (const tier of CONFIG.EVASION_TIERS) {
@@ -398,18 +366,6 @@ class DataManager {
     return house?.bonus?.goldBonus || 0
   }
 
-  stripTrainingClothes(data) {
-    for (const slot of CLOTHING_SLOTS) {
-      const r = data.clothes[slot]?.rarity
-      if (r === 'rare' || r === 'epic' || r === 'mythic') {
-        data.clothes[slot] = makeEmptySlot()
-      }
-    }
-  }
-
-  replaceOwnerName(text, data) {
-    return text.replace(/宠物/g, data.owner?.petName || '宠物').replace(/主人/g, data.pet?.ownerName || '主人')
-  }
 
   computeDiffParts(statsBefore, statsAfter, petBefore, petAfter) {
     const pctNames = { satiety: '饱', energy: '体', hygiene: '洁', pain: '疼', sensitivity: '敏' }
@@ -428,11 +384,6 @@ class DataManager {
     return parts
   }
 
-  formatTime(mins) {
-    const h = Math.floor(mins / 60).toString().padStart(2, '0')
-    const m = (mins % 60).toString().padStart(2, '0')
-    return `${h}:${m}`
-  }
 }
 
 export default DataManager
