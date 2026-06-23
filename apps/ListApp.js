@@ -40,8 +40,8 @@ class ListApp extends plugin {
       const intimacy = petData.pet?.intimacy || 0
 
       relList.push({
-        ownerName: petData.pet?.ownerName || rel.ownerId,
-        petName: petData.pet?.petName || ownerData.owner?.petName || rel.petId,
+        ownerName: petData.pet?.ownerName || '主人',
+        petName: petData.pet?.petName || ownerData.owner?.petName || '宠物',
         status: isBonded ? '缔约' : '领养',
         intimacyLevel: this.sys.dm.getIntimacyLevel(intimacy),
         intimacy,

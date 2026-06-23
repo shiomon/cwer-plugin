@@ -196,6 +196,8 @@ class DataManager {
     if (data.pet && data.pet.lewd === undefined) data.pet.lewd = 0
     if (data.pet && data.pet.petName === undefined) data.pet.petName = null
     if (data.pet && data.pet.petAvatar === undefined) data.pet.petAvatar = null
+    if (data.pet && data.pet.petName && /^\d+$/.test(data.pet.petName)) data.pet.petName = null
+    if (data.pet && data.pet.ownerName && /^\d+$/.test(data.pet.ownerName)) data.pet.ownerName = null
 
   }
 
