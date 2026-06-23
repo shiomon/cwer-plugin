@@ -194,8 +194,8 @@ class DataManager {
     if (data.pet && data.pet.intimacy === undefined) data.pet.intimacy = 0
     if (data.pet && data.pet.obedience === undefined) data.pet.obedience = 0
     if (data.pet && data.pet.lewd === undefined) data.pet.lewd = 0
-    if (data.pet && data.pet.petName === undefined) data.pet.petName = ''
-    if (data.pet && data.pet.petAvatar === undefined) data.pet.petAvatar = ''
+    if (data.pet && data.pet.petName === undefined) data.pet.petName = null
+    if (data.pet && data.pet.petAvatar === undefined) data.pet.petAvatar = null
   }
 
   saveUserData(data, groupId) {

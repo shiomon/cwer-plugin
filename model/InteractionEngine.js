@@ -47,7 +47,7 @@ class InteractionEngine {
 
     const meta = ACTION_META[action]
     const logColor = isCrit ? meta.critColor : meta.normalColor
-    const petName = petData.pet?.petName || petData._userId || '宠物'
+    const petName = petData.pet?.petName || '宠物'
     let logText = this.getLogText(userName, isCrit, isForce, petName, action, userId)
 
     if (DUR_LOSS_ACTIONS.has(action)) {
