@@ -342,6 +342,7 @@ class RelationApp extends plugin {
     if (!userData || !userData.pet || !userData.pet.ownerId) {
       return e.reply(NO_OWNER_MSG)
     }
+    userData._userId = userId
 
     if (userData.pet.status === 'bonded') {
       return e.reply('已经和主人缔约了！')
