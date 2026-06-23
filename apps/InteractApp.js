@@ -44,8 +44,8 @@ class InteractApp extends plugin {
     const isPetCare = PET_CARE_ACTIONS.has(action)
 
     if (isTrainOrForce) {
-      if (!hasOwner) return e.reply('你没有宠物，无法使用调教指令！')
-      if (userData.owner.status !== 'bonded') return e.reply('请先与宠物缔约后才能使用调教指令！')
+      if (!hasOwner) return e.reply('请先提升亲密度后缔约')
+      if (userData.owner.status !== 'bonded') return e.reply('请先提升亲密度后缔约')
       return this.executeOwnerAction(e, userData, action, userName, userId, groupId)
     }
 
