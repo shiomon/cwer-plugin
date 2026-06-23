@@ -1,4 +1,4 @@
-# cwer-plugin v1.0.3
+# cwer-plugin v2.0.0
 
 宠物养成插件 —— 基于 Yunzai 框架的1对1宠物养成系统
 
