@@ -108,12 +108,19 @@ class EventSystem {
 
   updateTraits(data) {
     const st = data.stats
+    const pet = data.pet
+    const mergedStats = {
+      ...st,
+      intimacy: pet?.intimacy || 0,
+      obedience: pet?.obedience || 0,
+      lewd: pet?.lewd || 0
+    }
     const counts = { 'trait-bad': 0, 'trait-good': 0, 'trait-lewd': 0 }
     const newTraits = []
     const sortedTraits = [...CONFIG.TRAITS].sort((a, b) => b.priority - a.priority)
     for (const trait of sortedTraits) {
       try {
-        if (evalCondition(trait.condition, st)) {
+        if (evalCondition(trait.condition, mergedStats)) {
           const css = trait.css
           const limit = CONFIG.TRAIT_LIMITS[css.replace('trait-', '')] || 5
           if (counts[css] < limit) {

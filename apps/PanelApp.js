@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG, CMD_PREFIX } from '../config/cfg.js'
+import { CMD_PREFIX } from '../config/cfg.js'
 
 class PanelApp extends plugin {
   constructor() {
@@ -19,21 +19,25 @@ class PanelApp extends plugin {
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 
-    const asOwner = this.sys.dm.findRelationByOwner(groupId, userId)
-    const asPet = this.sys.dm.findRelationByPet(groupId, userId)
-
-    let data = null
-    if (asOwner.length > 0) {
-      data = this.sys.dm.readData(groupId, asOwner[0].ownerId, asOwner[0].petId)
-    } else if (asPet) {
-      data = this.sys.dm.readData(groupId, asPet.ownerId, asPet.petId)
+    const userData = this.sys.dm.readUserData(groupId, userId)
+    if (!userData) {
+      return e.reply('你还没有宠物哦，\n可发 $领养 随机或 $领养@群友 也可 $抢@群友，\n如已被领养可发 $缔约主人')
     }
 
-    if (!data) {
-      return e.reply('请先领养宠物或者做别人的宠物，领养发送$领养或者@群友$抢')
+    let petData = null
+    if (userData.owner && userData.owner.petId) {
+      petData = this.sys.dm.readUserData(groupId, userData.owner.petId)
+      if (petData) petData._userId = userData.owner.petId
+    } else if (userData.pet && userData.pet.ownerId) {
+      petData = userData
+      petData._userId = userId
     }
 
-    await this.sys.renderer.renderPanel(e, data)
+    if (!petData) {
+      return e.reply('你还没有宠物哦，\n可发 $领养 随机或 $领养@群友 也可 $抢@群友，\n如已被领养可发 $缔约主人')
+    }
+
+    await this.sys.renderer.renderPanel(e, petData)
   }
 }
 

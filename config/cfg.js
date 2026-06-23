@@ -9,10 +9,7 @@ const CONFIG = {
     energy: 100,
     hygiene: 100,
     pain: 100,
-    sensitivity: 100,
-    lewd: 1314,
-    obedience: 1314,
-    intimacy: 1314
+    sensitivity: 100
   },
   SATIETY_OPTIMAL_MIN: 60,
   SATIETY_OPTIMAL_MAX: 80,
@@ -81,9 +78,9 @@ const CONFIG = {
     ]
   },
   EVASION_TIERS: [
-    { max: 99, chance: 0.40 },
-    { max: 199, chance: 0.20 },
-    { max: 299, chance: 0.05 }
+    { max: 99, chance: 0.30 },
+    { max: 199, chance: 0.15 },
+    { max: 519, chance: 0.05 }
   ],
   INTIMACY_LEVELS: [
     { min: 0, name: '陌生人' },
@@ -560,8 +557,12 @@ function getUserColor(userId) {
 
 const CMD_PREFIX = '([#＃]宠物|[\\$＄])'
 
+const NO_PET_MSG = '你还没有宠物哦，\n可发 $领养 随机或 $领养@群友 也可 $抢@群友，\n如已被领养可发 $缔约主人'
+
+const NO_OWNER_MSG = '你好像没主人呢，让别人领养你吧'
+
 export {
   CONFIG, LOCATIONS, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, CLOTHING_DB,
   CLOTHING_PRESETS, COMMON_SETS, SHOP_ITEMS, HOUSES, HOUSE_UPGRADE_ORDER,
-  RANDOM_EVENTS, generateRandomEffect, getUserColor, CMD_PREFIX
+  RANDOM_EVENTS, generateRandomEffect, getUserColor, CMD_PREFIX, NO_PET_MSG, NO_OWNER_MSG
 }

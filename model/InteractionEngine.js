@@ -23,14 +23,13 @@ const ACTION_META = {
   强制羞辱: { critColor: '#ff0000', normalColor: '#cc0000' }
 }
 
-
 class InteractionEngine {
   constructor(eventSystem, dataManager) {
     this.es = eventSystem
     this.dm = dataManager
   }
 
-  executeInteraction(data, action, userName, userId, isPetSender) {
+  executeOwnerInteraction(petData, action, userName, userId) {
     const config = CONFIG.INTERACTION_EFFECTS[action]
     if (!config) {
       return { logText: '未知的互动方式', replyText: '未知的互动方式', logColor: '#ccc', roll: 0 }
@@ -40,21 +39,21 @@ class InteractionEngine {
     const roll = isForce ? 0 : Math.floor(Math.random() * 100) + 1
     const isCrit = !isForce && config.critThreshold > 0 && roll >= config.critThreshold
 
-    const baseBonus = this.dm.getTrainBonusSync(data)
-    const bonus = baseBonus
-    const locationModifier = this.es.getLocationModifier(data, action)
+    const baseBonus = this.dm.getTrainBonusSync(petData)
 
-    this.applyAction(data, action, config, isCrit, bonus, locationModifier, isPetSender)
+    const locationModifier = this.es.getLocationModifier(petData, action)
+
+    this.applyAction(petData, action, config, isCrit, baseBonus, locationModifier, false)
 
     const meta = ACTION_META[action]
     const logColor = isCrit ? meta.critColor : meta.normalColor
-    const ownerName = data.relation.ownerName || '主人'
-    const petName = data.relation.petName || '宠物'
+    const ownerName = petData.pet?.ownerName || '主人'
+    const petName = petData._userId || '宠物'
     let logText = this.getLogText(userName, isCrit, isForce, petName, action, userId)
-    let replyText = this.getLogText(userName, isCrit, isForce, isPetSender ? ownerName : petName, action, userId)
+    let replyText = this.getLogText(userName, isCrit, isForce, petName, action, userId)
 
     if (DUR_LOSS_ACTIONS.has(action)) {
-      const broken = this.damageRandomCommonClothing(data)
+      const broken = this.damageRandomCommonClothing(petData)
       if (broken.length > 0) {
         const names = broken.map(c => c.name).join('、')
         const msg = `\n【爆衣警告】${names} 被彻底撕碎了！`
@@ -66,10 +65,39 @@ class InteractionEngine {
     return { logText, replyText, logColor, roll }
   }
 
+  executePetInteraction(ownerData, action, userName, userId) {
+    const config = CONFIG.INTERACTION_EFFECTS[action]
+    if (!config || !ownerData.pet) {
+      return { logText: '未知的互动方式', replyText: '未知的互动方式', logColor: '#ccc', roll: 0 }
+    }
+
+    const halfMult = 0.5
+    const pet = ownerData.pet
+
+    if (config.intimacyGain) {
+      pet.intimacy += Math.round(config.intimacyGain * halfMult)
+    }
+    if (config.intimacyLoss) {
+      pet.intimacy -= Math.round(config.intimacyLoss * halfMult)
+    }
+    if (config.obedienceGain) {
+      pet.obedience += Math.round(config.obedienceGain * halfMult)
+    }
+    if (config.lewdGain) {
+      pet.lewd += Math.round(config.lewdGain * halfMult)
+    }
+
+    const ownerName = ownerData.pet.ownerName || '主人'
+    let logText = `<span style="color:${getUserColor(userId)};font-weight:600">${userName}</span> 对${ownerName}使用了${action}~`
+    let replyText = `${userName} 对${ownerName}使用了${action}~`
+
+    return { logText, replyText, logColor: '#aaffaa', roll: 0 }
+  }
+
   applyAction(data, action, config, isCrit, bonus, modifier, isPetSender) {
-    const halfMult = isPetSender ? 0.5 : 1.0
-    const isBonded = data.relation.status === 'bonded'
+    const isBonded = data.pet?.status === 'bonded'
     const st = data.stats
+    const pet = data.pet
 
     const satOptimal = st.satiety >= CONFIG.SATIETY_OPTIMAL_MIN && st.satiety <= CONFIG.SATIETY_OPTIMAL_MAX
     const engOptimal = st.energy >= CONFIG.ENERGY_OPTIMAL_MIN
@@ -97,7 +125,7 @@ class InteractionEngine {
     }
     if (config.satietyGain && !satZero) {
       const base = isCrit ? (config.critSatietyGain || config.satietyGain) : config.satietyGain
-      data.stats.satiety += base * halfMult * (satOptimal ? 1 : nm)
+      data.stats.satiety += base * (satOptimal ? 1 : nm)
     }
     if (config.satietyLoss && !satZero) {
       const base = config.satietyLoss
@@ -105,7 +133,7 @@ class InteractionEngine {
     }
     if (config.energyGain && !engZero) {
       const base = isCrit ? (config.critEnergyGain || config.energyGain) : config.energyGain
-      data.stats.energy += base * halfMult * (engOptimal ? 1 : nm)
+      data.stats.energy += base * (engOptimal ? 1 : nm)
     }
     if (config.energyLoss && !engZero) {
       const base = config.energyLoss
@@ -113,30 +141,31 @@ class InteractionEngine {
     }
     if (config.hygieneGain && !hygZero) {
       const base = isCrit ? (config.critHygieneGain || config.hygieneGain) : config.hygieneGain
-      data.stats.hygiene += base * halfMult * (hygOptimal ? 1 : nm)
+      data.stats.hygiene += base * (hygOptimal ? 1 : nm)
     }
     if (config.sensitivityGain && !sensZero) {
       const base = isCrit ? (config.critSensitivityGain || config.sensitivityGain) : config.sensitivityGain
-      data.stats.sensitivity += base * halfMult * (sensOptimal ? 1 : nm)
+      data.stats.sensitivity += base * (sensOptimal ? 1 : nm)
     }
 
-    if (config.intimacyGain) {
-      const gain = isCrit ? (config.critIntimacyGain || config.intimacyGain) : config.intimacyGain
-      const isTrainAction = config.type === 'train' || config.type === 'force'
-      data.stats.intimacy += Math.round(gain * (isTrainAction ? bonus : 1))
-    }
-    if (config.intimacyLoss) {
-      const loss = isCrit ? (config.critIntimacyLoss || config.intimacyLoss) : config.intimacyLoss
-      data.stats.intimacy -= Math.round(loss * (config.forceMultiplier || 1))
-    }
-
-    if (config.obedienceGain) {
-      const gain = isCrit ? (config.critObedienceGain || config.obedienceGain) : config.obedienceGain
-      data.stats.obedience += Math.round(gain * bonus * (config.forceMultiplier || 1))
-    }
-    if (config.lewdGain) {
-      const gain = isCrit ? (config.critLewdGain || config.lewdGain) : config.lewdGain
-      data.stats.lewd += Math.round(gain * bonus)
+    if (pet) {
+      if (config.intimacyGain) {
+        const gain = isCrit ? (config.critIntimacyGain || config.intimacyGain) : config.intimacyGain
+        const isTrainAction = config.type === 'train' || config.type === 'force'
+        pet.intimacy += Math.round(gain * (isTrainAction ? bonus : 1))
+      }
+      if (config.intimacyLoss) {
+        const loss = isCrit ? (config.critIntimacyLoss || config.intimacyLoss) : config.intimacyLoss
+        pet.intimacy -= Math.round(loss * (config.forceMultiplier || 1))
+      }
+      if (config.obedienceGain) {
+        const gain = isCrit ? (config.critObedienceGain || config.obedienceGain) : config.obedienceGain
+        pet.obedience += Math.round(gain * bonus * (config.forceMultiplier || 1))
+      }
+      if (config.lewdGain) {
+        const gain = isCrit ? (config.critLewdGain || config.lewdGain) : config.lewdGain
+        pet.lewd += Math.round(gain * bonus)
+      }
     }
 
     const achValue = config.type === 'pet' ? 10 : (config.type === 'train' ? 8 : 12)
@@ -174,7 +203,6 @@ class InteractionEngine {
     }
     return broken
   }
-
 
   getLogText(userName, isCrit, isForce, targetName, action, userId) {
     const u = `<span style="color:${getUserColor(userId)};font-weight:600">${userName}</span>：`

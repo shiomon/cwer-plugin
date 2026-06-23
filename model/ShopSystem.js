@@ -259,21 +259,21 @@ class ShopSystem {
           case 'obedience_520':
           case 'obedience_888':
           case 'obedience_1314':
-            unlocked = (data.stats.obedience || 0) >= ach.target
+            unlocked = (data.pet?.obedience || 0) >= ach.target
             break
           case 'lewd_66':
           case 'lewd_299':
           case 'lewd_520':
           case 'lewd_888':
           case 'lewd_1314':
-            unlocked = (data.stats.lewd || 0) >= ach.target
+            unlocked = (data.pet?.lewd || 0) >= ach.target
             break
           case 'intimacy_299':
           case 'intimacy_520':
           case 'intimacy_666':
           case 'intimacy_999':
           case 'intimacy_1314':
-            unlocked = (data.stats.intimacy || 0) >= ach.target
+            unlocked = (data.pet?.intimacy || 0) >= ach.target
             break
           case 'survivor_3':
           case 'survivor_30':

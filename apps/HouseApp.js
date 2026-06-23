@@ -1,8 +1,9 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { HOUSES, HOUSE_UPGRADE_ORDER, CONFIG, CMD_PREFIX } from '../config/cfg.js'
+import { HOUSES, HOUSE_UPGRADE_ORDER, CONFIG, CMD_PREFIX, NO_PET_MSG } from '../config/cfg.js'
 
 const FLOOR_MAP = { 'f1': 'cozy', 'f2': 'luxury', 'f3': 'palace' }
 const BUY_HOUSE_REG = new RegExp(`^${CMD_PREFIX}买房`)
+
 
 class HouseApp extends plugin {
   constructor() {
@@ -23,19 +24,11 @@ class HouseApp extends plugin {
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 
-    const asOwner = this.sys.dm.findRelationByOwner(groupId, userId)
-    const asPet = this.sys.dm.findRelationByPet(groupId, userId)
+    const userData = this.sys.dm.readUserData(groupId, userId)
+    if (!userData) return e.reply(NO_PET_MSG)
 
-    let data = null
-    if (asOwner.length > 0) {
-      data = this.sys.dm.readData(groupId, asOwner[0].ownerId, asOwner[0].petId)
-    } else if (asPet) {
-      data = this.sys.dm.readData(groupId, asPet.ownerId, asPet.petId)
-    }
-
-    if (!data) {
-      return e.reply('请先领养宠物或者做别人的宠物，领养发送$领养或者@群友$抢')
-    }
+    const petData = this.sys.getPetData(groupId, userData)
+    if (!petData) return e.reply(NO_PET_MSG)
 
     let targetKey = FLOOR_MAP[input] || null
     if (!targetKey) {
@@ -57,14 +50,16 @@ class HouseApp extends plugin {
       return e.reply(`未知的房子类型！可选：${available}`)
     }
 
-    const result = this.sys.shop.purchaseHouse(data, targetKey)
+    const result = this.sys.shop.purchaseHouse(petData, targetKey)
     if (!result.success) return e.reply(result.message)
 
-    this.sys.dm.addLog(data, result.logText, '#66ccff')
-    this.sys.dm.saveData(data, groupId)
+    this.sys.dm.addLog(petData, result.logText, '#66ccff')
+    this.sys.dm.saveUserData(petData, groupId)
 
-    await e.reply(`${result.message}\n(花费 ${result.cost} 金币，折旧抵扣 ${result.depreciation} 金币，实付 ${result.actualCost} 金币，剩余 ${data.sys.goldCoins} 金币)`)
+    await e.reply(`${result.message}\n(花费 ${result.cost} 金币，折旧抵扣 ${result.depreciation} 金币，实付 ${result.actualCost} 金币，剩余 ${petData.sys.goldCoins} 金币)`)
   }
+
+
 }
 
 export default HouseApp

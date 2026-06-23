@@ -1,13 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { CONFIG, CLOTHING_DB, CLOTHING_PRESETS, CLOTHING_SLOTS, SLOT_NAMES, LOCATIONS, EQUIPMENT_RARITY, HOUSES, COMMON_SETS } from '../config/cfg.js'
+import { CONFIG, CLOTHING_DB, CLOTHING_SLOTS, SLOT_NAMES, LOCATIONS, EQUIPMENT_RARITY, HOUSES, COMMON_SETS } from '../config/cfg.js'
 import { calculateDays, beijingNow } from './utils.js'
-import { injectAssets } from './html-inject.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const pluginRoot = path.resolve(__dirname, '..')
-const htmlSrc = path.join(pluginRoot, 'resources', 'panel.html')
 
 function makeEmptySlot() {
   return { name: '未穿', rarity: 'none', charm: 0, dur: 0, effect: null }
@@ -18,8 +16,8 @@ class DataManager {
     return path.join(pluginRoot, 'data', groupId || 'default')
   }
 
-  getDataPath(groupId, ownerId, petId) {
-    return path.join(this.getDataDir(groupId), `${ownerId}_${petId}.json`)
+  getDataPath(groupId, userId) {
+    return path.join(this.getDataDir(groupId), `${userId}.json`)
   }
 
   initData() {
@@ -36,35 +34,20 @@ class DataManager {
     }
   }
 
-  findRelationByPet(groupId, petId) {
-    this.initGroupDir(groupId)
-    const dir = this.getDataDir(groupId)
-    try {
-      const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'))
-      for (const file of files) {
-        const [owner, pet] = file.replace('.json', '').split('_')
-        if (pet === petId) {
-          return { ownerId: owner, petId: pet }
-        }
-      }
-    } catch {}
+  findRelationByOwner(groupId, ownerId) {
+    const data = this.readUserData(groupId, ownerId)
+    if (data && data.owner && data.owner.petId) {
+      return { ownerId, petId: data.owner.petId }
+    }
     return null
   }
 
-  findRelationByOwner(groupId, ownerId) {
-    this.initGroupDir(groupId)
-    const dir = this.getDataDir(groupId)
-    const results = []
-    try {
-      const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'))
-      for (const file of files) {
-        const [owner, pet] = file.replace('.json', '').split('_')
-        if (owner === ownerId) {
-          results.push({ ownerId: owner, petId: pet })
-        }
-      }
-    } catch {}
-    return results
+  findRelationByPet(groupId, petId) {
+    const data = this.readUserData(groupId, petId)
+    if (data && data.pet && data.pet.ownerId) {
+      return { ownerId: data.pet.ownerId, petId }
+    }
+    return null
   }
 
   findAllRelations(groupId) {
@@ -74,14 +57,31 @@ class DataManager {
     try {
       const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'))
       for (const file of files) {
-        const [owner, pet] = file.replace('.json', '').split('_')
-        results.push({ ownerId: owner, petId: pet })
+        const userId = file.replace('.json', '')
+        const data = this.readUserData(groupId, userId)
+        if (data && data.owner && data.owner.petId) {
+          results.push({ ownerId: userId, petId: data.owner.petId })
+        }
       }
     } catch {}
     return results
   }
 
-  resetData(groupId, ownerId, petId) {
+  readUserData(groupId, userId) {
+    this.initGroupDir(groupId)
+    const dataPath = this.getDataPath(groupId, userId)
+    try {
+      if (!fs.existsSync(dataPath)) return null
+      const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
+      this.migrateData(data)
+      return data
+    } catch (error) {
+      console.error('[Cwer] 读取数据失败:', error)
+      return null
+    }
+  }
+
+  resetUserData(groupId, userId) {
     this.initGroupDir(groupId)
     const t1Set = COMMON_SETS.t1
     const clothes = {}
@@ -105,29 +105,13 @@ class DataManager {
     }
 
     const defaultData = {
-      relation: {
-        ownerId,
-        petId,
-        ownerName: '',
-        petName: '',
-        petAvatar: '',
-        ownerAvatar: '',
-        status: 'claimed',
-        evading: false,
-        coldWar: false,
-        coldWarUntil: null,
-        createdAt: Date.now(),
-        bondedAt: null
-      },
+      _userId: userId,
       stats: {
         satiety: Math.floor(Math.random() * 61) + 20,
         energy: Math.floor(Math.random() * 61) + 20,
         hygiene: Math.floor(Math.random() * 61) + 20,
         pain: 0,
-        sensitivity: Math.floor(Math.random() * 41) + 5,
-        lewd: Math.floor(Math.random() * 30),
-        obedience: Math.floor(Math.random() * 30),
-        intimacy: Math.floor(Math.random() * 30)
+        sensitivity: Math.floor(Math.random() * 41) + 5
       },
       clothes,
       house: 'broken',
@@ -143,35 +127,48 @@ class DataManager {
         firstReach: {},
         achievements: [],
         clothesBroken: 0
-      }
+      },
+      owner: null,
+      pet: null
     }
-    this.saveData(defaultData, groupId)
+    this.saveUserData(defaultData, groupId)
     return defaultData
   }
 
-  readData(groupId, ownerId, petId) {
-    this.initGroupDir(groupId)
-    const dataPath = this.getDataPath(groupId, ownerId, petId)
-    try {
-      if (!fs.existsSync(dataPath)) {
-        return null
-      }
-      const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
-      this.migrateData(data)
-      return data
-    } catch (error) {
-      console.error('[Cwer] 读取数据失败:', error)
-      return null
+  setupOwnerRelation(ownerData, petData, ownerName, petName, petAvatar, ownerAvatar) {
+    ownerData.owner = {
+      petId: petData._userId,
+      petName,
+      petAvatar,
+      status: 'claimed',
+      createdAt: Date.now(),
+      bondedAt: null
+    }
+    petData.pet = {
+      ownerId: ownerData._userId,
+      ownerName,
+      ownerAvatar,
+      petName,
+      status: 'claimed',
+      createdAt: Date.now(),
+      bondedAt: null,
+      intimacy: Math.floor(Math.random() * 30),
+      obedience: Math.floor(Math.random() * 30),
+      lewd: Math.floor(Math.random() * 30)
     }
   }
 
+  clearOwnerRelation(data) {
+    data.owner = null
+  }
+
+  clearPetRelation(data) {
+    data.pet = null
+  }
+
   migrateData(data) {
-    if (!data.relation) data.relation = {}
-    if (data.relation.evading === undefined) data.relation.evading = false
-    if (data.relation.coldWar === undefined) data.relation.coldWar = false
-    if (data.relation.coldWarUntil === undefined) data.relation.coldWarUntil = null
     if (!data.stats) data.stats = {}
-    for (const key of ['satiety', 'energy', 'hygiene', 'pain', 'sensitivity', 'lewd', 'obedience', 'intimacy']) {
+    for (const key of ['satiety', 'energy', 'hygiene', 'pain', 'sensitivity']) {
       if (data.stats[key] === undefined) data.stats[key] = 0
     }
     if (!data.clothes) data.clothes = {}
@@ -191,32 +188,47 @@ class DataManager {
     if (!data.sys.achievements) data.sys.achievements = []
     if (!data.sys.statHistory) data.sys.statHistory = { pain: [], energy: [], satiety: [], sensitivity: [], hygiene: [] }
     if (!data.sys.firstReach) data.sys.firstReach = {}
+    if (data.owner === undefined) data.owner = null
+    if (data.pet === undefined) data.pet = null
+    if (data.pet && data.pet.intimacy === undefined) data.pet.intimacy = 0
+    if (data.pet && data.pet.obedience === undefined) data.pet.obedience = 0
+    if (data.pet && data.pet.lewd === undefined) data.pet.lewd = 0
+    if (data.pet && data.pet.petName === undefined) data.pet.petName = ''
   }
 
-  saveData(data, groupId) {
+  saveUserData(data, groupId) {
     try {
       this.initGroupDir(groupId)
-      const dataPath = this.getDataPath(groupId, data.relation.ownerId, data.relation.petId)
+      const userId = data._userId
+      if (!userId) {
+        console.error('[Cwer] 保存数据失败: 缺少_userId')
+        return
+      }
       const pctStats = ['satiety', 'energy', 'hygiene', 'pain', 'sensitivity']
       for (const s of pctStats) {
         if (data.stats[s] !== undefined) {
           data.stats[s] = Math.max(0, Math.min(100, Math.round(data.stats[s] * 10) / 10))
         }
       }
-      for (const s of ['lewd', 'obedience', 'intimacy']) {
-        if (data.stats[s] !== undefined) {
-          data.stats[s] = Math.max(0, Math.min(1314, Math.round(data.stats[s])))
+      if (data.pet) {
+        for (const s of ['intimacy', 'obedience', 'lewd']) {
+          if (data.pet[s] !== undefined) {
+            data.pet[s] = Math.max(0, Math.min(1314, Math.round(data.pet[s])))
+          }
         }
       }
-      fs.writeFileSync(dataPath, JSON.stringify(data, null, 2))
+      const saveData = { ...data }
+      delete saveData._userId
+      const dataPath = this.getDataPath(groupId, userId)
+      fs.writeFileSync(dataPath, JSON.stringify(saveData, null, 2))
     } catch (error) {
       console.error('[Cwer] 保存数据失败:', error)
     }
   }
 
-  deleteData(groupId, ownerId, petId) {
+  deleteUserData(groupId, userId) {
     try {
-      const dataPath = this.getDataPath(groupId, ownerId, petId)
+      const dataPath = this.getDataPath(groupId, userId)
       if (fs.existsSync(dataPath)) {
         fs.unlinkSync(dataPath)
       }
@@ -311,7 +323,7 @@ class DataManager {
   getTrainBonusSync(data) {
     let bonus = 1.0
     const s = data.stats
-    const isBonded = data.relation.status.startsWith('bonded')
+    const isBonded = data.pet?.status === 'bonded'
     bonus += this._statBonus(s.satiety, CONFIG.SATIETY_OPTIMAL_MIN, CONFIG.SATIETY_OPTIMAL_MAX, 2)
     bonus += this._statBonus(s.energy, CONFIG.ENERGY_OPTIMAL_MIN, CONFIG.ENERGY_OPTIMAL_MAX, 1)
     if (isBonded) {
@@ -332,7 +344,7 @@ class DataManager {
   getTrainBonusDetail(data) {
     const parts = []
     const s = data.stats
-    const isBonded = data.relation.status.startsWith('bonded')
+    const isBonded = data.pet?.status === 'bonded'
     parts.push((1 + this._statBonus(s.satiety, CONFIG.SATIETY_OPTIMAL_MIN, CONFIG.SATIETY_OPTIMAL_MAX, 2)).toFixed(2))
     parts.push((1 + this._statBonus(s.energy, CONFIG.ENERGY_OPTIMAL_MIN, CONFIG.ENERGY_OPTIMAL_MAX, 1)).toFixed(2))
     if (isBonded) {
@@ -375,9 +387,9 @@ class DataManager {
   applyHouseBonus(data) {
     const house = HOUSES[data.house]
     if (!house || !house.bonus) return
-    if (house.bonus.intimacyPct && data.stats.intimacy > 0) {
-      const gain = Math.max(1, Math.floor(data.stats.intimacy * house.bonus.intimacyPct / 100))
-      data.stats.intimacy = this.clampStat('intimacy', data.stats.intimacy + gain)
+    if (house.bonus.intimacyPct && data.pet && data.pet.intimacy > 0) {
+      const gain = Math.max(1, Math.floor(data.pet.intimacy * house.bonus.intimacyPct / 100))
+      data.pet.intimacy = Math.min(1314, data.pet.intimacy + gain)
     }
   }
 
@@ -396,10 +408,10 @@ class DataManager {
   }
 
   replaceOwnerName(text, data) {
-    return text.replace(/宠物/g, data.relation.petName || '宠物').replace(/主人/g, data.relation.ownerName || '主人')
+    return text.replace(/宠物/g, data.owner?.petName || '宠物').replace(/主人/g, data.pet?.ownerName || '主人')
   }
 
-  computeDiffParts(statsBefore, statsAfter) {
+  computeDiffParts(statsBefore, statsAfter, petBefore, petAfter) {
     const pctNames = { satiety: '饱', energy: '体', hygiene: '洁', pain: '疼', sensitivity: '敏' }
     const progNames = { lewd: '涩', obedience: '服', intimacy: '亲' }
     const parts = []
@@ -407,9 +419,11 @@ class DataManager {
       const d = Math.round((statsAfter[k] - statsBefore[k]) * 10) / 10
       if (Math.abs(d) > 0.01) parts.push(`${label}${d > 0 ? '+' : ''}${d}%`)
     }
-    for (const [k, label] of Object.entries(progNames)) {
-      const d = Math.round(statsAfter[k] - statsBefore[k])
-      if (d !== 0) parts.push(`${label}${d > 0 ? '+' : ''}${d}`)
+    if (petBefore && petAfter) {
+      for (const [k, label] of Object.entries(progNames)) {
+        const d = Math.round(petAfter[k] - petBefore[k])
+        if (d !== 0) parts.push(`${label}${d > 0 ? '+' : ''}${d}`)
+      }
     }
     return parts
   }

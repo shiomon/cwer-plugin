@@ -20,6 +20,14 @@ es.shop = shop
 
 global.cwerSys = { dm, es, ie, shop, renderer }
 
+global.cwerSys.getPetData = function getPetData(groupId, userData) {
+  if (userData.owner && userData.owner.petId) {
+    const petData = dm.readUserData(groupId, userData.owner.petId)
+    if (petData) { petData._userId = userData.owner.petId; return petData }
+  }
+  return null
+}
+
 dm.initData()
 
 const apps = {}
@@ -36,6 +44,6 @@ for (const file of files) {
   }
 }
 
-logger.info(`cwer-plugin v1.0.3 加载完成`)
+logger.info(`cwer-plugin v2.0.0 加载完成`)
 
 export { apps }

@@ -12,7 +12,6 @@ const htmlSrc = path.join(pluginRoot, 'resources', 'panel.html')
 const tempDir = path.join(pluginRoot, 'data')
 const tempHtmlPath = path.join(tempDir, '_panel_temp.html')
 
-
 const STAT_NAMES = {
   lewd: '涩', obedience: '服', intimacy: '亲', pain: '痛', sensitivity: '敏', satiety: '饱', energy: '体', hygiene: '洁'
 }
@@ -24,8 +23,8 @@ class PanelRenderer {
 
   buildRenderData(data, htmlPath) {
     const st = data.stats
-    const rel = data.relation
-    const isBonded = rel.status === 'bonded'
+    const pet = data.pet
+    const isBonded = pet?.status === 'bonded'
     const house = HOUSES[data.house] || HOUSES.broken
 
     const slotList = CLOTHING_SLOTS.map(key => ({ key, label: SLOT_NAMES[key] || key }))
@@ -59,7 +58,7 @@ class PanelRenderer {
 
     const totalEffectText = Object.entries(totalEffects).map(([k, v]) => `${STAT_NAMES[k] || k}${v > 0 ? '+' : ''}${v}`).join(' ')
 
-    const statusText = this.generateStatusText(st)
+    const statusText = this.generateStatusText(st, pet)
     const unlockedAchievements = this.getUnlockedAchievements(data)
 
     const traits = (data.traits || []).map(t => {
@@ -77,14 +76,21 @@ class PanelRenderer {
     const bonusParts = this.dm.getTrainBonusDetail(data)
     const trainBonusDetail = bonusParts.join('×')
 
+    const intimacy = pet?.intimacy || 0
+    const obedience = pet?.obedience || 0
+    const lewd = pet?.lewd || 0
+
     return {
       tplFile: htmlPath,
-      petName: rel.petName || '宠物',
-      petAvatar: rel.petAvatar || '',
-      ownerName: rel.ownerName || '主人',
+      petName: pet?.petName || '宠物',
+      petAvatar: pet?.ownerAvatar || '',
+      ownerName: pet?.ownerName || '主人',
       statusText,
       traits,
       stats: st,
+      intimacy,
+      obedience,
+      lewd,
       bondLabel: isBonded ? '缔约' : '领养',
       house,
       slotList,
@@ -107,11 +113,17 @@ class PanelRenderer {
     }
   }
 
-  generateStatusText(stats) {
+  generateStatusText(stats, pet) {
+    const mergedStats = {
+      ...stats,
+      intimacy: pet?.intimacy || 0,
+      obedience: pet?.obedience || 0,
+      lewd: pet?.lewd || 0
+    }
     for (const entry of [...CONFIG.STATUS_TEXTS].sort((a, b) => b.priority - a.priority)) {
       try {
-        const fn = new Function(...Object.keys(stats), `return (${entry.condition})`)
-        if (fn(...Object.values(stats))) return entry.text
+        const fn = new Function(...Object.keys(mergedStats), `return (${entry.condition})`)
+        if (fn(...Object.values(mergedStats))) return entry.text
       } catch { continue }
     }
     return '正在适应中...'
