@@ -1,7 +1,7 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { CONFIG, HOUSES, CMD_PREFIX } from '../config/cfg.js'
+import { HOUSES, CMD_PREFIX } from '../config/cfg.js'
 import { renderTemplate } from '../model/html-inject.js'
 import { calculateDays } from '../model/utils.js'
 
@@ -33,21 +33,21 @@ class ListApp extends plugin {
     const relList = []
     for (const rel of relations) {
       const ownerData = this.sys.dm.readUserData(groupId, rel.ownerId)
-      const petData = this.sys.dm.readUserData(groupId, rel.petId)
-      if (!ownerData || !petData) continue
+      if (!ownerData || !ownerData.owner) continue
 
-      const isBonded = ownerData.owner?.status === 'bonded'
-      const intimacy = petData.pet?.intimacy || 0
+      const o = ownerData.owner
+      const isBonded = o.status === 'bonded'
+      const intimacy = o.intimacy || 0
 
       relList.push({
-        ownerName: petData.pet?.ownerName || '主人',
-        petName: petData.pet?.petName || ownerData.owner?.petName || '宠物',
+        ownerName: o.ownerName || '主人',
+        petName: o.petName || '宠物',
         status: isBonded ? '缔约' : '领养',
         intimacyLevel: this.sys.dm.getIntimacyLevel(intimacy),
         intimacy,
-        survivalDays: calculateDays(petData.sys.startTimestamp),
-        house: HOUSES[petData.house]?.emoji + ' ' + HOUSES[petData.house]?.name || '破败小屋',
-        goldCoins: petData.sys.goldCoins || 0
+        survivalDays: calculateDays(o.petSys?.startTimestamp),
+        house: HOUSES[o.petHouse] ? HOUSES[o.petHouse].emoji + ' ' + HOUSES[o.petHouse].name : '破败小屋',
+        goldCoins: o.petSys?.goldCoins || 0
       })
     }
 

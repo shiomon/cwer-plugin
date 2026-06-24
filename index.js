@@ -23,14 +23,6 @@ es.shop = shop
 
 global.cwerSys = { dm, es, ie, shop, renderer }
 
-global.cwerSys.getPetData = function getPetData(groupId, userData) {
-  if (userData.owner && userData.owner.petId) {
-    const petData = dm.readUserData(groupId, userData.owner.petId)
-    if (petData) { petData._userId = userData.owner.petId; return petData }
-  }
-  return null
-}
-
 dm.initData()
 
 const apps = {}

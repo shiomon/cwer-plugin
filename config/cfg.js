@@ -1,30 +1,37 @@
+const CMD_PREFIX = '([#＃]宠物|[\\$＄])' // 指令前缀正则：#宠物 / ＃宠物 / $ / ＄
+
 const CONFIG = {
-  MAX_LOGS: 10,
-  INTERACT_COOLDOWN: 30,
-  ADOPT_CHANCE: 0.7,
-  RELATION_COOLDOWN: 30 * 60 * 1000,
-  BOND_REQUEST_TIMEOUT: 30,
-  STAT_LIMITS: {
-    satiety: 100,
-    energy: 100,
-    hygiene: 100,
-    pain: 100,
-    sensitivity: 100
+  MAX_LOGS: 10, // 日志最大条数
+  INTERACTION_COOLDOWN: 30 * 1000, // 互动冷却时间（毫秒）
+  ADOPT_CHANCE: 0.7, // 领养成功率
+  RELATION_COOLDOWN: 30 * 60 * 1000, // 解除/摆脱冷却时间（毫秒）
+  BOND_REQUEST_TIMEOUT: 30, // 缔约请求超时（秒）
+
+  STAT_LIMITS: { // 属性上限
+    satiety: 100, // 饱食
+    energy: 100, // 体力
+    hygiene: 100, // 清洁
+    pain: 100, // 疼痛
+    sensitivity: 100 // 敏感度
   },
+
+  // 属性最优区间（区间内效果倍率为1，否则乘以NON_OPTIMAL_MULTIPLIER）
   SATIETY_OPTIMAL_MIN: 60,
   SATIETY_OPTIMAL_MAX: 80,
   ENERGY_OPTIMAL_MIN: 80,
   ENERGY_OPTIMAL_MAX: 100,
-  PAIN_OPTIMAL_MIN: 80,
+  PAIN_OPTIMAL_MIN: 80, // 仅缔约后生效
   PAIN_OPTIMAL_MAX: 100,
   SENSITIVITY_OPTIMAL_MIN: 80,
   SENSITIVITY_OPTIMAL_MAX: 100,
   HYGIENE_OPTIMAL_MIN: 80,
   HYGIENE_OPTIMAL_MAX: 100,
-  NON_OPTIMAL_MULTIPLIER: 0.25,
-  INITIAL_GOLD: 99,
-  TAUNT_MESSAGES: {
-    adoptFail: [
+  NON_OPTIMAL_MULTIPLIER: 0.25, // 非最优区间属性变化倍率
+
+  INITIAL_GOLD: 99, // 初始金币
+
+  TAUNT_MESSAGES: { // 嘲讽文案池
+    adoptFail: [ // 领养失败
       '就这？连个宠物都抓不住~',
       '哈哈哈，太弱了吧！',
       '人家根本不想跟你走嘛~',
@@ -33,7 +40,7 @@ const CONFIG = {
       '手残党连领养都不会吗？',
       '宠物看了你一眼，嫌弃地走开了~'
     ],
-    stealFail: [
+    stealFail: [ // 抢夺失败
       '想抢？做梦吧你！',
       '你的手太短了够不着~',
       '宠物表示：我不认识你！',
@@ -41,17 +48,17 @@ const CONFIG = {
       '别来碰我，你不行~',
       '就这还想抢人？回去练练吧~'
     ],
-    noPet: [
+    noPet: [ // 没有宠物
       '连宠物都没有还想互动？可怜~',
       '先去领养个宠物再来吧，没人要的单身狗~',
       '没有宠物还在这晃悠？快去领养啊，废物~'
     ],
-    notBonded: [
+    notBonded: [ // 未缔约
       '还没缔约就想调教？做梦！',
       '亲密度不够还想来这套？宠物不答应~',
       '先提升亲密度缔约了再说吧，心急吃不了热豆腐~'
     ],
-    evasion: [
+    evasion: [ // 逃避成功
       '你的宠物不乖，挣脱了你的手！',
       '宠物调皮地躲开了~',
       '宠物不配合，扭头就跑！',
@@ -59,7 +66,7 @@ const CONFIG = {
       '宠物装作没听见，互动无效！',
       '宠物翻了个白眼，懒得理你~'
     ],
-    taunt: [
+    taunt: [ // 宠物嘲讽主人
       '主人太不行了~',
       '太小了没感觉呢~',
       '就这点本事？不够不够~',
@@ -77,12 +84,14 @@ const CONFIG = {
       '主人你是不是该去锻炼了？'
     ]
   },
-  EVASION_TIERS: [
-    { max: 99, chance: 0.30 },
-    { max: 199, chance: 0.15 },
-    { max: 519, chance: 0.05 }
+
+  EVASION_TIERS: [ // 逃避概率（按服从值分段，缔约后归零）
+    { max: 99, chance: 0.20 }, // 服从0~99: 20%
+    { max: 199, chance: 0.10 }, // 服从100~199: 10%
+    { max: 519, chance: 0.05 } // 服从200~519: 5%
   ],
-  INTIMACY_LEVELS: [
+
+  INTIMACY_LEVELS: [ // 亲密度等级（min为该等级最低亲密度）
     { min: 0, name: '陌生人' },
     { min: 29, name: '熟悉' },
     { min: 99, name: '信赖' },
@@ -92,10 +101,11 @@ const CONFIG = {
     { min: 999, name: '深情不悔' },
     { min: 1314, name: '一生一世' }
   ],
-  BOND_TIERS: {
-    bonded: { minIntimacy: 299, label: '缔约' }
-  },
-  INTERACTION_EFFECTS: {
+
+  INTERACTION_EFFECTS: { // 互动效果配置
+    // type: pet=照顾类, train=调教类, force=强制类
+    // critThreshold: 暴击阈值（roll>=此值触发暴击，0=无暴击）
+    // goldReward/goldCost: 金币奖励/消耗
     投喂: {
       satietyGain: 30, energyGain: 20, intimacyGain: 5,
       critSatietyGain: 40, critEnergyGain: 30, critIntimacyGain: 10,
@@ -172,6 +182,7 @@ const CONFIG = {
       critLewdGain: 12, critSensitivityGain: 16, critPainGain: 24, critIntimacyLoss: 10,
       critThreshold: 88, type: 'train', goldReward: 10
     },
+    // 强制类：forceMultiplier=属性变化额外倍率，forceBreakClothes=100%爆衣，forceExtraHunger=额外饱食/体力扣除
     强制鞭打: {
       obedienceGain: 12, painGain: 30, intimacyLoss: 20, lewdGain: 8,
       critObedienceGain: 24, critPainGain: 50, critIntimacyLoss: 35,
@@ -186,49 +197,78 @@ const CONFIG = {
       obedienceGain: 15, intimacyLoss: 20, lewdGain: 15,
       critObedienceGain: 30, critIntimacyLoss: 35,
       critThreshold: 0, type: 'force', goldReward: 15, forceMultiplier: 1.5
+    },
+    // 宠物自主指令（仅缔约后可用）
+    撒娇: {
+      intimacyGain: 5,
+      critIntimacyGain: 10,
+      critThreshold: 85, type: 'pet', goldReward: 2
+    },
+    生气气: {
+      intimacyLoss: 3, satietyGain: 10,
+      critSatietyGain: 18,
+      critThreshold: 80, type: 'pet', goldReward: 2
+    },
+    讨好: {
+      intimacyGain: 5, painLoss: 5,
+      critIntimacyGain: 10, critPainLoss: 10,
+      critThreshold: 85, type: 'pet', goldReward: 2
+    },
+    献媚: {
+      intimacyGain: 3, lewdGain: 5,
+      critIntimacyGain: 6, critLewdGain: 10,
+      critThreshold: 85, type: 'pet', goldReward: 3
+    },
+    勾引: {
+      lewdGain: 5, intimacyGain: 3,
+      critLewdGain: 10, critIntimacyGain: 6,
+      critThreshold: 85, type: 'pet', goldReward: 5
     }
   },
-  PET_ACTIONS: {
-    撒娇: { intimacyGain: 5, cooldown: 30 * 1000 },
-    生气气: { intimacyLoss: 3, satietyGain: 10, cooldown: 30 * 1000 },
-    讨好: { intimacyGain: 5, painLoss: 5, cooldown: 30 * 1000 },
-    献媚: { intimacyGain: 3, lewdGain: 5, cooldown: 30 * 1000 },
-    求关注: { intimacyBonus: 3, cooldown: 30 * 1000 },
-    告状: { intimacyLoss: 2, cooldown: 0 },
-    勾引: { lewdGain: 5, intimacyGain: 3, ownerGoldReward: 8, cooldown: 30 * 1000 },
-    冷战: { intimacyLoss: 5, duration: 30 * 60 * 1000, cooldown: 30 * 1000 }
+
+  PET_ACTIONS: { // 宠物特殊指令（不走executePetInteraction）
+    求关注: { intimacyBonus: 3, cooldown: 30 * 1000 }, // @主人提醒互动
+    冷战: { intimacyLoss: 5, duration: 30 * 60 * 1000, cooldown: 30 * 1000 } // 切换冷战状态
   },
-  INTERACTION_TIME_COST: 15,
-  SHOP_TIME_COST: 5,
-  DAILY_ENERGY_RECOVERY: 30,
-  DAILY_SATIETY_LOSS: 15,
-  NIGHT_EVENT_CHANCE: 0.4,
-  TICK_DECAY: {
+
+  INTERACTION_TIME_COST: 15, // 每次互动消耗的游戏分钟数
+  SHOP_TIME_COST: 5, // 每次购物消耗的游戏分钟数
+  DAILY_ENERGY_RECOVERY: 30, // 跨天体力恢复
+  DAILY_SATIETY_LOSS: 15, // 跨天饱食消耗
+  NIGHT_EVENT_CHANCE: 0.4, // 夜间事件触发概率
+
+  TICK_DECAY: { // 每tick属性自然衰减
     satiety: -5,
     energy: -5,
     pain: -5,
     sensitivity: -5,
     hygiene: -5
   },
-  ACHIEVEMENTS: {
+
+  ACHIEVEMENTS: { // 成就配置（type省略时为累计宠爱/服从/涩气/亲密度达标型）
+    // 累计宠爱类
     'first_pet': { name: '初次宠爱', desc: '累计宠爱100点', target: 100, reward: 50 },
     'pet_200': { name: '温柔之手', desc: '累计宠爱200点', target: 200, reward: 60 },
     'pet_500': { name: '千宠百爱', desc: '累计宠爱500点', target: 500, reward: 120 },
+    // 服从值达标类
     'obedience_66': { name: '初识顺从', desc: '服从值达到66', target: 66, reward: 40 },
     'obedience_299': { name: '渐趋顺从', desc: '服从值达到299', target: 299, reward: 60 },
     'obedience_520': { name: '死心塌地', desc: '服从值达到520', target: 520, reward: 80 },
     'obedience_888': { name: '深度臣服', desc: '服从值达到888', target: 888, reward: 120 },
     'obedience_1314': { name: '永恒臣服', desc: '服从值达到1314', target: 1314, reward: 200 },
+    // 涩气值达标类
     'lewd_66': { name: '涩气初绽', desc: '涩气值达到66', target: 66, reward: 40 },
     'lewd_299': { name: '欲念渐起', desc: '涩气值达到299', target: 299, reward: 60 },
     'lewd_520': { name: '欲念缠身', desc: '涩气值达到520', target: 520, reward: 80 },
     'lewd_888': { name: '欲壑难填', desc: '涩气值达到888', target: 888, reward: 120 },
     'lewd_1314': { name: '极欲化身', desc: '涩气值达到1314', target: 1314, reward: 200 },
+    // 亲密度达标类
     'intimacy_299': { name: '依恋之心', desc: '亲密度达到299', target: 299, reward: 60 },
     'intimacy_520': { name: '告白时刻', desc: '亲密度达到520', target: 520, reward: 80 },
     'intimacy_666': { name: '非你不可', desc: '亲密度达到666', target: 666, reward: 100 },
     'intimacy_999': { name: '深情不悔', desc: '亲密度达到999', target: 999, reward: 120 },
     'intimacy_1314': { name: '一生一世', desc: '亲密度达到1314', target: 1314, reward: 200 },
+    // 特殊条件类
     'pain_m_awaken': { name: 'M显现', desc: '疼痛首次达到100', type: 'first_reach', stat: 'pain', value: 100, reward: 100 },
     'pain_collapse': { name: '濒临崩溃', desc: '连续3次疼痛为100', type: 'consecutive', stat: 'pain', value: 100, count: 3, reward: 80 },
     'sensitivity_stone': { name: '麻木', desc: '敏感度归零', type: 'reach_zero', stat: 'sensitivity', reward: 50 },
@@ -240,13 +280,16 @@ const CONFIG = {
     'satiety_overfeed': { name: '你要撑死我', desc: '连续3次饱食为100', type: 'consecutive', stat: 'satiety', value: 100, count: 3, reward: 80 },
     'hygiene_cinderella': { name: '灰姑娘', desc: '连续3次清洁为0', type: 'consecutive', stat: 'hygiene', value: 0, count: 3, reward: 60 },
     'hygiene_lotus': { name: '我有洁癖', desc: '连续3次清洁为100', type: 'consecutive', stat: 'hygiene', value: 100, count: 3, reward: 100 },
+    // 存活天数类
     'survivor_3': { name: '黏人的宠物', desc: '宠物存活3天', target: 3, reward: 60 },
     'survivor_30': { name: '久经陪伴', desc: '宠物存活30天', target: 30, reward: 150 },
     'survivor_99': { name: '长长久久', desc: '宠物存活99天', target: 99, reward: 200 },
     'survivor_520': { name: '我爱你', desc: '宠物存活520天', target: 520, reward: 300 },
     'survivor_1314': { name: '一生一世', desc: '宠物存活1314天', target: 1314, reward: 500 },
+    // 破衣类
     'breaker_5': { name: '衣不蔽体', desc: '累计破坏5件衣物', target: 5, reward: 40 },
     'breaker_10': { name: '碎衣狂魔', desc: '累计破坏10件衣物', target: 10, reward: 70 },
+    // 商店/衣物类
     'shop_first_buy': { name: '初入衣柜', desc: '购买1件衣服', type: 'shop_buy', target: 1, reward: 30 },
     'shop_all_buy': { name: '全图鉴', desc: '商店衣服全买', type: 'shop_all', reward: 200 },
     'shop_has_bra': { name: '半柜芬芳', desc: '拥有5件胸罩', type: 'clothes_count', slot: 'bra', target: 5, reward: 50 },
@@ -256,14 +299,17 @@ const CONFIG = {
     'shop_destroy_master': { name: '善解人衣', desc: '触发2次10%掉光耐久', type: 'destroy_master', target: 2, reward: 100 },
     'shop_naked_3d': { name: '衣服是什么', desc: '未穿连续3天', type: 'naked_days', target: 3, reward: 60 },
     'shop_naked_7d': { name: '裸体宠物', desc: '未穿连续7天', type: 'naked_days', target: 7, reward: 100 },
+    // 房子类
     'house_cozy': { name: '温馨之家', desc: '升级到温馨小屋', type: 'house', house: 'cozy', reward: 50 },
     'house_luxury': { name: '豪宅梦', desc: '升级到豪华公寓', type: 'house', house: 'luxury', reward: 80 },
     'house_palace': { name: '帝王享受', desc: '升级到奢华别墅', type: 'house', house: 'palace', reward: 150 },
+    // 魅力类
     'charm_520': { name: '小妖精', desc: '总魅力达到520', target: 520, reward: 80 },
     'charm_1314': { name: '万众倾倒', desc: '总魅力达到1314', target: 1314, reward: 150 },
     'charm_3640': { name: '绝世魅影', desc: '总魅力达到3640', target: 3640, reward: 200 }
   },
-  STATUS_TEXTS: [
+
+  STATUS_TEXTS: [ // 面板状态文案（按priority降序匹配，condition为JS表达式字符串）
     { priority: 100, condition: 'energy <= 0 && satiety <= 0', text: '已失去意识，需要紧急抢救...' },
     { priority: 95, condition: 'energy <= 20', text: '精疲力竭，连站起来的力气都没有...' },
     { priority: 90, condition: 'satiety <= 20', text: '饥饿难耐，肚子咕咕叫...' },
@@ -281,7 +327,8 @@ const CONFIG = {
     { priority: 50, condition: 'pain <= 20', text: '状态平稳，等待互动...' },
     { priority: 0, condition: 'true', text: '正在适应中...' }
   ],
-  TRAITS: [
+
+  TRAITS: [ // 面板特质标签（按priority降序匹配，css: trait-bad/trait-good/trait-lewd）
     { priority: 100, condition: 'energy <= 0 && satiety <= 0', name: '濒死', css: 'trait-bad' },
     { priority: 95, condition: 'energy <= 20 && energy > 0', name: '虚脱', css: 'trait-bad' },
     { priority: 90, condition: 'satiety <= 20', name: '饥饿', css: 'trait-bad' },
@@ -298,10 +345,11 @@ const CONFIG = {
     { priority: 35, condition: 'energy >= 80 && satiety >= 80', name: '状态良好', css: 'trait-good' },
     { priority: 30, condition: 'hygiene >= 80', name: '洁净', css: 'trait-good' }
   ],
-  TRAIT_LIMITS: { bad: 3, good: 3, lewd: 4 }
+
+  TRAIT_LIMITS: { bad: 3, good: 3, lewd: 4 } // 各类特质最大显示数
 }
 
-const LOCATIONS = [
+const LOCATIONS = [ // 地点列表（每天随机切换，modifier为互动属性加成）
   { name: '杂乱的卧室', modifier: { energy: 5, satiety: -3, hygiene: -5 } },
   { name: '黑海岸沙滩', modifier: { sensitivity: 5, intimacy: 5, hygiene: 3, obedience: -3 } },
   { name: '幽暗的地下室', modifier: { pain: 5, obedience: 5, sensitivity: -3 } },
@@ -311,14 +359,14 @@ const LOCATIONS = [
   { name: '教室', modifier: { energy: 3, pain: 5, lewd: -3, intimacy: -3 } }
 ]
 
-const EQUIPMENT_RARITY = {
+const EQUIPMENT_RARITY = { // 稀有度配置（charmRange/charm为魅力值范围/固定值，multiplier为属性变化倍率）
   common: { name: '普通', color: '#aaaaaa', charm: 0, multiplier: 1.0 },
   rare: { name: '稀有', color: '#44aaff', charmRange: [60, 120], effectCount: 1, multiplier: 1.3 },
   epic: { name: '传说', color: '#ff9933', charmRange: [120, 250], effectCount: 2, multiplier: 1.6 },
   mythic: { name: '神话', color: '#e91e63', charmRange: [250, 520], effectCount: 3, multiplier: 2.0 }
 }
 
-const EFFECT_POOL = [
+const EFFECT_POOL = [ // 稀有以上装备随机效果池（range为[min,max]）
   { stat: 'lewd', range: [1, 5] },
   { stat: 'obedience', range: [1, 5] },
   { stat: 'intimacy', range: [1, 5] },
@@ -327,7 +375,7 @@ const EFFECT_POOL = [
   { stat: 'energy', range: [-5, -1] }
 ]
 
-function generateRandomEffect(count) {
+function generateRandomEffect(count) { // 从EFFECT_POOL随机抽取count个不重复效果
   const effect = {}
   const pool = [...EFFECT_POOL]
   for (let i = 0; i < count && pool.length > 0; i++) {
@@ -339,13 +387,13 @@ function generateRandomEffect(count) {
   return effect
 }
 
-const CLOTHING_SLOTS = ['head', 'upper', 'lower', 'bra', 'panty', 'accessory', 'shoes']
+const CLOTHING_SLOTS = ['head', 'upper', 'lower', 'bra', 'panty', 'accessory', 'shoes'] // 衣物槽位顺序
 
-const SLOT_NAMES = {
+const SLOT_NAMES = { // 槽位中文名
   head: '头饰', upper: '上装', lower: '下装', bra: '胸罩', panty: '内裤', accessory: '饰品', shoes: '鞋子'
 }
 
-const CLOTHING_DB = {
+const CLOTHING_DB = { // 衣物数据库（每个槽位按索引排列，common有dur耐久，稀有以上无dur=无限耐久）
   head: [
     { name: '发夹', dur: 100, rarity: 'common' },
     { name: '发带', dur: 100, rarity: 'common' },
@@ -425,22 +473,7 @@ const CLOTHING_DB = {
   ]
 }
 
-const CLOTHING_PRESETS = [
-  {
-    name: '运动装',
-    clothes: {
-      head: { ...CLOTHING_DB.head[3] },
-      upper: { ...CLOTHING_DB.upper[2] },
-      lower: { ...CLOTHING_DB.lower[2] },
-      bra: { ...CLOTHING_DB.bra[2] },
-      panty: { ...CLOTHING_DB.panty[3] },
-      accessory: { ...CLOTHING_DB.accessory[3] },
-      shoes: { ...CLOTHING_DB.shoes[3] }
-    }
-  }
-]
-
-const COMMON_SETS = {
+const COMMON_SETS = { // 普通套装（一键购买整套common装，items为各槽位在CLOTHING_DB中的索引）
   t1: {
     name: '日常套装', cost: 200,
     items: { head: 0, upper: 0, lower: 0, bra: 0, panty: 0, accessory: 0, shoes: 0 }
@@ -459,7 +492,7 @@ const COMMON_SETS = {
   }
 }
 
-const SHOP_ITEMS = {
+const SHOP_ITEMS = { // 商店单品（items格式为 "槽位:索引"，对应CLOTHING_DB）
   '兔耳兜帽': { cost: 60, type: 'clothing', items: ['head:4'] },
   '猫耳贝雷帽': { cost: 60, type: 'clothing', items: ['head:5'] },
   '女仆装': { cost: 60, type: 'clothing', items: ['upper:4'] },
@@ -497,30 +530,30 @@ const SHOP_ITEMS = {
   '猫爪长筒靴': { cost: 550, type: 'clothing', items: ['shoes:8'] }
 }
 
-const HOUSES = {
+const HOUSES = { // 房子配置（cost为升级费用，bonus.goldBonus=每日额外金币，bonus.intimacyPct=亲密度百分比加成）
   broken: { name: '破败的房子', emoji: '🏚️', cost: 0, bonus: {} },
   cozy: { name: '温馨小屋', emoji: '🏠', cost: 200, bonus: { goldBonus: 1 } },
   luxury: { name: '豪华公寓', emoji: '🏢', cost: 500, bonus: { goldBonus: 2, intimacyPct: 5 } },
   palace: { name: '奢华别墅', emoji: '🏰', cost: 1000, bonus: { goldBonus: 5, intimacyPct: 10 } }
 }
 
-const HOUSE_UPGRADE_ORDER = ['broken', 'cozy', 'luxury', 'palace']
+const HOUSE_UPGRADE_ORDER = ['broken', 'cozy', 'luxury', 'palace'] // 房子升级顺序
 
-const RANDOM_EVENTS = {
-  night: [
+const RANDOM_EVENTS = { // 随机事件（weight为权重，effect为属性变化）
+  night: [ // 夜间事件（跨天时按NIGHT_EVENT_CHANCE概率触发）
     { text: '宠物做了个美梦，心情愉悦~', effect: { intimacy: 3 }, weight: 3 },
     { text: '半夜被雷声惊醒，瑟瑟发抖...', effect: { sensitivity: 5 }, weight: 2 },
     { text: '梦游走出了房间，撞到了墙', effect: { pain: 5 }, weight: 1 },
     { text: '梦里和主人一起玩耍，好开心！', effect: { intimacy: 5, obedience: 3 }, weight: 2 }
   ],
-  day: [
+  day: [ // 白天事件（跨天时触发）
     { text: '阳光洒进窗户，温暖舒适~', effect: { energy: 5 }, weight: 3 },
     { text: '不小心打翻了水杯，衣服湿了...', effect: { hygiene: -10 }, weight: 2 },
     { text: '路过商店橱窗，眼巴巴地看着...', effect: { intimacy: 2 }, weight: 2 },
     { text: '在角落里发现了藏起来的零食！', effect: { satiety: 10 }, weight: 1 },
     { text: '被路过的野猫吓了一跳！', effect: { sensitivity: 5, pain: 3 }, weight: 1 }
   ],
-  location: {
+  location: { // 地点专属事件（跨天时按当前地点触发）
     '杂乱的卧室': [
       { text: '在床缝里找到了遗忘的零食~', effect: { satiety: 5 }, weight: 2 }
     ],
@@ -545,7 +578,7 @@ const RANDOM_EVENTS = {
   }
 }
 
-function getUserColor(userId) {
+function getUserColor(userId) { // 根据用户ID哈希分配固定颜色（用于日志高亮）
   const colors = ['#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#00bcd4', '#4caf50', '#ff9800', '#ff5722', '#795548']
   let hash = 0
   for (let i = 0; i < userId.length; i++) {
@@ -555,14 +588,12 @@ function getUserColor(userId) {
   return colors[Math.abs(hash) % colors.length]
 }
 
-const CMD_PREFIX = '([#＃]宠物|[\\$＄])'
+const NO_PET_MSG = '你还没有宠物哦，\n可发 $领养 随机或 $领养@群友 也可 $抢@群友，\n如已被领养可发 $缔约主人' // 无宠物提示
 
-const NO_PET_MSG = '你还没有宠物哦，\n可发 $领养 随机或 $领养@群友 也可 $抢@群友，\n如已被领养可发 $缔约主人'
-
-const NO_OWNER_MSG = '你好像没主人呢，让别人领养你吧'
+const NO_OWNER_MSG = '你好像没主人呢，让别人领养你吧' // 无主人提示
 
 export {
   CONFIG, LOCATIONS, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, CLOTHING_DB,
-  CLOTHING_PRESETS, COMMON_SETS, SHOP_ITEMS, HOUSES, HOUSE_UPGRADE_ORDER,
+  COMMON_SETS, SHOP_ITEMS, HOUSES, HOUSE_UPGRADE_ORDER,
   RANDOM_EVENTS, generateRandomEffect, getUserColor, CMD_PREFIX, NO_PET_MSG, NO_OWNER_MSG
 }

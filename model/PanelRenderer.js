@@ -1,4 +1,3 @@
-import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { CONFIG, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, HOUSES, LOCATIONS } from '../config/cfg.js'
@@ -17,11 +16,11 @@ class PanelRenderer {
     this.dm = dataManager
   }
 
-  buildRenderData(data) {
-    const st = data.stats
-    const pet = data.pet
+  buildRenderData(petData, ownerData) {
+    const st = petData.stats
+    const pet = petData.pet
     const isBonded = pet?.status === 'bonded'
-    const house = HOUSES[data.house] || HOUSES.broken
+    const house = HOUSES[petData.house] || HOUSES.broken
 
     const slotList = CLOTHING_SLOTS.map(key => ({ key, label: SLOT_NAMES[key] || key }))
 
@@ -29,7 +28,7 @@ class PanelRenderer {
     let totalCharm = 0
     let totalEffects = {}
     for (const slot of CLOTHING_SLOTS) {
-      const item = data.clothes[slot]
+      const item = petData.clothes[slot]
       if (!item) continue
       const rarityInfo = EQUIPMENT_RARITY[item.rarity]
       const isEmpty = item.rarity === 'none' || (item.rarity === 'common' && item.dur !== undefined && item.dur <= 0)
@@ -55,20 +54,20 @@ class PanelRenderer {
     const totalEffectText = Object.entries(totalEffects).map(([k, v]) => `${STAT_NAMES[k] || k}${v > 0 ? '+' : ''}${v}`).join(' ')
 
     const statusText = this.generateStatusText(st, pet)
-    const unlockedAchievements = this.getUnlockedAchievements(data)
+    const unlockedAchievements = this.getUnlockedAchievements(petData)
 
-    const traits = (data.traits || []).map(t => {
+    const traits = (petData.traits || []).map(t => {
       if (typeof t === 'object') return t
       return { name: t, css: 'trait-good' }
     })
 
-    const locationObj = LOCATIONS.find(loc => loc.name === data.sys.location)
+    const locationObj = LOCATIONS.find(loc => loc.name === petData.sys.location)
     let locationModifier = ''
     if (locationObj && locationObj.modifier) {
       locationModifier = Object.entries(locationObj.modifier).map(([k, v]) => `${STAT_NAMES[k] || k}${v > 0 ? '+' : ''}${v}`).join(' ')
     }
 
-    const { bonus: trainBonus, detail: bonusParts } = this.dm.getTrainBonusSync(data)
+    const { bonus: trainBonus, detail: bonusParts } = this.dm.getTrainBonusSync(ownerData)
     const trainBonusDetail = bonusParts.join('×')
 
     const intimacy = pet?.intimacy || 0
@@ -76,9 +75,8 @@ class PanelRenderer {
     const lewd = pet?.lewd || 0
 
     return {
-
       petName: pet?.petName || '宠物',
-      petAvatar: pet?.petAvatar || (data._userId ? `https://q1.qlogo.cn/g?b=qq&s=100&nk=${data._userId}` : ''),
+      petAvatar: pet?.petAvatar || (petData._userId ? `https://q1.qlogo.cn/g?b=qq&s=100&nk=${petData._userId}` : ''),
       ownerName: pet?.ownerName || '主人',
       ownerAvatar: pet?.ownerAvatar || (pet?.ownerId ? `https://q1.qlogo.cn/g?b=qq&s=100&nk=${pet.ownerId}` : ''),
       statusText,
@@ -93,13 +91,13 @@ class PanelRenderer {
       clothes,
       totalCharm,
       totalEffectText,
-      logs: data.diary || [],
+      logs: petData.diary || [],
       achievements: unlockedAchievements,
-      achievementsCount: (data.sys.achievements || []).length,
+      achievementsCount: (petData.sys.achievements || []).length,
       totalAchievements: Object.keys(CONFIG.ACHIEVEMENTS).length,
-      goldCoins: data.sys.goldCoins || 0,
-      survivalDays: calculateDays(data.sys.startTimestamp),
-      location: data.sys.location || '',
+      goldCoins: petData.sys.goldCoins || 0,
+      survivalDays: calculateDays(petData.sys.startTimestamp),
+      location: petData.sys.location || '',
       locationModifier,
       trainBonus,
       trainBonusDetail
@@ -131,9 +129,9 @@ class PanelRenderer {
     return result
   }
 
-  async renderPanel(e, data) {
+  async renderPanel(e, petData, ownerData) {
     try {
-      const renderData = this.buildRenderData(data)
+      const renderData = this.buildRenderData(petData, ownerData)
       await renderTemplate(e, htmlSrc, '_panel_temp.html', renderData, 'cwerPanel')
     } catch (error) {
       console.error('[Cwer] 面板渲染失败:', error)

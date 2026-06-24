@@ -7,7 +7,6 @@ import { renderTemplate } from '../model/html-inject.js'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const achHtmlPath = path.resolve(__dirname, '../resources/achievement.html')
 
-
 class AchievementApp extends plugin {
   constructor() {
     super({
@@ -26,11 +25,10 @@ class AchievementApp extends plugin {
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 
-    const userData = this.sys.dm.readUserData(groupId, userId)
-    if (!userData) return e.reply(NO_PET_MSG)
+    const { ownerData } = this.sys.dm.resolveOwnerData(groupId, userId)
+    if (!ownerData || !ownerData.owner) return e.reply(NO_PET_MSG)
 
-    const petData = this.sys.getPetData(groupId, userData)
-    if (!petData) return e.reply(NO_PET_MSG)
+    const petData = this.sys.dm.extractPetData(ownerData)
 
     const unlocked = petData.sys.achievements || []
     const total = Object.keys(CONFIG.ACHIEVEMENTS).length
@@ -47,7 +45,6 @@ class AchievementApp extends plugin {
       await e.reply('成就面板渲染失败，请稍后再试')
     }
   }
-
 }
 
 export default AchievementApp

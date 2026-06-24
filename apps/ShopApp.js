@@ -1,8 +1,8 @@
 import plugin from '../../../lib/plugins/plugin.js'
+import { CONFIG, CMD_PREFIX, NO_PET_MSG } from '../config/cfg.js'
+import { renderTemplate } from '../model/html-inject.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { CONFIG, COMMON_SETS, SHOP_ITEMS, HOUSES, CMD_PREFIX, NO_PET_MSG } from '../config/cfg.js'
-import { renderTemplate } from '../model/html-inject.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const shopHtmlPath = path.resolve(__dirname, '../resources/shop.html')
@@ -38,32 +38,32 @@ class ShopApp extends plugin {
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 
-    const userData = this.sys.dm.readUserData(groupId, userId)
-    if (!userData) return e.reply(NO_PET_MSG)
-
-    const petData = this.sys.getPetData(groupId, userData)
-    if (!petData) return e.reply(NO_PET_MSG)
+    const { ownerData, userData } = this.sys.dm.resolveOwnerData(groupId, userId)
+    if (!ownerData || !ownerData.owner) return e.reply(NO_PET_MSG)
+    ownerData._userId = userData.masterId || userId
 
     const item = this.sys.shop.findShopItemByCode(itemText) || this.sys.shop.findShopItem(itemText)
     if (!item) return e.reply('商店里没有这件商品，发送 #宠物商店 查看目录。')
 
-    const currentMoney = petData.sys.goldCoins || 0
+    const currentMoney = ownerData.owner.petSys.goldCoins || 0
     if (currentMoney < item.cost) return e.reply(`金币不足！需要 ${item.cost} 金币，当前只有 ${currentMoney} 金币。`)
 
+    const petData = this.sys.dm.extractPetData(ownerData)
     if (item.type === 'clothing' && !this.sys.shop.allCommonBroken(petData)) return e.reply('调教装尚未解锁！需所有普通装耐久归零后解锁')
 
     const result = item.type === 'common_set' || item.type === 'clothing'
-      ? this.sys.shop.executePurchase(petData, item, petData.pet?.intimacy || 0)
+      ? this.sys.shop.executePurchase(petData, item, ownerData.owner.intimacy || 0)
       : { success: false, message: '未知的商品类型' }
 
     if (!result.success) return e.reply(result.message)
 
     petData.sys.goldCoins = currentMoney - item.cost
-    this.sys.es.tickTime(petData, CONFIG.SHOP_TIME_COST)
-    this.sys.dm.addLog(petData, result.logText, '#ff66ff')
-    this.sys.dm.saveUserData(petData, groupId)
+    this.sys.dm.writePetData(ownerData, petData)
+    this.sys.es.tickTime(ownerData, CONFIG.SHOP_TIME_COST)
+    this.sys.dm.addLog(ownerData, result.logText, '#ff66ff')
+    this.sys.dm.saveUserData(ownerData, groupId)
 
-    await e.reply(`${result.message}\n(花费 ${item.cost} 金币，剩余 ${petData.sys.goldCoins} 金币)`)
+    await e.reply(`${result.message}\n(花费 ${item.cost} 金币，剩余 ${ownerData.owner.petSys.goldCoins} 金币)`)
   }
 }
 

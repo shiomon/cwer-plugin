@@ -17,79 +17,88 @@ class EventSystem {
     this.shop = null
   }
 
-  tickTime(data, minutes) {
-    this.applyTickDecay(data)
-    if (Math.random() < 0.15) {
-      this.triggerRandomEvent(data, 'day')
-    }
-    this.updateTraits(data)
-    this.checkDailyEvents(data)
+  tickTime(ownerData, minutes) {
+    this.applyTickDecay(ownerData)
+
+    this.updateTraits(ownerData)
+    this.checkDailyEvents(ownerData)
   }
 
-  checkDailyEvents(data) {
+  checkDailyEvents(ownerData) {
+    const o = ownerData.owner
+    if (!o) return
     const today = beijingDateString()
-    if (data.sys.lastCheckDate !== today) {
-      data.sys.lastCheckDate = today
-      data.achievements.survivalDays = (data.achievements.survivalDays || 0) + 1
-      this.dm.updateStatHistory(data)
-      data.sys.location = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)].name
-      data.stats.energy = this.dm.clampStat('energy', data.stats.energy + CONFIG.DAILY_ENERGY_RECOVERY)
-      data.stats.satiety = this.dm.clampStat('satiety', data.stats.satiety - CONFIG.DAILY_SATIETY_LOSS)
-      data.stats = this.dm.clampAllStats(data.stats)
-      this.dm.addLog(data, `新的一天开始了。在 [${data.sys.location}] 醒来。`, '#aaa')
+    if (o.petSys.lastCheckDate !== today) {
+      o.petSys.lastCheckDate = today
+      o.petAchievements.survivalDays = (o.petAchievements.survivalDays || 0) + 1
+      this.dm.updateStatHistory(ownerData)
+      o.petSys.location = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)].name
+      o.petStats.energy = this.dm.clampStat('energy', o.petStats.energy + CONFIG.DAILY_ENERGY_RECOVERY)
+      o.petStats.satiety = this.dm.clampStat('satiety', o.petStats.satiety - CONFIG.DAILY_SATIETY_LOSS)
+      for (const key in o.petStats) {
+        o.petStats[key] = this.dm.clampStat(key, o.petStats[key])
+      }
+      this.dm.addLog(ownerData, `新的一天开始了。在 [${o.petSys.location}] 醒来。`, '#aaa')
       if (Math.random() < 0.4) {
-        this.triggerRandomEvent(data, 'location')
+        this.triggerRandomEvent(ownerData, 'location')
       }
       if (Math.random() < CONFIG.NIGHT_EVENT_CHANCE) {
-        this.triggerNightEvent(data)
+        this.triggerNightEvent(ownerData)
       }
       if (this.shop) {
-        this.shop.checkAchievements(data)
+        this.shop.checkAchievements(ownerData)
       }
     }
   }
 
-  applyTickDecay(data) {
+  applyTickDecay(ownerData) {
+    const o = ownerData.owner
+    if (!o) return
     const decay = CONFIG.TICK_DECAY
     for (const [stat, value] of Object.entries(decay)) {
-      if (data.stats[stat] !== undefined) {
-        data.stats[stat] = this.dm.clampStat(stat, data.stats[stat] + value)
+      if (o.petStats[stat] !== undefined) {
+        o.petStats[stat] = this.dm.clampStat(stat, o.petStats[stat] + value)
       }
     }
   }
 
-  triggerNightEvent(data) {
+  triggerNightEvent(ownerData) {
     const event = getRandomWeightedItem(RANDOM_EVENTS.night)
-    this.applyEventEffect(data, event)
-    this.dm.addLog(data, `<span style="color:#9c27b0;font-weight:600">半夜事件</span>：${event.text}`, '#999')
+    this.applyEventEffect(ownerData, event)
+    this.dm.addLog(ownerData, `<span style="color:#9c27b0;font-weight:600">半夜事件</span>：${event.text}`, '#999')
   }
 
-  triggerRandomEvent(data, type) {
+  triggerRandomEvent(ownerData, type) {
+    const o = ownerData.owner
+    if (!o) return
     if (type === 'day') {
       const event = getRandomWeightedItem(RANDOM_EVENTS.day)
-      this.applyEventEffect(data, event)
-      this.dm.addLog(data, `<span style="color:#ff9800;font-weight:600">随机事件</span>：${event.text}`, '#888')
+      this.applyEventEffect(ownerData, event)
+      this.dm.addLog(ownerData, `<span style="color:#ff9800;font-weight:600">随机事件</span>：${event.text}`, '#888')
     } else if (type === 'location') {
-      const locationEvents = RANDOM_EVENTS.location[data.sys.location] || []
+      const locationEvents = RANDOM_EVENTS.location[o.petSys.location] || []
       if (locationEvents.length > 0) {
         const event = getRandomWeightedItem(locationEvents)
-        this.applyEventEffect(data, event)
-        this.dm.addLog(data, `<span style="color:#2196f3;font-weight:600">地点事件</span>：${event.text}`, '#88aaff')
+        this.applyEventEffect(ownerData, event)
+        this.dm.addLog(ownerData, `<span style="color:#2196f3;font-weight:600">地点事件</span>：${event.text}`, '#88aaff')
       }
     }
   }
 
-  applyEventEffect(data, event) {
-    if (!event.effect) return
+  applyEventEffect(ownerData, event) {
+    const o = ownerData.owner
+    if (!o || !event.effect) return
     for (const [stat, value] of Object.entries(event.effect)) {
-      if (data.stats[stat] !== undefined) {
-        data.stats[stat] = this.dm.clampStat(stat, data.stats[stat] + value)
+      if (o.petStats[stat] !== undefined) {
+        o.petStats[stat] = this.dm.clampStat(stat, o.petStats[stat] + value)
       }
     }
   }
 
-  getLocationModifier(data, action) {
-    const location = LOCATIONS.find(loc => loc.name === data.sys.location)
+  getLocationModifier(ownerData, action) {
+    const o = ownerData.owner
+    if (!o) return null
+    const location = LOCATIONS.find(loc => loc.name === o.petSys.location)
     if (!location || !location.modifier) return null
     const modifier = {}
     for (const [key, value] of Object.entries(location.modifier)) {
@@ -106,14 +115,15 @@ class EventSystem {
     }
   }
 
-  updateTraits(data) {
-    const st = data.stats
-    const pet = data.pet
+  updateTraits(ownerData) {
+    const o = ownerData.owner
+    if (!o) return
+    const st = o.petStats
     const mergedStats = {
       ...st,
-      intimacy: pet?.intimacy || 0,
-      obedience: pet?.obedience || 0,
-      lewd: pet?.lewd || 0
+      intimacy: o.intimacy || 0,
+      obedience: o.obedience || 0,
+      lewd: o.lewd || 0
     }
     const counts = { 'trait-bad': 0, 'trait-good': 0, 'trait-lewd': 0 }
     const newTraits = []
@@ -130,7 +140,7 @@ class EventSystem {
         }
       } catch { continue }
     }
-    const isClothesEmpty = (slot) => data.clothes[slot]?.rarity === 'none' || (data.clothes[slot]?.rarity === 'common' && data.clothes[slot]?.dur <= 0)
+    const isClothesEmpty = (slot) => o.petClothes[slot]?.rarity === 'none' || (o.petClothes[slot]?.rarity === 'common' && o.petClothes[slot]?.dur <= 0)
     if (isClothesEmpty('upper') && isClothesEmpty('lower')) {
       newTraits.push({ name: '暴露', css: 'trait-lewd' })
     }
@@ -138,11 +148,11 @@ class EventSystem {
     if (allEmpty) {
       newTraits.push({ name: '一丝不挂', css: 'trait-lewd' })
     }
-    const hasMythic = Object.values(data.clothes).some(item => item.rarity === 'mythic')
+    const hasMythic = Object.values(o.petClothes).some(item => item.rarity === 'mythic')
     if (hasMythic) {
       newTraits.push({ name: '神话装', css: 'trait-good' })
     }
-    data.traits = newTraits
+    o.petTraits = newTraits
   }
 }
 

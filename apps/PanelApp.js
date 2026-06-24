@@ -19,25 +19,12 @@ class PanelApp extends plugin {
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 
-    const userData = this.sys.dm.readUserData(groupId, userId)
-    if (!userData) {
-      return e.reply(NO_PET_MSG)
-    }
+    const { ownerData, userData } = this.sys.dm.resolveOwnerData(groupId, userId)
+    if (!ownerData || !ownerData.owner) return e.reply(NO_PET_MSG)
 
-    let petData = null
-    if (userData.pet && userData.pet.ownerId) {
-      petData = userData
-      petData._userId = userId
-    } else if (userData.owner && userData.owner.petId) {
-      petData = this.sys.dm.readUserData(groupId, userData.owner.petId)
-      if (petData) petData._userId = userData.owner.petId
-    }
-
-    if (!petData) {
-      return e.reply(NO_PET_MSG)
-    }
-
-    await this.sys.renderer.renderPanel(e, petData)
+    const petData = this.sys.dm.extractPetData(ownerData)
+    petData._userId = userData.masterId || ownerData.owner.petId
+    return await this.sys.renderer.renderPanel(e, petData, ownerData)
   }
 }
 

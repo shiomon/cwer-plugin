@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { CONFIG, CLOTHING_DB, CLOTHING_SLOTS, SLOT_NAMES, LOCATIONS, EQUIPMENT_RARITY, HOUSES, COMMON_SETS } from '../config/cfg.js'
+import { CONFIG, CLOTHING_DB, CLOTHING_SLOTS, LOCATIONS, EQUIPMENT_RARITY, HOUSES, COMMON_SETS } from '../config/cfg.js'
 import { calculateDays, beijingNow } from './utils.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -9,6 +9,55 @@ const pluginRoot = path.resolve(__dirname, '..')
 
 function makeEmptySlot() {
   return { name: '未穿', rarity: 'none', charm: 0, dur: 0, effect: null }
+}
+
+function makeDefaultPetStats() {
+  return {
+    satiety: Math.floor(Math.random() * 61) + 20,
+    energy: Math.floor(Math.random() * 61) + 20,
+    hygiene: Math.floor(Math.random() * 61) + 20,
+    pain: 0,
+    sensitivity: Math.floor(Math.random() * 41) + 5
+  }
+}
+
+function makeDefaultPetClothes() {
+  const t1Set = COMMON_SETS.t1
+  const clothes = {}
+  for (const [slot, idx] of Object.entries(t1Set.items)) {
+    const clothingData = CLOTHING_DB[slot]?.[idx]
+    if (!clothingData) continue
+    const fresh = { name: clothingData.name, rarity: clothingData.rarity }
+    if (clothingData.rarity === 'common') fresh.dur = 100
+    fresh.charm = 0
+    fresh.effect = null
+    clothes[slot] = fresh
+  }
+  const allSlots = [...CLOTHING_SLOTS]
+  const shuffled = allSlots.sort(() => Math.random() - 0.5)
+  const skipSlots = new Set([shuffled[0], shuffled[1]])
+  for (const slot of skipSlots) {
+    clothes[slot] = makeEmptySlot()
+  }
+  return clothes
+}
+
+function makeDefaultPetSys() {
+  return {
+    startTimestamp: null,
+    lastInteractTime: null,
+    lastCheckDate: null,
+    goldCoins: CONFIG.INITIAL_GOLD,
+    statHistory: { pain: [], energy: [], satiety: [], sensitivity: [], hygiene: [] },
+    firstReach: {},
+    achievements: [],
+    clothesBroken: 0,
+    location: LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)].name
+  }
+}
+
+function makeDefaultPetAchievements() {
+  return { totalPet: 0, totalTrain: 0, totalHeal: 0, survivalDays: 0, clothesBroken: 0, totalCharm: 0 }
 }
 
 class DataManager {
@@ -34,6 +83,109 @@ class DataManager {
     }
   }
 
+  readUserData(groupId, userId) {
+    this.initGroupDir(groupId)
+    const dataPath = this.getDataPath(groupId, userId)
+    try {
+      if (!fs.existsSync(dataPath)) return null
+      const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
+      this.migrateData(data)
+      data._userId = userId
+      return data
+    } catch (error) {
+      console.error('[Cwer] 读取数据失败:', error)
+      return null
+    }
+  }
+
+  saveUserData(data, groupId) {
+    try {
+      this.initGroupDir(groupId)
+      const userId = data._userId
+      if (!userId) {
+        console.error('[Cwer] 保存数据失败: 缺少_userId')
+        return
+      }
+      if (data.owner && data.owner.petStats) {
+        for (const s of ['satiety', 'energy', 'hygiene', 'pain', 'sensitivity']) {
+          if (data.owner.petStats[s] !== undefined) {
+            data.owner.petStats[s] = Math.max(0, Math.min(100, Math.round(data.owner.petStats[s] * 10) / 10))
+          }
+        }
+        for (const s of ['intimacy', 'obedience', 'lewd']) {
+          if (data.owner[s] !== undefined) {
+            data.owner[s] = Math.max(0, Math.min(1314, Math.round(data.owner[s])))
+          }
+        }
+      }
+      const saveData = { ...data }
+      delete saveData._userId
+      const dataPath = this.getDataPath(groupId, userId)
+      fs.writeFileSync(dataPath, JSON.stringify(saveData, null, 2))
+    } catch (error) {
+      console.error('[Cwer] 保存数据失败:', error)
+    }
+  }
+
+
+  extractPetData(ownerData) {
+    if (!ownerData || !ownerData.owner) return null
+    const o = ownerData.owner
+    return {
+      _userId: o.petId,
+      stats: o.petStats || {},
+      clothes: o.petClothes || {},
+      house: o.petHouse || 'broken',
+      traits: o.petTraits || [],
+      diary: o.petDiary || [],
+      achievements: o.petAchievements || makeDefaultPetAchievements(),
+      sys: o.petSys || makeDefaultPetSys(),
+      owner: null,
+      pet: {
+        ownerId: ownerData._userId,
+        ownerName: o.ownerName,
+        ownerAvatar: o.ownerAvatar,
+        petName: o.petName,
+        petAvatar: o.petAvatar,
+        status: o.status,
+        createdAt: o.createdAt,
+        bondedAt: o.bondedAt,
+        intimacy: o.intimacy || 0,
+        obedience: o.obedience || 0,
+        lewd: o.lewd || 0
+      }
+    }
+  }
+
+  writePetData(ownerData, petData) {
+    if (!ownerData.owner) return
+    const o = ownerData.owner
+    o.petStats = petData.stats
+    o.petClothes = petData.clothes
+    o.petHouse = petData.house
+    o.petTraits = petData.traits
+    o.petDiary = petData.diary
+    o.petAchievements = petData.achievements
+    o.petSys = petData.sys
+    o.petId = petData._userId
+    o.petName = petData.pet?.petName
+    o.petAvatar = petData.pet?.petAvatar
+    o.status = petData.pet?.status || o.status
+    o.createdAt = petData.pet?.createdAt || o.createdAt
+    o.bondedAt = petData.pet?.bondedAt || o.bondedAt
+    o.intimacy = petData.pet?.intimacy ?? o.intimacy
+    o.obedience = petData.pet?.obedience ?? o.obedience
+    o.lewd = petData.pet?.lewd ?? o.lewd
+  }
+
+  findMasterId(groupId, petId) {
+    const data = this.readUserData(groupId, petId)
+    if (!data) return null
+    if (data.masterId) return data.masterId
+    if (data.owner && data.owner.petId) return petId
+    return null
+  }
+
   findRelationByOwner(groupId, ownerId) {
     const data = this.readUserData(groupId, ownerId)
     if (data && data.owner && data.owner.petId) {
@@ -43,9 +195,11 @@ class DataManager {
   }
 
   findRelationByPet(groupId, petId) {
-    const data = this.readUserData(groupId, petId)
-    if (data && data.pet && data.pet.ownerId) {
-      return { ownerId: data.pet.ownerId, petId }
+    const masterId = this.findMasterId(groupId, petId)
+    if (!masterId) return null
+    const data = this.readUserData(groupId, masterId)
+    if (data && data.owner && data.owner.petId === petId) {
+      return { ownerId: masterId, petId }
     }
     return null
   }
@@ -67,96 +221,51 @@ class DataManager {
     return results
   }
 
-  readUserData(groupId, userId) {
-    this.initGroupDir(groupId)
-    const dataPath = this.getDataPath(groupId, userId)
-    try {
-      if (!fs.existsSync(dataPath)) return null
-      const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
-      this.migrateData(data)
-      return data
-    } catch (error) {
-      console.error('[Cwer] 读取数据失败:', error)
-      return null
-    }
-  }
-
-  resetUserData(groupId, userId) {
-    this.initGroupDir(groupId)
-    const t1Set = COMMON_SETS.t1
-    const clothes = {}
-    for (const [slot, idx] of Object.entries(t1Set.items)) {
-      const clothingData = CLOTHING_DB[slot]?.[idx]
-      if (!clothingData) continue
-      const fresh = { name: clothingData.name, rarity: clothingData.rarity }
-      if (clothingData.rarity === 'common') {
-        fresh.dur = 100
-      }
-      fresh.charm = 0
-      fresh.effect = null
-      clothes[slot] = fresh
-    }
-
-    const allSlots = [...CLOTHING_SLOTS]
-    const shuffled = allSlots.sort(() => Math.random() - 0.5)
-    const skipSlots = new Set([shuffled[0], shuffled[1]])
-    for (const slot of skipSlots) {
-      clothes[slot] = makeEmptySlot()
-    }
-
-    const defaultData = {
-      _userId: userId,
-      stats: {
-        satiety: Math.floor(Math.random() * 61) + 20,
-        energy: Math.floor(Math.random() * 61) + 20,
-        hygiene: Math.floor(Math.random() * 61) + 20,
-        pain: 0,
-        sensitivity: Math.floor(Math.random() * 41) + 5
-      },
-      clothes,
-      house: 'broken',
-      traits: [],
-      diary: [],
-      achievements: { totalPet: 0, totalTrain: 0, totalHeal: 0, survivalDays: 0, clothesBroken: 0, totalCharm: 0 },
-      sys: {
-        startTimestamp: null,
-        lastInteractTime: null,
-        lastCheckDate: null,
-        goldCoins: CONFIG.INITIAL_GOLD,
-        statHistory: { pain: [], energy: [], satiety: [], sensitivity: [], hygiene: [] },
-        firstReach: {},
-        achievements: [],
-        clothesBroken: 0
-      },
-      owner: null,
-      pet: null
-    }
-    this.saveUserData(defaultData, groupId)
-    return defaultData
-  }
-
   setupOwnerRelation(ownerData, petData, ownerName, petName, petAvatar, ownerAvatar) {
     ownerData.owner = {
       petId: petData._userId,
       petName,
       petAvatar,
-      status: 'claimed',
-      createdAt: Date.now(),
-      bondedAt: null
-    }
-    petData.pet = {
-      ownerId: ownerData._userId,
       ownerName,
       ownerAvatar,
-      petName,
-      petAvatar,
       status: 'claimed',
       createdAt: Date.now(),
       bondedAt: null,
       intimacy: Math.floor(Math.random() * 30),
       obedience: Math.floor(Math.random() * 30),
-      lewd: Math.floor(Math.random() * 30)
+      lewd: Math.floor(Math.random() * 30),
+      petStats: petData.stats || makeDefaultPetStats(),
+      petClothes: petData.clothes || makeDefaultPetClothes(),
+      petHouse: petData.house || 'broken',
+      petTraits: petData.traits || [],
+      petDiary: petData.diary || [],
+      petAchievements: petData.achievements || makeDefaultPetAchievements(),
+      petSys: petData.sys || makeDefaultPetSys()
     }
+
+  }
+
+  setupPetMasterLink(groupId, ownerId, petId) {
+    const petFileData = this.readUserData(groupId, petId) || { _userId: petId }
+    petFileData.masterId = ownerId
+    petFileData._userId = petId
+    this.saveUserData(petFileData, groupId)
+  }
+
+  resolveOwnerData(groupId, userId) {
+    const userData = this.readUserData(groupId, userId)
+    if (!userData) return { ownerData: null, userData }
+    if (userData.owner && userData.owner.petId) {
+      return { ownerData: userData, userData }
+    }
+    if (userData.masterId) {
+      const ownerData = this.readUserData(groupId, userData.masterId)
+      if (ownerData && ownerData.owner) {
+        ownerData._userId = userData.masterId
+        return { ownerData, userData }
+      }
+    }
+    return { ownerData: null, userData }
   }
 
   clearOwnerRelation(data) {
@@ -164,71 +273,26 @@ class DataManager {
   }
 
   clearPetRelation(data) {
-    data.pet = null
+    data.masterId = null
   }
 
   migrateData(data) {
-    if (!data.stats) data.stats = {}
-    for (const key of ['satiety', 'energy', 'hygiene', 'pain', 'sensitivity']) {
-      if (data.stats[key] === undefined) data.stats[key] = 0
-    }
-    if (!data.clothes) data.clothes = {}
-    for (const slot of CLOTHING_SLOTS) {
-      if (!data.clothes[slot]) data.clothes[slot] = makeEmptySlot()
-      if (data.clothes[slot].rarity === 'none') data.clothes[slot] = makeEmptySlot()
-      if (data.clothes[slot].rarity === 'common' && data.clothes[slot].dur !== undefined && data.clothes[slot].dur <= 0) {
-        data.clothes[slot] = makeEmptySlot()
+    if (data.owner && data.owner.petStats) {
+      if (!data.owner.petClothes) data.owner.petClothes = makeDefaultPetClothes()
+      if (!data.owner.petHouse) data.owner.petHouse = 'broken'
+      if (!data.owner.petTraits) data.owner.petTraits = []
+      if (!data.owner.petDiary) data.owner.petDiary = []
+      if (!data.owner.petAchievements) data.owner.petAchievements = makeDefaultPetAchievements()
+      if (!data.owner.petSys) data.owner.petSys = makeDefaultPetSys()
+      for (const slot of CLOTHING_SLOTS) {
+        if (!data.owner.petClothes[slot]) data.owner.petClothes[slot] = makeEmptySlot()
       }
+      if (data.owner.petName && /^\d+$/.test(data.owner.petName)) data.owner.petName = null
+      if (data.owner.ownerName && /^\d+$/.test(data.owner.ownerName)) data.owner.ownerName = null
+      return
     }
-    if (!data.house) data.house = 'broken'
-    if (!data.traits) data.traits = []
-    if (!data.diary) data.diary = []
-    if (!data.achievements) data.achievements = { totalPet: 0, totalTrain: 0, totalHeal: 0, survivalDays: 0, clothesBroken: 0, totalCharm: 0 }
-    if (!data.sys) data.sys = {}
-    if (data.sys.goldCoins === undefined) data.sys.goldCoins = CONFIG.INITIAL_GOLD
-    if (!data.sys.achievements) data.sys.achievements = []
-    if (!data.sys.statHistory) data.sys.statHistory = { pain: [], energy: [], satiety: [], sensitivity: [], hygiene: [] }
-    if (!data.sys.firstReach) data.sys.firstReach = {}
     if (data.owner === undefined) data.owner = null
-    if (data.pet === undefined) data.pet = null
-    if (data.pet && data.pet.intimacy === undefined) data.pet.intimacy = 0
-    if (data.pet && data.pet.obedience === undefined) data.pet.obedience = 0
-    if (data.pet && data.pet.lewd === undefined) data.pet.lewd = 0
-    if (data.pet && data.pet.petName === undefined) data.pet.petName = null
-    if (data.pet && data.pet.petAvatar === undefined) data.pet.petAvatar = null
-    if (data.pet && data.pet.petName && /^\d+$/.test(data.pet.petName)) data.pet.petName = null
-    if (data.pet && data.pet.ownerName && /^\d+$/.test(data.pet.ownerName)) data.pet.ownerName = null
-
-  }
-
-  saveUserData(data, groupId) {
-    try {
-      this.initGroupDir(groupId)
-      const userId = data._userId
-      if (!userId) {
-        console.error('[Cwer] 保存数据失败: 缺少_userId')
-        return
-      }
-      const pctStats = ['satiety', 'energy', 'hygiene', 'pain', 'sensitivity']
-      for (const s of pctStats) {
-        if (data.stats[s] !== undefined) {
-          data.stats[s] = Math.max(0, Math.min(100, Math.round(data.stats[s] * 10) / 10))
-        }
-      }
-      if (data.pet) {
-        for (const s of ['intimacy', 'obedience', 'lewd']) {
-          if (data.pet[s] !== undefined) {
-            data.pet[s] = Math.max(0, Math.min(1314, Math.round(data.pet[s])))
-          }
-        }
-      }
-      const saveData = { ...data }
-      delete saveData._userId
-      const dataPath = this.getDataPath(groupId, userId)
-      fs.writeFileSync(dataPath, JSON.stringify(saveData, null, 2))
-    } catch (error) {
-      console.error('[Cwer] 保存数据失败:', error)
-    }
+    if (data.masterId === undefined) data.masterId = null
   }
 
   clamp(val, min, max) {
@@ -240,55 +304,58 @@ class DataManager {
     return this.clamp(value, 0, limit)
   }
 
-  clampAllStats(stats) {
-    const clampedStats = {}
-    for (const key in stats) {
-      clampedStats[key] = this.clampStat(key, stats[key])
-    }
-    return clampedStats
-  }
 
   addLog(data, text, color = '#ccc') {
+    const petSys = data.owner?.petSys
+    if (!petSys) return
     const now = beijingNow()
     const h = now.getHours().toString().padStart(2, '0')
     const m = now.getMinutes().toString().padStart(2, '0')
-    const day = calculateDays(data.sys.startTimestamp)
+    const day = calculateDays(petSys.startTimestamp)
     const timeStr = `${day}日 ${h}:${m}`
-    if (!data.diary) data.diary = []
-    data.diary.unshift({ time: timeStr, text, color })
-    if (data.diary.length > CONFIG.MAX_LOGS) {
-      data.diary = data.diary.slice(0, CONFIG.MAX_LOGS)
+    if (!data.owner.petDiary) data.owner.petDiary = []
+    data.owner.petDiary.unshift({ time: timeStr, text, color })
+    if (data.owner.petDiary.length > CONFIG.MAX_LOGS) {
+      data.owner.petDiary = data.owner.petDiary.slice(0, CONFIG.MAX_LOGS)
     }
   }
 
   updateStatHistory(data) {
-    if (!data.sys.statHistory) data.sys.statHistory = { pain: [], energy: [], satiety: [], sensitivity: [], hygiene: [] }
-    if (!data.sys.firstReach) data.sys.firstReach = {}
+    const petSys = data.owner?.petSys
+    const petStats = data.owner?.petStats
+    const petClothes = data.owner?.petClothes
+    const petAchievements = data.owner?.petAchievements
+    if (!petSys || !petStats) return
+    if (!petSys.statHistory) petSys.statHistory = { pain: [], energy: [], satiety: [], sensitivity: [], hygiene: [] }
+    if (!petSys.firstReach) petSys.firstReach = {}
     for (const stat of ['pain', 'energy', 'satiety', 'sensitivity', 'hygiene']) {
-      if (!data.sys.statHistory[stat]) data.sys.statHistory[stat] = []
-      const prevVal = data.sys.statHistory[stat].length > 0 ? data.sys.statHistory[stat][data.sys.statHistory[stat].length - 1] : null
-      if (prevVal !== null && prevVal <= 0 && data.stats[stat] > 0) {
-        data.sys.firstReach[`${stat}_revived`] = true
+      if (!petSys.statHistory[stat]) petSys.statHistory[stat] = []
+      const prevVal = petSys.statHistory[stat].length > 0 ? petSys.statHistory[stat][petSys.statHistory[stat].length - 1] : null
+      if (prevVal !== null && prevVal <= 0 && petStats[stat] > 0) {
+        petSys.firstReach[`${stat}_revived`] = true
       }
-      data.sys.statHistory[stat].push(data.stats[stat])
-      if (data.sys.statHistory[stat].length > 10) {
-        data.sys.statHistory[stat].shift()
+      petSys.statHistory[stat].push(petStats[stat])
+      if (petSys.statHistory[stat].length > 10) {
+        petSys.statHistory[stat].shift()
       }
     }
-
-    const allNaked = CLOTHING_SLOTS.every(slot => {
-      const c = data.clothes[slot]
-      return !c || c.rarity === 'none' || (c.rarity === 'common' && c.dur <= 0)
-    })
-    if (allNaked) {
-      data.achievements.nakedDays = (data.achievements.nakedDays || 0) + 1
-    } else {
-      data.achievements.nakedDays = 0
+    if (petClothes && petAchievements) {
+      const allNaked = CLOTHING_SLOTS.every(slot => {
+        const c = petClothes[slot]
+        return !c || c.rarity === 'none' || (c.rarity === 'common' && c.dur <= 0)
+      })
+      if (allNaked) {
+        petAchievements.nakedDays = (petAchievements.nakedDays || 0) + 1
+      } else {
+        petAchievements.nakedDays = 0
+      }
     }
   }
 
   checkConsecutive(data, stat, value, count) {
-    const history = data.sys.statHistory?.[stat] || []
+    const petSys = data.owner?.petSys
+    if (!petSys) return false
+    const history = petSys.statHistory?.[stat] || []
     if (history.length < count) return false
     for (let i = history.length - count; i < history.length; i++) {
       if (history[i] !== value) return false
@@ -297,10 +364,12 @@ class DataManager {
   }
 
   getTotalCharm(data) {
+    const petClothes = data.owner?.petClothes || data.clothes
+    if (!petClothes) return 0
     let total = 0
     for (const slot of CLOTHING_SLOTS) {
-      if (data.clothes[slot]?.rarity !== 'none' && data.clothes[slot]?.rarity !== 'common') {
-        total += data.clothes[slot]?.charm || 0
+      if (petClothes[slot]?.rarity !== 'none' && petClothes[slot]?.rarity !== 'common') {
+        total += petClothes[slot]?.charm || 0
       }
     }
     return total
@@ -315,8 +384,10 @@ class DataManager {
   }
 
   getTrainBonusSync(data) {
-    const s = data.stats
-    const isBonded = data.pet?.status === 'bonded'
+    const s = data.owner?.petStats
+    if (!s) return { bonus: 1, detail: ['1.00'] }
+    const isBonded = data.owner?.status === 'bonded'
+    const petClothes = data.owner?.petClothes || {}
     const parts = []
     parts.push(this._statBonus(s.satiety, CONFIG.SATIETY_OPTIMAL_MIN, CONFIG.SATIETY_OPTIMAL_MAX, 2))
     parts.push(this._statBonus(s.energy, CONFIG.ENERGY_OPTIMAL_MIN, CONFIG.ENERGY_OPTIMAL_MAX, 1))
@@ -327,7 +398,7 @@ class DataManager {
     parts.push(this._statBonus(s.hygiene, CONFIG.HYGIENE_OPTIMAL_MIN, CONFIG.HYGIENE_OPTIMAL_MAX, 1))
     let clothingBonus = 0
     for (const slot of CLOTHING_SLOTS) {
-      const item = data.clothes[slot]
+      const item = petClothes[slot]
       if (item && item.rarity !== 'none' && item.rarity !== 'common' && item.effect) {
         const rarity = EQUIPMENT_RARITY[item.rarity]
         if (rarity) clothingBonus += (rarity.multiplier - 1.0) * 0.1
@@ -347,7 +418,6 @@ class DataManager {
     return level.name
   }
 
-
   getEvasionChance(obedience) {
     for (const tier of CONFIG.EVASION_TIERS) {
       if (obedience <= tier.max) return tier.chance
@@ -356,17 +426,13 @@ class DataManager {
   }
 
   applyHouseBonus(data) {
-    const house = HOUSES[data.house]
+    if (!data.owner) return
+    const house = HOUSES[data.owner.petHouse]
     if (!house || !house.bonus) return
-    if (house.bonus.intimacyPct && data.pet && data.pet.intimacy > 0) {
-      const gain = Math.max(1, Math.floor(data.pet.intimacy * house.bonus.intimacyPct / 100))
-      data.pet.intimacy = Math.min(1314, data.pet.intimacy + gain)
+    if (house.bonus.intimacyPct && data.owner.intimacy > 0) {
+      const gain = Math.max(1, Math.floor(data.owner.intimacy * house.bonus.intimacyPct / 100))
+      data.owner.intimacy = Math.min(1314, data.owner.intimacy + gain)
     }
-  }
-
-  getHouseGoldBonus(data) {
-    const house = HOUSES[data.house]
-    return house?.bonus?.goldBonus || 0
   }
 
 
@@ -386,6 +452,7 @@ class DataManager {
     }
     return parts
   }
+
 
 }
 

@@ -1,20 +1,19 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import { CONFIG, getUserColor, CMD_PREFIX, NO_PET_MSG } from '../config/cfg.js'
 
-const PET_ACTIONS = '投喂|洗澡|陪玩|摸头|拥抱|送礼物|鞭打|打脸|打屁股|羞辱|禁闭|振动|狗叫|滴蜡|挠痒|强制鞭打|强制禁闭|强制羞辱'
-const ACTION_REG = new RegExp(`^${CMD_PREFIX}(${PET_ACTIONS}).*`)
-const ACTION_EXTRACT = new RegExp(`(${PET_ACTIONS})`)
+const ACTION_NAMES = '投喂|洗澡|陪玩|摸头|拥抱|送礼物|鞭打|打脸|打屁股|羞辱|禁闭|振动|狗叫|滴蜡|挠痒|强制鞭打|强制禁闭|强制羞辱'
+const ACTION_REG = new RegExp(`^${CMD_PREFIX}(${ACTION_NAMES}).*`)
+const ACTION_EXTRACT = new RegExp(`(${ACTION_NAMES})`)
 
-const PET_CARE_ACTIONS = new Set(['投喂', '洗澡', '陪玩', '摸头', '拥抱', '送礼物'])
-const TRAIN_ONLY_ACTIONS = new Set(['鞭打', '打脸', '打屁股', '羞辱', '禁闭', '振动', '狗叫', '滴蜡', '挠痒'])
+const CARE_ACTIONS = new Set(['投喂', '洗澡', '陪玩', '摸头', '拥抱', '送礼物'])
+const TRAIN_ACTIONS = new Set(['鞭打', '打脸', '打屁股', '羞辱', '禁闭', '振动', '狗叫', '滴蜡', '挠痒'])
 const FORCE_ACTIONS = new Set(['强制鞭打', '强制禁闭', '强制羞辱'])
-
 
 class InteractApp extends plugin {
   constructor() {
     super({
       name: 'Cwer-互动',
-      dsc: '主宠互动',
+      dsc: '宠物互动',
       event: 'message',
       priority: 5000,
       rule: [
@@ -25,147 +24,108 @@ class InteractApp extends plugin {
   }
 
   async interact(e) {
-    const match = e.msg.match(ACTION_EXTRACT)
-    if (!match) return false
+    const action = e.msg.match(ACTION_EXTRACT)?.[0]
+    if (!action) return false
 
-    const action = match[0]
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
     const userName = e.sender.card || e.sender.nickname
 
     const userData = this.sys.dm.readUserData(groupId, userId)
     if (!userData) return e.reply(NO_PET_MSG)
-    userData._userId = userId
 
     const hasOwner = userData.owner && userData.owner.petId
-    const hasPet = userData.pet && userData.pet.ownerId
+    const hasMaster = userData.masterId
 
-    const isTrainOrForce = TRAIN_ONLY_ACTIONS.has(action) || FORCE_ACTIONS.has(action)
-    const isPetCare = PET_CARE_ACTIONS.has(action)
+    const isTrainOrForce = TRAIN_ACTIONS.has(action) || FORCE_ACTIONS.has(action)
+    const isCare = CARE_ACTIONS.has(action)
 
     if (isTrainOrForce) {
-      if (!hasOwner) return e.reply('请先提升亲密度后缔约')
-      if (userData.owner.status !== 'bonded') return e.reply('请先提升亲密度后缔约')
+      if (!hasOwner) return e.reply('你没有宠物，无法使用调教指令！')
+      if (userData.owner.status !== 'bonded') return e.reply('请先与宠物缔约后才能使用调教指令！')
       return this.executeOwnerAction(e, userData, action, userName, userId, groupId)
     }
 
-    if (isPetCare) {
+    if (isCare) {
       if (hasOwner) return this.executeOwnerAction(e, userData, action, userName, userId, groupId)
-      if (hasPet) return this.executePetAction(e, userData, action, userName, userId, groupId)
+      if (hasMaster) {
+        const ownerData = this.sys.dm.readUserData(groupId, userData.masterId)
+        if (!ownerData || !ownerData.owner || ownerData.owner.status !== 'bonded') {
+          return e.reply('需要缔约后才能使用照顾类指令！')
+        }
+        ownerData._userId = userData.masterId
+        return this.executePetAction(e, ownerData, action, userName, userId, groupId)
+      }
       return e.reply(NO_PET_MSG)
     }
 
     return e.reply('未知的互动方式')
   }
 
-  async executeOwnerAction(e, userData, action, userName, userId, groupId) {
-    const petId = userData.owner.petId
-    const petData = this.sys.dm.readUserData(groupId, petId)
-    if (!petData) return e.reply('数据异常')
-    petData._userId = petId
-
-    if (petData.pet && petData.pet.coldWar && Date.now() < petData.pet.coldWarUntil) {
-      return e.reply('宠物正在冷战中，不想理你~')
-    }
+  async executeOwnerAction(e, ownerData, action, userName, userId, groupId) {
+    const o = ownerData.owner
+    if (!o) return e.reply(NO_PET_MSG)
 
     const now = Date.now()
-    const cooldownMs = CONFIG.INTERACT_COOLDOWN * 1000
-    if (petData.sys.lastInteractTime && now - petData.sys.lastInteractTime < cooldownMs) {
-      const remain = Math.ceil((cooldownMs - (now - petData.sys.lastInteractTime)) / 1000)
+    if (o.petSys.lastInteractTime && now - o.petSys.lastInteractTime < CONFIG.INTERACTION_COOLDOWN) {
+      const remain = Math.ceil((CONFIG.INTERACTION_COOLDOWN - (now - o.petSys.lastInteractTime)) / 1000)
       return e.reply(`宠物在回味中...请${remain}秒后再来`)
     }
-    petData.sys.lastInteractTime = now
 
-    if (!petData.sys.startTimestamp) petData.sys.startTimestamp = Date.now()
-
-    if (petData.pet && petData.pet.status === 'claimed' && petData.pet.obedience < 520) {
-      const evasionChance = this.sys.dm.getEvasionChance(petData.pet.obedience)
-      if (Math.random() < evasionChance) {
-        const evasionMsgs = CONFIG.TAUNT_MESSAGES.evasion
-        const evasionMsg = evasionMsgs[Math.floor(Math.random() * evasionMsgs.length)]
-        this.sys.dm.addLog(petData, `<span style="color:${getUserColor(userId)};font-weight:600">${userName}</span> 试图${action}，但宠物不配合！`, '#ff9900')
-        this.sys.dm.saveUserData(petData, groupId)
-        return e.reply(evasionMsg)
-      }
+    const evasionChance = this.sys.dm.getEvasionChance(o.obedience)
+    if (evasionChance > 0 && Math.random() * 100 < evasionChance) {
+      this.sys.dm.addLog(ownerData, `<span style="color:${getUserColor(userId)};font-weight:600">${userName}</span> 试图${action}，但宠物不配合！`, '#ff9900')
+      this.sys.dm.saveUserData(ownerData, groupId)
+      return e.reply(`宠物不配合！${action}失败了~`)
     }
 
-    const config = CONFIG.INTERACTION_EFFECTS[action]
-    if (config && config.goldCost) {
-      if (petData.sys.goldCoins < config.goldCost) return e.reply(`金币不足！需要 ${config.goldCost} 金币，当前只有 ${petData.sys.goldCoins} 金币。`)
-      petData.sys.goldCoins -= config.goldCost
-    }
+    const statsBefore = { ...o.petStats }
+    const petBefore = { intimacy: o.intimacy, obedience: o.obedience, lewd: o.lewd }
 
-    const warnings = []
-    const zeroStats = []
-    const isBonded = petData.pet?.status === 'bonded'
-    if (petData.stats.satiety <= 0) zeroStats.push('饱食')
-    if (petData.stats.energy <= 0) zeroStats.push('体力')
-    if (petData.stats.hygiene <= 0) zeroStats.push('清洁')
-    if (petData.stats.sensitivity <= 0) zeroStats.push('敏感')
-    if (isBonded && petData.stats.pain <= 0) zeroStats.push('疼痛')
-    if (zeroStats.length > 0) warnings.push(`${zeroStats.join('、')}已归零，互动效果将大幅降低！`)
-    if (petData.stats.satiety <= 0 && petData.stats.energy <= 0) warnings.push('💀 宠物已失去意识，像具尸体一样躺在地上...')
-    else if (petData.stats.satiety <= 0) warnings.push('💀 宠物饿得动弹不得，急需投喂！')
-    else if (petData.stats.energy <= 0) warnings.push('💀 宠物精疲力竭，连眼皮都抬不起来了...')
+    o.petSys.lastInteractTime = now
+    const result = this.sys.ie.executeOwnerInteraction(ownerData, action, userName, userId)
 
-    const statsBefore = { ...petData.stats }
-    const petBefore = petData.pet ? { ...petData.pet } : null
-
-    const result = this.sys.ie.executeOwnerInteraction(petData, action, userName, userId)
-
-    if (config) {
-      const goldReward = config.goldReward || 0
-      const forceMult = FORCE_ACTIONS.has(action) ? 1.5 : 1
-      petData.sys.goldCoins += Math.round(goldReward * forceMult) + this.sys.dm.getHouseGoldBonus(petData)
-    }
-
-    this.sys.es.tickTime(petData, CONFIG.INTERACTION_TIME_COST)
-    this.sys.dm.applyHouseBonus(petData)
-    this.sys.shop.checkAchievements(petData)
-
-    const diffParts = this.sys.dm.computeDiffParts(statsBefore, petData.stats, petBefore, petData.pet)
-    if (diffParts.length > 0) result.logText += ` | ${diffParts.join(', ')}`
-
-    this.sys.dm.addLog(petData, result.logText, result.logColor)
-    this.sys.dm.saveUserData(petData, groupId)
-
-    let outMsg = this.sys.ie.formatInteractionReply(result)
-    if (warnings.length > 0) outMsg += '\n⚠️ ' + warnings.join('\n⚠️ ')
-    await e.reply(outMsg)
-  }
-
-  async executePetAction(e, userData, action, userName, userId, groupId) {
-    const ownerId = userData.pet.ownerId
-    const ownerData = this.sys.dm.readUserData(groupId, ownerId)
-    if (!ownerData) return e.reply('数据异常')
-    ownerData._userId = ownerId
-
-    const now = Date.now()
-    const cooldownMs = CONFIG.INTERACT_COOLDOWN * 1000
-    if (ownerData.sys.lastInteractTime && now - ownerData.sys.lastInteractTime < cooldownMs) {
-      const remain = Math.ceil((cooldownMs - (now - ownerData.sys.lastInteractTime)) / 1000)
-      return e.reply(`宠物在回味中...请${remain}秒后再来`)
-    }
-    ownerData.sys.lastInteractTime = now
-
-    const petBefore = ownerData.pet ? { ...ownerData.pet } : null
-
-    const result = this.sys.ie.executePetInteraction(ownerData, action, userName, userId)
-
-    const config = CONFIG.INTERACTION_EFFECTS[action]
-    if (config) ownerData.sys.goldCoins += Math.round((config.goldReward || 0) * 0.5) + this.sys.dm.getHouseGoldBonus(ownerData)
+    const diffParts = this.sys.dm.computeDiffParts(statsBefore, o.petStats, petBefore, { intimacy: o.intimacy, obedience: o.obedience, lewd: o.lewd })
+    const replyText = this.sys.ie.formatInteractionReply(result)
+    const reply = diffParts.length > 0 ? `${replyText} | ${diffParts.join(', ')}` : replyText
 
     this.sys.es.tickTime(ownerData, CONFIG.INTERACTION_TIME_COST)
     this.sys.dm.applyHouseBonus(ownerData)
     this.sys.shop.checkAchievements(ownerData)
-
-    const diffParts = this.sys.dm.computeDiffParts({}, {}, petBefore, ownerData.pet)
-    if (diffParts.length > 0) result.logText += ` | ${diffParts.join(', ')}`
-
     this.sys.dm.addLog(ownerData, result.logText, result.logColor)
     this.sys.dm.saveUserData(ownerData, groupId)
 
-    await e.reply(this.sys.ie.formatInteractionReply(result))
+    await e.reply(reply)
+  }
+
+  async executePetAction(e, ownerData, action, userName, userId, groupId) {
+    const o = ownerData.owner
+    if (!o) return e.reply(NO_PET_MSG)
+
+    const now = Date.now()
+    if (o.petSys.lastInteractTime && now - o.petSys.lastInteractTime < CONFIG.INTERACTION_COOLDOWN) {
+      const remain = Math.ceil((CONFIG.INTERACTION_COOLDOWN - (now - o.petSys.lastInteractTime)) / 1000)
+      return e.reply(`还在回味中...请${remain}秒后再来`)
+    }
+
+
+    const statsBefore = { ...o.petStats }
+    const petBefore = { intimacy: o.intimacy, obedience: o.obedience, lewd: o.lewd }
+
+    o.petSys.lastInteractTime = now
+    const result = this.sys.ie.executePetInteraction(ownerData, action, userName, userId)
+
+    const diffParts = this.sys.dm.computeDiffParts(statsBefore, o.petStats, petBefore, { intimacy: o.intimacy, obedience: o.obedience, lewd: o.lewd })
+    const replyText = this.sys.ie.formatInteractionReply(result)
+    const reply = diffParts.length > 0 ? `${replyText} | ${diffParts.join(', ')}` : replyText
+
+    this.sys.es.tickTime(ownerData, CONFIG.INTERACTION_TIME_COST)
+    this.sys.dm.applyHouseBonus(ownerData)
+    this.sys.shop.checkAchievements(ownerData)
+    this.sys.dm.addLog(ownerData, result.logText, result.logColor)
+    this.sys.dm.saveUserData(ownerData, groupId)
+
+    await e.reply(reply)
   }
 }
 

@@ -1,5 +1,6 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG, CMD_PREFIX, NO_PET_MSG, NO_OWNER_MSG } from '../config/cfg.js'
+import { CONFIG, CMD_PREFIX, NO_PET_MSG, NO_OWNER_MSG, getUserColor } from '../config/cfg.js'
+import { segment } from 'oicq'
 
 const activeBondRequests = new Map()
 const releaseCooldowns = new Map()
@@ -9,18 +10,18 @@ class RelationApp extends plugin {
   constructor() {
     super({
       name: 'Cwer-关系',
-      dsc: '宠物关系管理',
+      dsc: '宠物领养/抢夺/缔约',
       event: 'message',
       priority: 5000,
       rule: [
-        { reg: `^${CMD_PREFIX}领养`, fnc: 'adopt' },
+        { reg: `^${CMD_PREFIX}领养.*`, fnc: 'adopt' },
         { reg: `^${CMD_PREFIX}抢.*`, fnc: 'steal' },
-        { reg: `^${CMD_PREFIX}缔约主人`, fnc: 'bondMaster' },
         { reg: `^${CMD_PREFIX}缔约.*`, fnc: 'bond' },
+        { reg: `^${CMD_PREFIX}缔约主人.*`, fnc: 'bondMaster' },
         { reg: `^${CMD_PREFIX}同意.*`, fnc: 'agreeBond' },
         { reg: `^${CMD_PREFIX}不同意.*`, fnc: 'rejectBond' },
-        { reg: `^${CMD_PREFIX}摆脱.*`, fnc: 'escape' },
-        { reg: `^${CMD_PREFIX}解除.*`, fnc: 'release' }
+        { reg: `^${CMD_PREFIX}解除.*`, fnc: 'release' },
+        { reg: `^${CMD_PREFIX}摆脱.*`, fnc: 'escape' }
       ]
     })
     this.sys = global.cwerSys
@@ -40,18 +41,17 @@ class RelationApp extends plugin {
     const ownerId = String(e.user_id)
     const ownerName = e.sender.card || e.sender.nickname
 
-    const ownerData = this.sys.dm.readUserData(groupId, ownerId) || this.sys.dm.resetUserData(groupId, ownerId)
+    const ownerData = this.sys.dm.readUserData(groupId, ownerId) || {}
     ownerData._userId = ownerId
     if (ownerData.owner && ownerData.owner.petId) {
       const msg = ownerData.owner.status === 'bonded' ? '你已经缔约了，无法再领养！' : '你已经养了宠物了，先解除关系再领养新的吧！'
       return e.reply(msg)
     }
 
-
     const petExisting = this.sys.dm.findRelationByPet(groupId, targetId)
     if (petExisting) {
       const petOwnerData = this.sys.dm.readUserData(groupId, petExisting.ownerId)
-      if (petOwnerData && petOwnerData.pet && petOwnerData.pet.status === 'bonded') {
+      if (petOwnerData && petOwnerData.owner && petOwnerData.owner.status === 'bonded') {
         return e.reply('该宠物已缔约，无法领养！')
       }
     }
@@ -87,13 +87,12 @@ class RelationApp extends plugin {
     } catch {}
 
     const ownerAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${ownerId}`
-    const petData = this.sys.dm.readUserData(groupId, targetId) || this.sys.dm.resetUserData(groupId, targetId)
-    petData._userId = targetId
+    const petData = this.sys.dm.readUserData(groupId, targetId) || { _userId: targetId }
 
     this.sys.dm.setupOwnerRelation(ownerData, petData, ownerName, petName, petAvatar, ownerAvatar)
-    if (!petData.sys.startTimestamp) petData.sys.startTimestamp = Date.now()
+    this.sys.dm.setupPetMasterLink(groupId, ownerId, targetId)
+    if (!ownerData.owner.petSys.startTimestamp) ownerData.owner.petSys.startTimestamp = Date.now()
     this.sys.dm.saveUserData(ownerData, groupId)
-    this.sys.dm.saveUserData(petData, groupId)
 
     await e.reply([`成功领养为宠物！快去宠爱ta吧~`, segment.at(Number(targetId))])
   }
@@ -103,7 +102,7 @@ class RelationApp extends plugin {
     const ownerId = String(e.user_id)
     const ownerName = e.sender.card || e.sender.nickname
 
-    const ownerData = this.sys.dm.readUserData(groupId, ownerId) || this.sys.dm.resetUserData(groupId, ownerId)
+    const ownerData = this.sys.dm.readUserData(groupId, ownerId) || {}
     ownerData._userId = ownerId
     if (ownerData.owner && ownerData.owner.petId) {
       const msg = ownerData.owner.status === 'bonded' ? '你已经缔约了，无法再领养！' : '你已经养了宠物了，先解除关系再领养新的吧！'
@@ -126,10 +125,9 @@ class RelationApp extends plugin {
       const rel = this.sys.dm.findRelationByPet(groupId, uid)
       if (rel && rel.ownerId === ownerId) continue
       if (rel) {
-        const d = this.sys.dm.readUserData(groupId, uid)
-        if (d && d.pet && d.pet.status === 'bonded') continue
+        const d = this.sys.dm.readUserData(groupId, rel.ownerId)
+        if (d && d.owner && d.owner.status === 'bonded') continue
       }
-
       candidates.push({ id: uid, name: info?.card || info?.nickname || null })
     }
 
@@ -156,13 +154,12 @@ class RelationApp extends plugin {
     }
 
     const ownerAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${ownerId}`
-    const petData = this.sys.dm.readUserData(groupId, target.id) || this.sys.dm.resetUserData(groupId, target.id)
-    petData._userId = target.id
+    const petData = this.sys.dm.readUserData(groupId, target.id) || { _userId: target.id }
 
     this.sys.dm.setupOwnerRelation(ownerData, petData, ownerName, target.name, `https://q1.qlogo.cn/g?b=qq&s=100&nk=${target.id}`, ownerAvatar)
-    if (!petData.sys.startTimestamp) petData.sys.startTimestamp = Date.now()
+    this.sys.dm.setupPetMasterLink(groupId, ownerId, target.id)
+    if (!ownerData.owner.petSys.startTimestamp) ownerData.owner.petSys.startTimestamp = Date.now()
     this.sys.dm.saveUserData(ownerData, groupId)
-    this.sys.dm.saveUserData(petData, groupId)
 
     await e.reply([`命运选择了你！领养成功~`, segment.at(Number(target.id))])
   }
@@ -181,50 +178,47 @@ class RelationApp extends plugin {
     const ownerId = String(e.user_id)
     const ownerName = e.sender.card || e.sender.nickname
 
-    const ownerData = this.sys.dm.readUserData(groupId, ownerId) || this.sys.dm.resetUserData(groupId, ownerId)
+    const ownerData = this.sys.dm.readUserData(groupId, ownerId) || {}
     ownerData._userId = ownerId
     if (ownerData.owner && ownerData.owner.petId) {
       const msg = ownerData.owner.status === 'bonded' ? '你已经缔约了，无法再抢夺！' : '你已经养了宠物了，先解除关系再抢别人的吧！'
       return e.reply(msg)
     }
 
-
     const petRel = this.sys.dm.findRelationByPet(groupId, targetId)
     if (petRel) {
-      const petData = this.sys.dm.readUserData(groupId, targetId)
-      if (petData && petData.pet && petData.pet.status === 'bonded') {
+      const petOwnerData = this.sys.dm.readUserData(groupId, petRel.ownerId)
+      if (petOwnerData && petOwnerData.owner && petOwnerData.owner.status === 'bonded') {
         return e.reply('该宠物已缔约，无法抢夺！')
       }
+    }
 
-      if (Math.random() > CONFIG.ADOPT_CHANCE) {
-        const taunts = CONFIG.TAUNT_MESSAGES.stealFail
-        const fail = taunts[Math.floor(Math.random() * taunts.length)]
-        return e.reply(`抢夺失败！${fail}`)
+    if (Math.random() > CONFIG.STEAL_CHANCE) {
+      const taunts = CONFIG.TAUNT_MESSAGES.stealFail
+      const fail = taunts[Math.floor(Math.random() * taunts.length)]
+      return e.reply(`抢夺失败！${fail}`)
+    }
+
+    if (petRel && petRel.ownerId === ownerId) {
+      return e.reply('你不能抢自己的宠物！')
+    }
+
+    if (petRel) {
+      const oldOwnerData = this.sys.dm.readUserData(groupId, petRel.ownerId)
+      if (oldOwnerData) {
+        const oldPetData = this.sys.dm.extractPetData(oldOwnerData)
+        this.sys.dm.clearOwnerRelation(oldOwnerData)
+        this.sys.dm.saveUserData(oldOwnerData, groupId)
+
+        const ownerAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${ownerId}`
+        oldPetData._userId = targetId
+        this.sys.dm.setupOwnerRelation(ownerData, oldPetData, ownerName, oldPetData.pet?.petName || null, `https://q1.qlogo.cn/g?b=qq&s=100&nk=${targetId}`, ownerAvatar)
+        this.sys.dm.setupPetMasterLink(groupId, ownerId, targetId)
+        if (!ownerData.owner.petSys.startTimestamp) ownerData.owner.petSys.startTimestamp = Date.now()
+        this.sys.dm.saveUserData(ownerData, groupId)
+
+        return e.reply([`成功抢走了 `, segment.at(Number(targetId)), ` 太厉害了！`])
       }
-
-      const oldOwnerName = petData?.pet?.ownerName || '某人'
-      const oldOwnerId = petData?.pet?.ownerId
-      let petName = null
-      if (oldOwnerId) {
-        const oldOwnerData = this.sys.dm.readUserData(groupId, oldOwnerId)
-        if (oldOwnerData) {
-          petName = oldOwnerData.owner?.petName || null
-          oldOwnerData._userId = oldOwnerId
-          this.sys.dm.clearOwnerRelation(oldOwnerData)
-          this.sys.dm.saveUserData(oldOwnerData, groupId)
-        }
-      }
-
-      const ownerAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${ownerId}`
-      petData._userId = targetId
-      const petAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${targetId}`
-
-      this.sys.dm.setupOwnerRelation(ownerData, petData, ownerName, petName, petAvatar, ownerAvatar)
-      if (!petData.sys.startTimestamp) petData.sys.startTimestamp = Date.now()
-      this.sys.dm.saveUserData(ownerData, groupId)
-      this.sys.dm.saveUserData(petData, groupId)
-
-      return e.reply([`成功抢走了 `, segment.at(Number(targetId)), ` 太厉害了！`])
     }
 
     return this.adoptTarget(e, targetId)
@@ -233,8 +227,9 @@ class RelationApp extends plugin {
   async stealRandom(e) {
     const groupId = String(e.group_id)
     const ownerId = String(e.user_id)
+    const ownerName = e.sender.card || e.sender.nickname
 
-    const ownerData = this.sys.dm.readUserData(groupId, ownerId) || this.sys.dm.resetUserData(groupId, ownerId)
+    const ownerData = this.sys.dm.readUserData(groupId, ownerId) || {}
     ownerData._userId = ownerId
     if (ownerData.owner && ownerData.owner.petId) {
       const msg = ownerData.owner.status === 'bonded' ? '你已经缔约了，无法再抢夺！' : '你已经养了宠物了，先解除关系再抢别人的吧！'
@@ -242,50 +237,30 @@ class RelationApp extends plugin {
     }
 
     const allRels = this.sys.dm.findAllRelations(groupId)
-    const stealable = []
-    for (const rel of allRels) {
-      if (rel.ownerId === ownerId) continue
-      const d = this.sys.dm.readUserData(groupId, rel.petId)
-      if (d && d.pet && d.pet.status !== 'bonded' && d.pet.ownerId !== ownerId) {
-        stealable.push(rel)
-      }
-    }
+    const candidates = allRels.filter(r => r.ownerId !== ownerId)
+    if (candidates.length === 0) return e.reply('没有可抢的宠物~')
 
-    if (stealable.length === 0) {
-      return this.adoptRandom(e)
-    }
+    const target = candidates[Math.floor(Math.random() * candidates.length)]
 
-    const target = stealable[Math.floor(Math.random() * stealable.length)]
-    const petData = this.sys.dm.readUserData(groupId, target.petId)
-
-    if (Math.random() > CONFIG.ADOPT_CHANCE) {
+    if (Math.random() > CONFIG.STEAL_CHANCE) {
       const taunts = CONFIG.TAUNT_MESSAGES.stealFail
       const fail = taunts[Math.floor(Math.random() * taunts.length)]
       return e.reply(`抢夺失败！${fail}`)
     }
 
-    const oldOwnerName = petData?.pet?.ownerName || '某人'
-    const oldOwnerId = petData?.pet?.ownerId
-    let petName = null
-    if (oldOwnerId) {
-      const oldOwnerData = this.sys.dm.readUserData(groupId, oldOwnerId)
-      if (oldOwnerData) {
-        petName = oldOwnerData.owner?.petName || null
-        oldOwnerData._userId = oldOwnerId
-        this.sys.dm.clearOwnerRelation(oldOwnerData)
-        this.sys.dm.saveUserData(oldOwnerData, groupId)
-      }
-    }
+    const oldOwnerData = this.sys.dm.readUserData(groupId, target.ownerId)
+    if (!oldOwnerData) return e.reply('数据异常')
 
-    const ownerName = e.sender.card || e.sender.nickname
+    const oldPetData = this.sys.dm.extractPetData(oldOwnerData)
+    this.sys.dm.clearOwnerRelation(oldOwnerData)
+    this.sys.dm.saveUserData(oldOwnerData, groupId)
+
     const ownerAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${ownerId}`
-    const petAvatar = `https://q1.qlogo.cn/g?b=qq&s=100&nk=${target.petId}`
-
-    petData._userId = target.petId
-    this.sys.dm.setupOwnerRelation(ownerData, petData, ownerName, petName, petAvatar, ownerAvatar)
-    if (!petData.sys.startTimestamp) petData.sys.startTimestamp = Date.now()
+    oldPetData._userId = target.petId
+    this.sys.dm.setupOwnerRelation(ownerData, oldPetData, ownerName, oldPetData.pet?.petName || null, `https://q1.qlogo.cn/g?b=qq&s=100&nk=${target.petId}`, ownerAvatar)
+    this.sys.dm.setupPetMasterLink(groupId, ownerId, target.petId)
+    if (!ownerData.owner.petSys.startTimestamp) ownerData.owner.petSys.startTimestamp = Date.now()
     this.sys.dm.saveUserData(ownerData, groupId)
-    this.sys.dm.saveUserData(petData, groupId)
 
     await e.reply([`成功抢走了 `, segment.at(Number(target.petId)), ` 太厉害了！`])
   }
@@ -293,20 +268,18 @@ class RelationApp extends plugin {
   async bond(e) {
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
-    const userName = e.sender.card || e.sender.nickname
 
     const userData = this.sys.dm.readUserData(groupId, userId)
     if (!userData) return e.reply(NO_PET_MSG)
 
     if (userData.owner && userData.owner.petId && userData.owner.status !== 'bonded') {
-      const petData = this.sys.dm.readUserData(groupId, userData.owner.petId)
-      if (!petData) return e.reply('数据异常')
-      if (!petData.pet || petData.pet.intimacy < 99) {
-        return e.reply(`亲密度不足99，当前等级：${this.sys.dm.getIntimacyLevel(petData.pet?.intimacy || 0)}`)
+      const petId = userData.owner.petId
+      if (!petId) return e.reply(NO_PET_MSG)
+      if (userData.owner.intimacy < 99) {
+        return e.reply(`亲密度不足99，当前等级：${this.sys.dm.getIntimacyLevel(userData.owner.intimacy)}`)
       }
 
-      const petId = userData.owner.petId
-      activeBondRequests.set(`${groupId}_${petId}`, { requesterId: userId, requesterName: userName, type: 'owner', time: Date.now() })
+      activeBondRequests.set(`${groupId}_${petId}`, { requesterId: userId, requesterName: e.sender.card || e.sender.nickname, type: 'owner', time: Date.now() })
       return e.reply([
         `向宠物发起了缔约请求！\n⚠️ 缔约后双方所有其他宠物/主人关系将被清除\n`,
         segment.at(Number(petId)),
@@ -314,19 +287,17 @@ class RelationApp extends plugin {
       ])
     }
 
-    if (userData.pet && userData.pet.ownerId && userData.pet.status !== 'bonded') {
-      if (userData.pet.intimacy < 99) {
-        return e.reply(`亲密度不足99，当前等级：${this.sys.dm.getIntimacyLevel(userData.pet.intimacy)}`)
-      }
-
-      const ownerData = this.sys.dm.readUserData(groupId, userData.pet.ownerId)
+    if (userData.masterId) {
+      const ownerData = this.sys.dm.readUserData(groupId, userData.masterId)
       if (!ownerData) return e.reply('数据异常')
 
-      const notifications = this.executeBond(groupId, userData, ownerData, userId, userData.pet.ownerId)
+      const notifications = this.executeBond(groupId, ownerData, userData, userData.masterId, userId)
       let msg = '缔约成功！解锁更多姿势了呢'
       if (notifications.length > 0) msg += '\n' + notifications.join('\n')
-      await e.reply([msg, segment.at(Number(userData.pet.ownerId))])
-      await this.sys.renderer.renderPanel(e, userData)
+      await e.reply([msg, segment.at(Number(userData.masterId))])
+      const petData = this.sys.dm.extractPetData(ownerData)
+      petData._userId = userId
+      await this.sys.renderer.renderPanel(e, petData, ownerData)
       return
     }
 
@@ -336,32 +307,33 @@ class RelationApp extends plugin {
   async bondMaster(e) {
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
-    const userName = e.sender.card || e.sender.nickname
 
     const userData = this.sys.dm.readUserData(groupId, userId)
-    if (!userData || !userData.pet || !userData.pet.ownerId) {
+    if (!userData || !userData.masterId) {
       return e.reply(NO_OWNER_MSG)
     }
     userData._userId = userId
 
-    if (userData.pet.status === 'bonded') {
-      return e.reply('已经和主人缔约了！')
-    }
-
-    if (userData.pet.intimacy < 99) {
-      return e.reply(`亲密度不足99，当前等级：${this.sys.dm.getIntimacyLevel(userData.pet.intimacy)}`)
-    }
-
-    const ownerId = userData.pet.ownerId
+    const ownerId = userData.masterId
     const ownerData = this.sys.dm.readUserData(groupId, ownerId)
     if (!ownerData) return e.reply('数据异常')
     ownerData._userId = ownerId
+
+    if (ownerData.owner && ownerData.owner.status === 'bonded') {
+      return e.reply('已经和主人缔约了！')
+    }
+
+    if (ownerData.owner.intimacy < 99) {
+      return e.reply(`亲密度不足99，当前等级：${this.sys.dm.getIntimacyLevel(ownerData.owner.intimacy)}`)
+    }
 
     const notifications = this.executeBond(groupId, ownerData, userData, ownerId, userId)
     let msg = '缔约成功！解锁更多姿势了呢'
     if (notifications.length > 0) msg += '\n' + notifications.join('\n')
     await e.reply([msg, segment.at(Number(ownerId))])
-    await this.sys.renderer.renderPanel(e, userData)
+    const petData = this.sys.dm.extractPetData(ownerData)
+    petData._userId = userId
+    await this.sys.renderer.renderPanel(e, petData, ownerData)
   }
 
   async agreeBond(e) {
@@ -388,20 +360,20 @@ class RelationApp extends plugin {
       if (!requesterData.owner || requesterData.owner.petId !== userId) return e.reply('关系已变更')
 
       notifications = this.executeBond(groupId, requesterData, userData, request.requesterId, userId)
-    } else {
-      const requesterData = this.sys.dm.readUserData(groupId, request.requesterId)
-      if (!requesterData) return e.reply('数据异常')
-      requesterData._userId = request.requesterId
-      if (!requesterData.pet || requesterData.pet.ownerId !== userId) return e.reply('关系已变更')
-
-      notifications = this.executeBond(groupId, userData, requesterData, userId, request.requesterId)
     }
 
     activeBondRequests.delete(key)
     let msg = '缔约成功！解锁更多姿势了呢'
     if (notifications.length > 0) msg += '\n' + notifications.join('\n')
     await e.reply([msg, segment.at(Number(request.requesterId))])
-    await this.sys.renderer.renderPanel(e, userData)
+    const ownerDataForRender = request.type === 'owner'
+      ? this.sys.dm.readUserData(groupId, request.requesterId)
+      : userData
+    const petData = this.sys.dm.extractPetData(ownerDataForRender)
+    if (petData) {
+      petData._userId = userId
+      await this.sys.renderer.renderPanel(e, petData, ownerDataForRender)
+    }
   }
 
   async rejectBond(e) {
@@ -411,11 +383,6 @@ class RelationApp extends plugin {
 
     const request = activeBondRequests.get(key)
     if (!request) return false
-    if (Date.now() - request.time > CONFIG.BOND_REQUEST_TIMEOUT * 1000) {
-      activeBondRequests.delete(key)
-      return e.reply(`缔约请求已超时，视为拒绝 ${request.requesterName} 的缔约请求`)
-    }
-
     activeBondRequests.delete(key)
     await e.reply(`已拒绝 ${request.requesterName} 的缔约请求`)
   }
@@ -424,18 +391,18 @@ class RelationApp extends plugin {
     const notifications = []
 
     const savedPetName = ownerSideData.owner?.petName || null
-    const savedOwnerName = petSideData.pet?.ownerName || null
+    const savedOwnerName = ownerSideData.owner?.ownerName || null
 
-    if (petSideData.pet && petSideData.pet.ownerId && petSideData.pet.ownerId !== ownerId) {
-      const oldOwnerId = petSideData.pet.ownerId
-      const oldOwnerData = this.sys.dm.readUserData(groupId, oldOwnerId)
-      if (oldOwnerData) {
-        oldOwnerData._userId = oldOwnerId
-        notifications.push(`已解除与 ${oldOwnerData.owner?.petName || '某人'} 的主人关系`)
-        this.sys.dm.clearOwnerRelation(oldOwnerData)
-        this.sys.dm.saveUserData(oldOwnerData, groupId)
+    if (petSideData.owner && petSideData.owner.petId && petSideData.owner.petId !== petId) {
+      const oldPetId = petSideData.owner.petId
+      const oldPetData2 = this.sys.dm.readUserData(groupId, oldPetId)
+      if (oldPetData2) {
+        oldPetData2._userId = oldPetId
+        notifications.push(`已解除与 ${oldPetData2.owner?.petName || '宠物'} 的主人宠物关系`)
+        this.sys.dm.clearOwnerRelation(oldPetData2)
+        this.sys.dm.saveUserData(oldPetData2, groupId)
       }
-      this.sys.dm.clearPetRelation(petSideData)
+      this.sys.dm.clearOwnerRelation(petSideData)
     }
 
     if (ownerSideData.owner && ownerSideData.owner.petId && ownerSideData.owner.petId !== petId) {
@@ -443,59 +410,35 @@ class RelationApp extends plugin {
       const oldPetData = this.sys.dm.readUserData(groupId, oldPetId)
       if (oldPetData) {
         oldPetData._userId = oldPetId
-        notifications.push(`已解除与 ${oldPetData.pet?.ownerName || '宠物'} 的宠物关系`)
-        this.sys.dm.clearPetRelation(oldPetData)
+        notifications.push(`已解除与 ${oldPetData.owner?.petName || '宠物'} 的宠物关系`)
+        this.sys.dm.clearOwnerRelation(oldPetData)
         this.sys.dm.saveUserData(oldPetData, groupId)
       }
       this.sys.dm.clearOwnerRelation(ownerSideData)
-    }
-
-    if (petSideData.owner && petSideData.owner.petId && petSideData.owner.petId !== ownerId) {
-      const oldPetId2 = petSideData.owner.petId
-      const oldPetData2 = this.sys.dm.readUserData(groupId, oldPetId2)
-      if (oldPetData2) {
-        oldPetData2._userId = oldPetId2
-        notifications.push(`已解除与 ${oldPetData2.pet?.ownerName || '宠物'} 的主人宠物关系`)
-        this.sys.dm.clearPetRelation(oldPetData2)
-        this.sys.dm.saveUserData(oldPetData2, groupId)
-      }
-      this.sys.dm.clearOwnerRelation(petSideData)
-    }
-
-    if (ownerSideData.pet && ownerSideData.pet.ownerId && ownerSideData.pet.ownerId !== petId) {
-      const oldOwnerId2 = ownerSideData.pet.ownerId
-      const oldOwnerData2 = this.sys.dm.readUserData(groupId, oldOwnerId2)
-      if (oldOwnerData2) {
-        oldOwnerData2._userId = oldOwnerId2
-        notifications.push(`已解除与 ${oldOwnerData2.owner?.petName || '某人'} 的主人关系`)
-        this.sys.dm.clearOwnerRelation(oldOwnerData2)
-        this.sys.dm.saveUserData(oldOwnerData2, groupId)
-      }
-      this.sys.dm.clearPetRelation(ownerSideData)
     }
 
     ownerSideData.owner = {
       petId,
       petName: savedPetName,
       petAvatar: `https://q1.qlogo.cn/g?b=qq&s=100&nk=${petId}`,
-      status: 'bonded',
-      createdAt: ownerSideData.owner?.createdAt || Date.now(),
-      bondedAt: Date.now()
-    }
-
-    petSideData.pet = {
-      ownerId,
       ownerName: savedOwnerName,
       ownerAvatar: `https://q1.qlogo.cn/g?b=qq&s=100&nk=${ownerId}`,
-      petName: savedPetName,
-      petAvatar: `https://q1.qlogo.cn/g?b=qq&s=100&nk=${petId}`,
       status: 'bonded',
-      createdAt: petSideData.pet?.createdAt || Date.now(),
+      createdAt: ownerSideData.owner?.createdAt || Date.now(),
       bondedAt: Date.now(),
-      intimacy: petSideData.pet?.intimacy || 0,
-      obedience: petSideData.pet?.obedience || 0,
-      lewd: petSideData.pet?.lewd || 0
+      intimacy: ownerSideData.owner?.intimacy || 0,
+      obedience: ownerSideData.owner?.obedience || 0,
+      lewd: ownerSideData.owner?.lewd || 0,
+      petStats: ownerSideData.owner?.petStats || {},
+      petClothes: ownerSideData.owner?.petClothes || {},
+      petHouse: ownerSideData.owner?.petHouse || 'broken',
+      petTraits: ownerSideData.owner?.petTraits || [],
+      petDiary: ownerSideData.owner?.petDiary || [],
+      petAchievements: ownerSideData.owner?.petAchievements || {},
+      petSys: ownerSideData.owner?.petSys || {}
     }
+
+    petSideData.masterId = ownerId
 
     this.sys.dm.saveUserData(ownerSideData, groupId)
     this.sys.dm.saveUserData(petSideData, groupId)
@@ -520,38 +463,38 @@ class RelationApp extends plugin {
 
     if (userData.owner && userData.owner.petId) {
       const petId = userData.owner.petId
-      const petData = this.sys.dm.readUserData(groupId, petId)
       const petName = userData.owner.petName || '宠物'
       const statusText = userData.owner.status === 'bonded' ? '缔约' : '领养'
 
       this.sys.dm.clearOwnerRelation(userData)
-      this.sys.dm.saveUserData(userData, groupId)
 
-      if (petData) {
-        petData._userId = petId
-        this.sys.dm.clearPetRelation(petData)
-        this.sys.dm.saveUserData(petData, groupId)
+      const petFileData = this.sys.dm.readUserData(groupId, petId)
+      if (petFileData) {
+        petFileData._userId = petId
+        petFileData.masterId = null
+        this.sys.dm.saveUserData(petFileData, groupId)
       }
+
+      this.sys.dm.saveUserData(userData, groupId)
 
       releaseCooldowns.set(cooldownKey, Date.now())
       return e.reply(`已解除与 ${petName} 的${statusText}关系`)
     }
 
-    if (userData.pet && userData.pet.ownerId) {
-      if (userData.pet.status !== 'bonded') {
+    if (userData.masterId) {
+      const ownerData = this.sys.dm.readUserData(groupId, userData.masterId)
+      if (!ownerData) return e.reply('数据异常')
+
+      if (ownerData.owner && ownerData.owner.status !== 'bonded') {
         return e.reply('领养阶段请使用 #宠物摆脱 来脱离主人')
       }
-      const ownerData = this.sys.dm.readUserData(groupId, userData.pet.ownerId)
-      const ownerName = userData.pet.ownerName || '主人'
+      const ownerName = ownerData.owner?.ownerName || '主人'
 
-      this.sys.dm.clearPetRelation(userData)
+      this.sys.dm.clearOwnerRelation(ownerData)
+      userData.masterId = null
+
+      this.sys.dm.saveUserData(ownerData, groupId)
       this.sys.dm.saveUserData(userData, groupId)
-
-      if (ownerData) {
-        ownerData._userId = userData.pet.ownerId
-        this.sys.dm.clearOwnerRelation(ownerData)
-        this.sys.dm.saveUserData(ownerData, groupId)
-      }
 
       releaseCooldowns.set(cooldownKey, Date.now())
       return e.reply(`已解除与 ${ownerName} 的缔约关系`)
@@ -572,27 +515,27 @@ class RelationApp extends plugin {
     }
 
     const userData = this.sys.dm.readUserData(groupId, userId)
-    if (!userData || !userData.pet || !userData.pet.ownerId) {
+    if (!userData || !userData.masterId) {
       return e.reply(NO_OWNER_MSG)
     }
     userData._userId = userId
 
-    if (userData.pet.status === 'bonded') {
+    const ownerData = this.sys.dm.readUserData(groupId, userData.masterId)
+    if (ownerData && ownerData.owner && ownerData.owner.status === 'bonded') {
       return e.reply('缔约关系请使用 #宠物解除')
     }
 
-    const ownerName = userData.pet.ownerName || '主人'
-    const ownerId = userData.pet.ownerId
-    const ownerData = this.sys.dm.readUserData(groupId, ownerId)
-
-    this.sys.dm.clearPetRelation(userData)
-    this.sys.dm.saveUserData(userData, groupId)
+    const ownerName = ownerData?.owner?.ownerName || '主人'
 
     if (ownerData) {
-      ownerData._userId = ownerId
       this.sys.dm.clearOwnerRelation(ownerData)
-      this.sys.dm.saveUserData(ownerData, groupId)
+      ownerData._userId = userData.masterId
     }
+
+    userData.masterId = null
+
+    if (ownerData) this.sys.dm.saveUserData(ownerData, groupId)
+    this.sys.dm.saveUserData(userData, groupId)
 
     escapeCooldowns.set(cooldownKey, Date.now())
     return e.reply(`已摆脱与 ${ownerName} 的领养关系`)
