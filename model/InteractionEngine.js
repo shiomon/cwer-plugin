@@ -51,11 +51,17 @@ class InteractionEngine {
     let logText = this.getLogText(userName, isCrit, isForce, petName, action, userId)
 
     if (DUR_LOSS_ACTIONS.has(action)) {
-      const broken = this.damageRandomCommonClothing(petData)
+      const broken = this.damageRandomCommonClothing(petData, config.forceBreakClothes)
       if (broken.length > 0) {
         const names = broken.map(c => c.name).join('、')
         logText += `\n【爆衣警告】${names} 被彻底撕碎了！`
       }
+    }
+
+    if (config.forceExtraHunger) {
+      petData.stats.satiety = Math.max(0, petData.stats.satiety - config.forceExtraHunger)
+      petData.stats.energy = Math.max(0, petData.stats.energy - config.forceExtraHunger)
+      logText += `\n【禁闭惩罚】饱食和体力额外降低${config.forceExtraHunger}！`
     }
 
     return { logText, replyText: logText, logColor, roll }
@@ -175,7 +181,7 @@ class InteractionEngine {
     if (modifier) this.es.applyModifier(data.stats, modifier)
   }
 
-  damageRandomCommonClothing(data) {
+  damageRandomCommonClothing(data, forceBreak = false) {
     const commonSlots = CLOTHING_SLOTS.filter(slot => {
       const item = data.clothes[slot]
       return item && item.rarity === 'common' && item.dur > 0
@@ -184,7 +190,7 @@ class InteractionEngine {
     const targetSlot = commonSlots[Math.floor(Math.random() * commonSlots.length)]
     const item = data.clothes[targetSlot]
     const broken = []
-    if (Math.random() < 0.1) {
+    if (forceBreak || Math.random() < 0.1) {
       item.dur = 0
       data.achievements.destroyMasterCount = (data.achievements.destroyMasterCount || 0) + 1
     } else {

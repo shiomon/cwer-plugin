@@ -173,17 +173,17 @@ const CONFIG = {
       critThreshold: 88, type: 'train', goldReward: 10
     },
     强制鞭打: {
-      obedienceGain: 12, painGain: 30, intimacyLoss: 20,
+      obedienceGain: 12, painGain: 30, intimacyLoss: 20, lewdGain: 8,
       critObedienceGain: 24, critPainGain: 50, critIntimacyLoss: 35,
-      critThreshold: 0, type: 'force', goldReward: 15, forceMultiplier: 1.5
+      critThreshold: 0, type: 'force', goldReward: 15, forceMultiplier: 1.5, forceBreakClothes: true
     },
     强制禁闭: {
-      obedienceGain: 15, satietyLoss: 30, energyLoss: 30, intimacyLoss: 25,
+      obedienceGain: 15, satietyLoss: 30, energyLoss: 30, intimacyLoss: 25, lewdGain: 5,
       critObedienceGain: 30, critIntimacyLoss: 40,
-      critThreshold: 0, type: 'force', goldReward: 20, forceMultiplier: 1.5
+      critThreshold: 0, type: 'force', goldReward: 20, forceMultiplier: 1.5, forceExtraHunger: 20
     },
     强制羞辱: {
-      obedienceGain: 15, intimacyLoss: 20,
+      obedienceGain: 15, intimacyLoss: 20, lewdGain: 15,
       critObedienceGain: 30, critIntimacyLoss: 35,
       critThreshold: 0, type: 'force', goldReward: 15, forceMultiplier: 1.5
     }
