@@ -1,7 +1,7 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { CONFIG, CMD_PREFIX, NO_PET_MSG } from '../config/cfg.js'
+import { CONFIG, CMD_PREFIX, NO_PET_MSG, GROUP_ONLY_MSG } from '../config/cfg.js'
 import { renderTemplate } from '../model/html-inject.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -22,6 +22,7 @@ class AchievementApp extends plugin {
   }
 
   async showAchievements(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 

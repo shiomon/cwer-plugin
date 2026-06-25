@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG, CMD_PREFIX, NO_PET_MSG } from '../config/cfg.js'
+import { CONFIG, CMD_PREFIX, NO_PET_MSG, GROUP_ONLY_MSG } from '../config/cfg.js'
 import { renderTemplate } from '../model/html-inject.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -34,6 +34,7 @@ class ShopApp extends plugin {
   }
 
   async buyItem(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const itemText = e.msg.replace(BUY_ITEM_REG, '').trim()
     const groupId = String(e.group_id)
     const userId = String(e.user_id)

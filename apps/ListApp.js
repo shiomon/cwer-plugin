@@ -1,7 +1,7 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { HOUSES, CMD_PREFIX } from '../config/cfg.js'
+import { HOUSES, CMD_PREFIX, GROUP_ONLY_MSG } from '../config/cfg.js'
 import { renderTemplate } from '../model/html-inject.js'
 import { calculateDays } from '../model/utils.js'
 
@@ -23,6 +23,7 @@ class ListApp extends plugin {
   }
 
   async showList(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const groupId = String(e.group_id)
     const relations = this.sys.dm.findAllRelations(groupId)
 

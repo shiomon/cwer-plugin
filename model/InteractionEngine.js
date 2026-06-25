@@ -44,12 +44,16 @@ class InteractionEngine {
 
     const locationModifier = this.es.getLocationModifier(ownerData, action)
 
+    const before = this._snapshotStats(o)
     this.applyAction(ownerData, action, config, isCrit, baseBonus, locationModifier)
 
     const meta = ACTION_META[action]
     const logColor = isCrit ? meta.critColor : meta.normalColor
     const petName = o.petName || '宠物'
     let logText = this.getLogText(userName, isCrit, isForce, petName, action, userId)
+
+    const diff = this._diffStats(before, o)
+    if (diff) logText += `\n${diff}`
 
     if (DUR_LOSS_ACTIONS.has(action)) {
       const broken = this.damageRandomCommonClothing(ownerData, config.forceBreakClothes)
@@ -89,12 +93,16 @@ class InteractionEngine {
     const { bonus: baseBonus } = this.dm.getTrainBonusSync(ownerData)
     const locationModifier = this.es.getLocationModifier(ownerData, action)
 
+    const before = this._snapshotStats(o)
     this.applyAction(ownerData, action, config, isCrit, baseBonus, locationModifier)
 
     const meta = ACTION_META[action]
     const logColor = isCrit ? (meta?.critColor || '#aaffaa') : (meta?.normalColor || '#aaffaa')
     const ownerName = o.ownerName || '主人'
     let logText = this.getPetLogText(userName, isCrit, isForce, ownerName, action, userId)
+
+    const diff = this._diffStats(before, o)
+    if (diff) logText += `\n${diff}`
 
 
     if (config.goldReward) {
@@ -271,6 +279,34 @@ class InteractionEngine {
     const cleanText = result.replyText.replace(/<[^>]+>/g, '').replace(/\n/g, ' ')
     if (result.roll === 0) return cleanText
     return `RNG检定[${result.roll}]:\n${cleanText}`
+  }
+
+  _snapshotStats(o) {
+    return {
+      satiety: o.petStats.satiety,
+      energy: o.petStats.energy,
+      hygiene: o.petStats.hygiene,
+      pain: o.petStats.pain,
+      sensitivity: o.petStats.sensitivity,
+      intimacy: o.intimacy,
+      obedience: o.obedience,
+      lewd: o.lewd
+    }
+  }
+
+  _diffStats(before, o) {
+    const pctNames = { satiety: '饱', energy: '体', hygiene: '洁', pain: '疼', sensitivity: '敏' }
+    const progNames = { lewd: '涩', obedience: '服', intimacy: '亲' }
+    const parts = []
+    for (const [k, label] of Object.entries(pctNames)) {
+      const d = Math.round((o.petStats[k] - before[k]) * 10) / 10
+      if (Math.abs(d) > 0.01) parts.push(`${label}${d > 0 ? '+' : ''}${d}%`)
+    }
+    for (const [k, label] of Object.entries(progNames)) {
+      const d = Math.round(o[k] - before[k])
+      if (d !== 0) parts.push(`${label}${d > 0 ? '+' : ''}${d}`)
+    }
+    return parts.length > 0 ? parts.join(' ') : null
   }
 }
 

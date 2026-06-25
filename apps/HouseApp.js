@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { HOUSES, CMD_PREFIX, NO_PET_MSG } from '../config/cfg.js'
+import { HOUSES, CMD_PREFIX, NO_PET_MSG, GROUP_ONLY_MSG } from '../config/cfg.js'
 
 const FLOOR_MAP = { 'f1': 'cozy', 'f2': 'luxury', 'f3': 'palace' }
 const BUY_HOUSE_REG = new RegExp(`^${CMD_PREFIX}买房`)
@@ -19,6 +19,7 @@ class HouseApp extends plugin {
   }
 
   async buyHouse(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const input = e.msg.replace(BUY_HOUSE_REG, '').trim().toLowerCase()
     const groupId = String(e.group_id)
     const userId = String(e.user_id)

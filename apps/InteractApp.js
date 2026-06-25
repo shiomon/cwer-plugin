@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG, getUserColor, CMD_PREFIX, NO_PET_MSG } from '../config/cfg.js'
+import { CONFIG, getUserColor, CMD_PREFIX, NO_PET_MSG, GROUP_ONLY_MSG } from '../config/cfg.js'
 
 const ACTION_NAMES = '投喂|洗澡|陪玩|摸头|拥抱|送礼物|鞭打|打脸|打屁股|羞辱|禁闭|振动|狗叫|滴蜡|挠痒|强制鞭打|强制禁闭|强制羞辱'
 const ACTION_REG = new RegExp(`^${CMD_PREFIX}(${ACTION_NAMES}).*`)
@@ -24,6 +24,7 @@ class InteractApp extends plugin {
   }
 
   async interact(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const action = e.msg.match(ACTION_EXTRACT)?.[0]
     if (!action) return false
 

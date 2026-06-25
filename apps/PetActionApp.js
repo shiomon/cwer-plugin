@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG, getUserColor, CMD_PREFIX, NO_OWNER_MSG } from '../config/cfg.js'
+import { CONFIG, getUserColor, CMD_PREFIX, NO_OWNER_MSG, GROUP_ONLY_MSG } from '../config/cfg.js'
 import { segment } from 'oicq'
 
 const PET_ACTION_REG = new RegExp(`^${CMD_PREFIX}(撒娇|生气气|讨好|献媚|求关注|吐槽|勾引|冷战).*`)
@@ -21,6 +21,7 @@ class PetActionApp extends plugin {
   }
 
   async petAction(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const action = e.msg.match(/撒娇|生气气|讨好|献媚|求关注|吐槽|勾引|冷战/)?.[0]
     if (!action) return false
 
@@ -103,6 +104,7 @@ class PetActionApp extends plugin {
   }
 
   async taunt(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
     const userName = e.sender.card || e.sender.nickname

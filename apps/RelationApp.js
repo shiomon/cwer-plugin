@@ -1,5 +1,5 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { CONFIG, CMD_PREFIX, NO_PET_MSG, NO_OWNER_MSG, getUserColor } from '../config/cfg.js'
+import { CONFIG, CMD_PREFIX, NO_PET_MSG, NO_OWNER_MSG, getUserColor, GROUP_ONLY_MSG } from '../config/cfg.js'
 import { segment } from 'oicq'
 
 const activeBondRequests = new Map()
@@ -28,6 +28,7 @@ class RelationApp extends plugin {
   }
 
   async adopt(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const at = e.message?.find(m => m.type === 'at')
     const targetId = String(e.at || at?.qq || at?.id || '')
     if (targetId && targetId !== '0' && targetId !== String(e.user_id)) {
@@ -165,6 +166,7 @@ class RelationApp extends plugin {
   }
 
   async steal(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const at = e.message?.find(m => m.type === 'at')
     const targetId = String(e.at || at?.qq || at?.id || '')
     if (targetId && targetId !== '0' && targetId !== String(e.user_id)) {
@@ -266,6 +268,7 @@ class RelationApp extends plugin {
   }
 
   async bond(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 
@@ -305,6 +308,7 @@ class RelationApp extends plugin {
   }
 
   async bondMaster(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 
@@ -337,6 +341,7 @@ class RelationApp extends plugin {
   }
 
   async agreeBond(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
     const key = `${groupId}_${userId}`
@@ -377,6 +382,7 @@ class RelationApp extends plugin {
   }
 
   async rejectBond(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
     const key = `${groupId}_${userId}`
@@ -447,6 +453,7 @@ class RelationApp extends plugin {
   }
 
   async release(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 
@@ -504,6 +511,7 @@ class RelationApp extends plugin {
   }
 
   async escape(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const groupId = String(e.group_id)
     const userId = String(e.user_id)
 
