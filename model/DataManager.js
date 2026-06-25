@@ -436,23 +436,6 @@ class DataManager {
   }
 
 
-  computeDiffParts(statsBefore, statsAfter, petBefore, petAfter) {
-    const pctNames = { satiety: '饱', energy: '体', hygiene: '洁', pain: '疼', sensitivity: '敏' }
-    const progNames = { lewd: '涩', obedience: '服', intimacy: '亲' }
-    const parts = []
-    for (const [k, label] of Object.entries(pctNames)) {
-      const d = Math.round((statsAfter[k] - statsBefore[k]) * 10) / 10
-      if (Math.abs(d) > 0.01) parts.push(`${label}${d > 0 ? '+' : ''}${d}%`)
-    }
-    if (petBefore && petAfter) {
-      for (const [k, label] of Object.entries(progNames)) {
-        const d = Math.round(petAfter[k] - petBefore[k])
-        if (d !== 0) parts.push(`${label}${d > 0 ? '+' : ''}${d}`)
-      }
-    }
-    return parts
-  }
-
 
 }
 

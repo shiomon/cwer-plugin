@@ -89,15 +89,10 @@ class PetActionApp extends plugin {
       return
     }
 
-    const statsBefore = { ...ownerData.owner.petStats }
-    const petBefore = { intimacy: ownerData.owner.intimacy, obedience: ownerData.owner.obedience, lewd: ownerData.owner.lewd }
-
     const result = this.sys.ie.executePetInteraction(ownerData, action, userName, userId)
     this.sys.dm.addLog(ownerData, result.logText, result.logColor)
 
-    const diffParts = this.sys.dm.computeDiffParts(statsBefore, ownerData.owner.petStats, petBefore, { intimacy: ownerData.owner.intimacy, obedience: ownerData.owner.obedience, lewd: ownerData.owner.lewd })
-    const replyText = this.sys.ie.formatInteractionReply(result)
-    const reply = diffParts.length > 0 ? `${replyText} | ${diffParts.join(', ')}` : replyText
+    const reply = this.sys.ie.formatInteractionReply(result)
 
     this.sys.es.tickTime(ownerData, CONFIG.INTERACTION_TIME_COST)
     this.sys.dm.applyHouseBonus(ownerData)

@@ -79,15 +79,10 @@ class InteractApp extends plugin {
       return e.reply(`宠物不配合！${action}失败了~`)
     }
 
-    const statsBefore = { ...o.petStats }
-    const petBefore = { intimacy: o.intimacy, obedience: o.obedience, lewd: o.lewd }
-
     o.petSys.lastInteractTime = now
     const result = this.sys.ie.executeOwnerInteraction(ownerData, action, userName, userId)
 
-    const diffParts = this.sys.dm.computeDiffParts(statsBefore, o.petStats, petBefore, { intimacy: o.intimacy, obedience: o.obedience, lewd: o.lewd })
-    const replyText = this.sys.ie.formatInteractionReply(result)
-    const reply = diffParts.length > 0 ? `${replyText} | ${diffParts.join(', ')}` : replyText
+    const reply = this.sys.ie.formatInteractionReply(result)
 
     this.sys.es.tickTime(ownerData, CONFIG.INTERACTION_TIME_COST)
     this.sys.dm.applyHouseBonus(ownerData)
@@ -108,16 +103,10 @@ class InteractApp extends plugin {
       return e.reply(`还在回味中...请${remain}秒后再来`)
     }
 
-
-    const statsBefore = { ...o.petStats }
-    const petBefore = { intimacy: o.intimacy, obedience: o.obedience, lewd: o.lewd }
-
     o.petSys.lastInteractTime = now
     const result = this.sys.ie.executePetInteraction(ownerData, action, userName, userId)
 
-    const diffParts = this.sys.dm.computeDiffParts(statsBefore, o.petStats, petBefore, { intimacy: o.intimacy, obedience: o.obedience, lewd: o.lewd })
-    const replyText = this.sys.ie.formatInteractionReply(result)
-    const reply = diffParts.length > 0 ? `${replyText} | ${diffParts.join(', ')}` : replyText
+    const reply = this.sys.ie.formatInteractionReply(result)
 
     this.sys.es.tickTime(ownerData, CONFIG.INTERACTION_TIME_COST)
     this.sys.dm.applyHouseBonus(ownerData)
