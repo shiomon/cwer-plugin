@@ -1,6 +1,7 @@
 # cwer-plugin v3.0.1
 
 群聊宠物养成，Yunzai框架的1对1养成插件
+
 领养群友做宠物，通过宠爱与调教培养专属关系，缔约后解锁更多互动与玩法。
 
 <img width="677" height="1220" alt="image" src="https://github.com/user-attachments/assets/839d72f2-4ecf-4f2f-9177-e89a5372251f" />
