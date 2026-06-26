@@ -290,13 +290,13 @@
                     <div class="circle-outer">
                         <svg viewBox="0 0 102 102">
                             <circle class="circle-bg" cx="51" cy="51" r="45"/>
-                            <circle class="circle-optimal" cx="51" cy="51" r="45" stroke-dasharray="0 169.6 56.5 56.6" stroke-dashoffset="0"/>
-                            <circle class="circle-fill {{if stats.energy >= 60}}c-eng-ring{{else}}c-eng-bad-ring{{/if}}" cx="51" cy="51" r="45" stroke-dasharray="{{(stats.energy / 100 * 282.7).toFixed(1)}} 282.7"/>
+                            <circle class="circle-optimal" cx="51" cy="51" r="45" stroke-dasharray="0 226.2 56.5" stroke-dashoffset="0"/>
+                            <circle class="circle-fill {{if stats.energy >= 80}}c-eng-ring{{else}}c-eng-bad-ring{{/if}}" cx="51" cy="51" r="45" stroke-dasharray="{{(stats.energy / 100 * 282.7).toFixed(1)}} 282.7"/>
                         </svg>
                     </div>
                 </div>
                 <article>
-                    <summary class="{{if stats.energy >= 60}}t-eng{{else}}t-eng-bad{{/if}}">体力</summary>
+                    <summary class="{{if stats.energy >= 80}}t-eng{{else}}t-eng-bad{{/if}}">体力</summary>
                 </article>
             </div>
             <div class="li">
@@ -305,12 +305,12 @@
                         <svg viewBox="0 0 102 102">
                             <circle class="circle-bg" cx="51" cy="51" r="45"/>
                             <circle class="circle-optimal" cx="51" cy="51" r="45" stroke-dasharray="0 226.2 56.5" stroke-dashoffset="0"/>
-                            <circle class="circle-fill {{if bondLabel === '缔约'}}{{if stats.pain <= 30}}c-pain-ring{{else}}c-pain-bad-ring{{/if}}{{else}}c-pain-locked{{/if}}" cx="51" cy="51" r="45" stroke-dasharray="{{(stats.pain / 100 * 282.7).toFixed(1)}} 282.7"/>
+                            <circle class="circle-fill {{if bondLabel === '缔约'}}{{if stats.pain >= 80}}c-pain-ring{{else}}c-pain-bad-ring{{/if}}{{else}}c-pain-locked{{/if}}" cx="51" cy="51" r="45" stroke-dasharray="{{(stats.pain / 100 * 282.7).toFixed(1)}} 282.7"/>
                         </svg>
                     </div>
                 </div>
                 <article>
-                    <summary class="{{if bondLabel === '缔约'}}{{if stats.pain <= 30}}t-pain{{else}}t-pain-bad{{/if}}{{else}}t-pain-locked{{/if}}">疼痛</summary>
+                    <summary class="{{if bondLabel === '缔约'}}{{if stats.pain >= 80}}t-pain{{else}}t-pain-bad{{/if}}{{else}}t-pain-locked{{/if}}">疼痛</summary>
                 </article>
             </div>
             <div class="li">
@@ -318,13 +318,13 @@
                     <div class="circle-outer">
                         <svg viewBox="0 0 102 102">
                             <circle class="circle-bg" cx="51" cy="51" r="45"/>
-                            <circle class="circle-optimal" cx="51" cy="51" r="45" stroke-dasharray="0 169.6 56.5 56.6" stroke-dashoffset="0"/>
-                            <circle class="circle-fill {{if stats.sensitivity >= 20 && stats.sensitivity <= 60}}c-sens-ring{{else}}c-sens-bad-ring{{/if}}" cx="51" cy="51" r="45" stroke-dasharray="{{(stats.sensitivity / 100 * 282.7).toFixed(1)}} 282.7"/>
+                            <circle class="circle-optimal" cx="51" cy="51" r="45" stroke-dasharray="0 226.2 56.5" stroke-dashoffset="0"/>
+                            <circle class="circle-fill {{if stats.sensitivity >= 80}}c-sens-ring{{else}}c-sens-bad-ring{{/if}}" cx="51" cy="51" r="45" stroke-dasharray="{{(stats.sensitivity / 100 * 282.7).toFixed(1)}} 282.7"/>
                         </svg>
                     </div>
                 </div>
                 <article>
-                    <summary class="{{if stats.sensitivity >= 20 && stats.sensitivity <= 60}}t-sens{{else}}t-sens-bad{{/if}}">敏感</summary>
+                    <summary class="{{if stats.sensitivity >= 80}}t-sens{{else}}t-sens-bad{{/if}}">敏感</summary>
                 </article>
             </div>
             <div class="li">
@@ -332,13 +332,13 @@
                     <div class="circle-outer">
                         <svg viewBox="0 0 102 102">
                             <circle class="circle-bg" cx="51" cy="51" r="45"/>
-                            <circle class="circle-optimal" cx="51" cy="51" r="45" stroke-dasharray="0 169.6 56.5 56.6" stroke-dashoffset="0"/>
-                            <circle class="circle-fill {{if stats.hygiene >= 60}}c-hyg-ring{{else}}c-hyg-bad-ring{{/if}}" cx="51" cy="51" r="45" stroke-dasharray="{{(stats.hygiene / 100 * 282.7).toFixed(1)}} 282.7"/>
+                            <circle class="circle-optimal" cx="51" cy="51" r="45" stroke-dasharray="0 226.2 56.5" stroke-dashoffset="0"/>
+                            <circle class="circle-fill {{if stats.hygiene >= 80}}c-hyg-ring{{else}}c-hyg-bad-ring{{/if}}" cx="51" cy="51" r="45" stroke-dasharray="{{(stats.hygiene / 100 * 282.7).toFixed(1)}} 282.7"/>
                         </svg>
                     </div>
                 </div>
                 <article>
-                    <summary class="{{if stats.hygiene >= 60}}t-hyg{{else}}t-hyg-bad{{/if}}">清洁</summary>
+                    <summary class="{{if stats.hygiene >= 80}}t-hyg{{else}}t-hyg-bad{{/if}}">清洁</summary>
                 </article>
             </div>
         </div>
