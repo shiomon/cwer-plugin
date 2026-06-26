@@ -7,7 +7,10 @@ const ACTION_META = {
   洗澡: { critColor: '#44aaff', normalColor: '#88ccff' },
   陪玩: { critColor: '#44ff44', normalColor: '#88cc44' },
   摸头: { critColor: '#33cc33', normalColor: '#aaffaa' },
-  拥抱: { critColor: '#44ff44', normalColor: '#aaffaa' },
+  摸摸: { critColor: '#33cc33', normalColor: '#aaffaa' },
+  亲亲: { critColor: '#ff69b4', normalColor: '#ffb6c1' },
+  捏脸: { critColor: '#ffab40', normalColor: '#ffe0b2' },
+  抱抱: { critColor: '#44ff44', normalColor: '#aaffaa' },
   送礼物: { critColor: '#ff9900', normalColor: '#ffcc00' },
   挠痒: { critColor: '#ff33ff', normalColor: '#ff66ff' },
   狗叫: { critColor: '#ff9800', normalColor: '#ffcc80' },
@@ -125,7 +128,10 @@ class InteractionEngine {
       洗澡: { crit: () => `${u} 帮${targetName}放好洗澡水，自己也洗得舒舒服服！`, normal: () => `${u} 帮${targetName}放好洗澡水，自己也顺便洗了个澡。` },
       陪玩: { crit: () => `${u} 陪${targetName}玩出了【暴击】！开心极了！`, normal: () => `${u} 陪${targetName}玩耍，亲密度提升了不少。` },
       摸头: { crit: () => `${u} 乖巧地把头凑过去，${targetName}温柔地摸了摸...`, normal: () => `${u} 凑过去让${targetName}摸了摸头。` },
-      拥抱: { crit: () => `${u} 扑进${targetName}怀里！暴击拥抱！温暖溢出！`, normal: () => `${u} 抱了抱${targetName}，好温暖。` },
+      摸摸: { crit: () => `${u} 凑过去让${targetName}摸摸...暴击！舒服得眯起了眼！`, normal: () => `${u} 凑过去让${targetName}摸了摸。` },
+      亲亲: { crit: () => `${u} 亲了${targetName}一口！暴击！脸红透了！`, normal: () => `${u} 亲了亲${targetName}。` },
+      捏脸: { crit: () => `${u} 让${targetName}捏脸...暴击！软软的！`, normal: () => `${u} 让${targetName}捏了捏脸。` },
+      抱抱: { crit: () => `${u} 扑进${targetName}怀里！暴击抱抱！温暖溢出！`, normal: () => `${u} 抱了抱${targetName}，好温暖。` },
       送礼物: { crit: () => `${u} 精心准备了礼物送给${targetName}！${targetName}感动不已！`, normal: () => `${u} 送了礼物给${targetName}。` },
       撒娇: { crit: () => `${u} 撒了个大娇！${targetName}心都化了！`, normal: () => `${u} 向${targetName}撒了个娇~` },
       生气气: { crit: () => `${u} 气鼓鼓的！化悲愤为暴食！`, normal: () => `${u} 生气气了！化悲愤为食欲！` },
@@ -143,61 +149,43 @@ class InteractionEngine {
   applyAction(ownerData, action, config, isCrit, bonus, modifier) {
     const o = ownerData.owner
     const isBonded = o.status === 'bonded'
-    const st = o.petStats
-
-    const satOptimal = st.satiety >= CONFIG.SATIETY_OPTIMAL_MIN && st.satiety <= CONFIG.SATIETY_OPTIMAL_MAX
-    const engOptimal = st.energy >= CONFIG.ENERGY_OPTIMAL_MIN
-    const hygOptimal = st.hygiene >= CONFIG.HYGIENE_OPTIMAL_MIN
-    const sensOptimal = st.sensitivity >= CONFIG.SENSITIVITY_OPTIMAL_MIN
-    const painOptimal = isBonded ? st.pain >= CONFIG.PAIN_OPTIMAL_MIN : true
-
-    const satZero = st.satiety <= 0
-    const engZero = st.energy <= 0
-    const hygZero = st.hygiene <= 0
-    const sensZero = st.sensitivity <= 0
-    const painZero = st.pain <= 0
-
-    const nm = CONFIG.NON_OPTIMAL_MULTIPLIER
 
     if (isBonded) {
-      if (config.painGain && !painZero) {
+      if (config.painGain) {
         const base = isCrit ? (config.critPainGain || config.painGain) : config.painGain
-        o.petStats.pain += base * (painOptimal ? 1 : nm)
+        o.petStats.pain += base
       }
-      if (config.painLoss && !painZero) {
+      if (config.painLoss) {
         const base = isCrit ? (config.critPainLoss || config.painLoss) : config.painLoss
-        o.petStats.pain -= base * (painOptimal ? 1 : nm)
+        o.petStats.pain -= base
       }
     }
-    if (config.satietyGain && !satZero) {
+    if (config.satietyGain) {
       const base = isCrit ? (config.critSatietyGain || config.satietyGain) : config.satietyGain
-      o.petStats.satiety += base * (satOptimal ? 1 : nm)
+      o.petStats.satiety += base
     }
-    if (config.satietyLoss && !satZero) {
-      const base = config.satietyLoss
-      o.petStats.satiety -= base * (satOptimal ? 1 : nm)
+    if (config.satietyLoss) {
+      o.petStats.satiety -= config.satietyLoss
     }
-    if (config.energyGain && !engZero) {
+    if (config.energyGain) {
       const base = isCrit ? (config.critEnergyGain || config.energyGain) : config.energyGain
-      o.petStats.energy += base * (engOptimal ? 1 : nm)
+      o.petStats.energy += base
     }
-    if (config.energyLoss && !engZero) {
-      const base = config.energyLoss
-      o.petStats.energy -= base * (engOptimal ? 1 : nm)
+    if (config.energyLoss) {
+      o.petStats.energy -= config.energyLoss
     }
-    if (config.hygieneGain && !hygZero) {
+    if (config.hygieneGain) {
       const base = isCrit ? (config.critHygieneGain || config.hygieneGain) : config.hygieneGain
-      o.petStats.hygiene += base * (hygOptimal ? 1 : nm)
+      o.petStats.hygiene += base
     }
-    if (config.sensitivityGain && !sensZero) {
+    if (config.sensitivityGain) {
       const base = isCrit ? (config.critSensitivityGain || config.sensitivityGain) : config.sensitivityGain
-      o.petStats.sensitivity += base * (sensOptimal ? 1 : nm)
+      o.petStats.sensitivity += base
     }
 
     if (config.intimacyGain) {
       const gain = isCrit ? (config.critIntimacyGain || config.intimacyGain) : config.intimacyGain
-      const isTrainAction = config.type === 'train' || config.type === 'force'
-      o.intimacy += Math.round(gain * (isTrainAction ? bonus : 1))
+      o.intimacy += Math.round(gain * bonus)
     }
     if (config.intimacyLoss) {
       const loss = isCrit ? (config.critIntimacyLoss || config.intimacyLoss) : config.intimacyLoss
@@ -220,8 +208,17 @@ class InteractionEngine {
       o.petAchievements.totalTrain = (o.petAchievements.totalTrain || 0) + achValue
     }
 
-    if (modifier) this.es.applyModifier(o.petStats, modifier)
+    if (modifier) {
+      if (!isBonded && modifier.pain) {
+        const filtered = { ...modifier }
+        delete filtered.pain
+        if (Object.keys(filtered).length > 0) this.es.applyModifier(o.petStats, filtered)
+      } else {
+        this.es.applyModifier(o.petStats, modifier)
+      }
+    }
   }
+
 
   damageRandomCommonClothing(ownerData, forceBreak = false) {
     const o = ownerData.owner
@@ -256,7 +253,10 @@ class InteractionEngine {
       洗澡: { crit: () => `${u} 小心翼翼帮${targetName}洗澡，非常舒适！`, normal: () => `${u} 帮${targetName}洗了个澡，清洁度恢复了。` },
       陪玩: { crit: () => `${u} 陪${targetName}玩出了【暴击】！开心极了！`, normal: () => `${u} 陪${targetName}玩耍，亲密度提升了不少。` },
       摸头: { crit: () => `${u} 极其温柔地摸头...${targetName}发出了呼噜声！`, normal: () => `${u} 摸了摸${targetName}的头。` },
-      拥抱: { crit: () => `${u} 给了${targetName}一个暴击拥抱！温暖溢出！`, normal: () => `${u} 给了${targetName}一个温暖的抱抱。` },
+      摸摸: { crit: () => `${u} 温柔地摸摸${targetName}...暴击！${targetName}舒服地眯起了眼！`, normal: () => `${u} 摸了摸${targetName}，好乖。` },
+      亲亲: { crit: () => `${u} 亲了${targetName}一口！暴击亲亲！${targetName}脸红透了！`, normal: () => `${u} 亲了亲${targetName}。` },
+      捏脸: { crit: () => `${u} 捏${targetName}的脸捏出了【暴击】！软软的！`, normal: () => `${u} 捏了捏${targetName}的脸。` },
+      抱抱: { crit: () => `${u} 给了${targetName}一个暴击抱抱！温暖溢出！`, normal: () => `${u} 给了${targetName}一个温暖的抱抱。` },
       送礼物: { crit: () => `${u} 送出了精美礼物！${targetName}感动不已！`, normal: () => `${u} 送了礼物给${targetName}。` },
       挠痒: { crit: () => `${u} 挠痒挤出了【暴击】！${targetName}笑到窒息！`, normal: () => `${u} 疯狂挠${targetName}的痒！` },
       狗叫: { crit: () => `${u}让${targetName}学出了【暴击狗叫】！彻底沦陷！`, normal: () => `${u}让${targetName}学了一声狗叫，害羞了。` },

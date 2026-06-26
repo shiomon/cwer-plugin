@@ -50,7 +50,8 @@
         .header-card .title { font-size: 22px; font-weight: 700; color: #e91e63; }
         .header-card .subtitle { font-size: 14px; color: #555; margin-top: 4px; letter-spacing: 0.5px; font-weight: 600; }
         .row-wrap { display: flex; gap: 12px; }
-        .row-wrap .card { flex: 1; margin-bottom: 12px; }
+        .row-wrap .card { flex: 1; margin-bottom: 12px; border-right: 1px solid rgba(255,255,255,0.15); }
+        .row-wrap .card:last-child { border-right: none; }
         .footer-box { text-align: center; padding: 20px 28px 16px 28px; }
         .footer-inner { display: inline-block; background: rgba(255,255,255,0.92); border-radius: 10px; padding: 10px 28px; box-shadow: 0 0 12px 4px rgba(0,0,0,0.15), 0 0 20px rgba(0,0,0,0.1); font-size: 14px; color: #888; }
 
@@ -117,8 +118,8 @@
                 <div class="cmd-row"><span class="cmd-name">$缔约主人</span><span class="cmd-desc">和主人缔约(亲密≥99)</span><span class="cmd-tag tag-relation">宠物</span></div>
                 <div class="cmd-row"><span class="cmd-name">$同意</span><span class="cmd-desc">同意缔约请求(30秒内)</span><span class="cmd-tag tag-relation">双方</span></div>
                 <div class="cmd-row"><span class="cmd-name">$不同意</span><span class="cmd-desc">拒绝缔约请求(30秒内)</span><span class="cmd-tag tag-relation">双方</span></div>
-                <div class="cmd-row"><span class="cmd-name">$解除</span><span class="cmd-desc">解除关系(30分钟冷却)</span><span class="cmd-tag tag-relation">双方</span></div>
-                <div class="cmd-row"><span class="cmd-name">$摆脱</span><span class="cmd-desc">摆脱主人(仅领养阶段,30分钟冷却)</span><span class="cmd-tag tag-relation">宠物</span></div>
+                <div class="cmd-row"><span class="cmd-name">$解除</span><span class="cmd-desc">解除缔约关系</span><span class="cmd-tag tag-relation">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$摆脱</span><span class="cmd-desc">摆脱主人(仅领养阶段)</span><span class="cmd-tag tag-relation">宠物</span></div>
             </div>
         </div>
     </div>
@@ -126,12 +127,15 @@
         <div class="card-title" style="color: #2e7d32;">💕 宠爱指令</div>
         <div class="card-inner">
             <div class="section-pet">
-                <div class="cmd-row"><span class="cmd-name">$投喂</span><span class="cmd-desc">+饱食/体力，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
-                <div class="cmd-row"><span class="cmd-name">$洗澡</span><span class="cmd-desc">+清洁/体力，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
-                <div class="cmd-row"><span class="cmd-name">$陪玩</span><span class="cmd-desc">+亲密/敏感，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
-                <div class="cmd-row"><span class="cmd-name">$摸头</span><span class="cmd-desc">+亲密/敏感，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
-                <div class="cmd-row"><span class="cmd-name">$拥抱</span><span class="cmd-desc">+亲密/敏感，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
-                <div class="cmd-row"><span class="cmd-name">$送礼物</span><span class="cmd-desc">+亲密/服从</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$投喂</span><span class="cmd-desc">+饱食/体力/亲密，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$洗澡</span><span class="cmd-desc">+清洁/亲密，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$陪玩</span><span class="cmd-desc">+亲密/敏感</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$摸头</span><span class="cmd-desc">+亲密/敏感</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$摸摸</span><span class="cmd-desc">+敏感，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$亲亲</span><span class="cmd-desc">+亲密/涩气，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$捏脸</span><span class="cmd-desc">+敏感/亲密</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$抱抱</span><span class="cmd-desc">+亲密，-疼痛</span><span class="cmd-tag tag-pet">双方</span></div>
+                <div class="cmd-row"><span class="cmd-name">$送礼物</span><span class="cmd-desc">+亲密，-15金币</span><span class="cmd-tag tag-pet">双方</span></div>
             </div>
         </div>
     </div>

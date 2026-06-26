@@ -106,129 +106,146 @@ const CONFIG = {
     // type: pet=照顾类, train=调教类, force=强制类
     // critThreshold: 暴击阈值（roll>=此值触发暴击，0=无暴击）
     // goldReward/goldCost: 金币奖励/消耗
+    // 百分比属性(饱食/体力/清洁/疼痛/敏感): 固定值，不受bonus影响
+    // 成长值属性(亲密/服从/涩气): 受bonus加成
     投喂: {
-      satietyGain: 30, energyGain: 20, intimacyGain: 5,
-      critSatietyGain: 40, critEnergyGain: 30, critIntimacyGain: 10,
-      painLoss: 10, critPainLoss: 15,
-      critThreshold: 90, type: 'pet', goldReward: 3
+      satietyGain: 25, energyGain: 15, intimacyGain: 5,
+      critSatietyGain: 35, critEnergyGain: 22, critIntimacyGain: 8,
+      painLoss: 5, critPainLoss: 8,
+      critThreshold: 75, type: 'pet', goldReward: 2
     },
     洗澡: {
-      hygieneGain: 50, intimacyGain: 5,
-      critHygieneGain: 70, critIntimacyGain: 10,
-      painLoss: 10, critPainLoss: 15,
-      critThreshold: 80, type: 'pet', goldReward: 3
+      hygieneGain: 40, intimacyGain: 3,
+      critHygieneGain: 60, critIntimacyGain: 5,
+      painLoss: 5, critPainLoss: 8,
+      critThreshold: 70, type: 'pet', goldReward: 2
     },
     陪玩: {
-      intimacyGain: 8, sensitivityGain: 10,
-      critIntimacyGain: 16, critSensitivityGain: 18,
-      critThreshold: 85, type: 'pet', goldReward: 5
+      intimacyGain: 6, sensitivityGain: 8,
+      critIntimacyGain: 10, critSensitivityGain: 14,
+      critThreshold: 80, type: 'pet', goldReward: 3
     },
     摸头: {
-      intimacyGain: 5, sensitivityGain: 8,
-      critIntimacyGain: 10, critSensitivityGain: 14,
-      critThreshold: 90, type: 'pet', goldReward: 2
+      intimacyGain: 4, sensitivityGain: 4,
+      critIntimacyGain: 7, critSensitivityGain: 7,
+      critThreshold: 95, type: 'pet', goldReward: 1
     },
-    拥抱: {
-      intimacyGain: 5, painLoss: 15,
-      critIntimacyGain: 10, critPainLoss: 25,
-      critThreshold: 85, type: 'pet', goldReward: 2
+    摸摸: {
+      sensitivityGain: 6, painLoss: 5,
+      critSensitivityGain: 10, critPainLoss: 8,
+      critThreshold: 82, type: 'pet', goldReward: 1
+    },
+    亲亲: {
+      intimacyGain: 6, lewdGain: 2, painLoss: 3,
+      critIntimacyGain: 10, critLewdGain: 4, critPainLoss: 5,
+      critThreshold: 78, type: 'pet', goldReward: 2
+    },
+    捏脸: {
+      sensitivityGain: 8, intimacyGain: 2,
+      critSensitivityGain: 14, critIntimacyGain: 4,
+      critThreshold: 85, type: 'pet', goldReward: 1
+    },
+    抱抱: {
+      intimacyGain: 4, painLoss: 10,
+      critIntimacyGain: 7, critPainLoss: 16,
+      critThreshold: 80, type: 'pet', goldReward: 1
     },
     送礼物: {
-      intimacyGain: 15, critIntimacyGain: 25,
-      critThreshold: 85, type: 'pet', goldReward: 0, goldCost: 20
+      intimacyGain: 12, critIntimacyGain: 20,
+      critThreshold: 90, type: 'pet', goldReward: 0, goldCost: 15
     },
     挠痒: {
-      obedienceGain: 5, lewdGain: 12, intimacyLoss: 3,
-      critObedienceGain: 10, critLewdGain: 20, critIntimacyLoss: 5,
-      critThreshold: 85, type: 'train', goldReward: 8
+      sensitivityGain: 6, lewdGain: 3, intimacyLoss: 2,
+      critSensitivityGain: 10, critLewdGain: 6, critIntimacyLoss: 4,
+      critThreshold: 78, type: 'train', goldReward: 2
     },
     狗叫: {
-      lewdGain: 8, intimacyLoss: 3,
-      critLewdGain: 16, critIntimacyLoss: 5,
-      critThreshold: 85, type: 'train', goldReward: 8
+      obedienceGain: 4, lewdGain: 6, intimacyLoss: 2,
+      critObedienceGain: 8, critLewdGain: 10, critIntimacyLoss: 4,
+      critThreshold: 78, type: 'train', goldReward: 2
     },
     羞辱: {
-      obedienceGain: 10, intimacyLoss: 5,
-      critObedienceGain: 20, critIntimacyLoss: 8,
-      critThreshold: 90, type: 'train', goldReward: 8
+      obedienceGain: 6, lewdGain: 3, intimacyLoss: 4,
+      critObedienceGain: 12, critLewdGain: 6, critIntimacyLoss: 7,
+      critThreshold: 82, type: 'train', goldReward: 3
     },
     鞭打: {
-      obedienceGain: 8, painGain: 15, intimacyLoss: 8,
-      critObedienceGain: 16, critPainGain: 30, critIntimacyLoss: 12,
-      critThreshold: 95, type: 'train', goldReward: 8
+      obedienceGain: 6, painGain: 12, intimacyLoss: 6,
+      critObedienceGain: 12, critPainGain: 22, critIntimacyLoss: 10,
+      critThreshold: 92, type: 'train', goldReward: 4
     },
     打脸: {
-      obedienceGain: 6, painGain: 10, intimacyLoss: 8,
-      critObedienceGain: 12, critPainGain: 20, critIntimacyLoss: 12,
-      critThreshold: 90, type: 'train', goldReward: 8
+      obedienceGain: 4, painGain: 8, lewdGain: 2, intimacyLoss: 6,
+      critObedienceGain: 8, critPainGain: 14, critLewdGain: 4, critIntimacyLoss: 10,
+      critThreshold: 85, type: 'train', goldReward: 3
     },
     打屁股: {
-      lewdGain: 8, painGain: 12, intimacyLoss: 6,
-      critLewdGain: 16, critPainGain: 24, critIntimacyLoss: 10,
-      critThreshold: 88, type: 'train', goldReward: 10
+      lewdGain: 6, painGain: 10, intimacyLoss: 5,
+      critLewdGain: 12, critPainGain: 18, critIntimacyLoss: 8,
+      critThreshold: 80, type: 'train', goldReward: 4
     },
     禁闭: {
-      obedienceGain: 10, satietyLoss: 10, energyLoss: 15, intimacyLoss: 8,
-      critObedienceGain: 20, critIntimacyLoss: 12,
-      critThreshold: 90, type: 'train', goldReward: 12
+      obedienceGain: 8, lewdGain: 2, satietyLoss: 8, energyLoss: 12, intimacyLoss: 6,
+      critObedienceGain: 16, critLewdGain: 4, critIntimacyLoss: 10,
+      critThreshold: 82, type: 'train', goldReward: 5
     },
     振动: {
-      lewdGain: 10, sensitivityGain: 15, intimacyLoss: 6,
-      critLewdGain: 20, critSensitivityGain: 25, critIntimacyLoss: 10,
-      critThreshold: 90, type: 'train', goldReward: 10
+      lewdGain: 8, sensitivityGain: 12, intimacyLoss: 5,
+      critLewdGain: 16, critSensitivityGain: 20, critIntimacyLoss: 8,
+      critThreshold: 85, type: 'train', goldReward: 4
     },
     滴蜡: {
-      lewdGain: 6, sensitivityGain: 8, painGain: 12, intimacyLoss: 6,
-      critLewdGain: 12, critSensitivityGain: 16, critPainGain: 24, critIntimacyLoss: 10,
-      critThreshold: 88, type: 'train', goldReward: 10
+      lewdGain: 4, sensitivityGain: 6, painGain: 10, intimacyLoss: 5,
+      critLewdGain: 8, critSensitivityGain: 10, critPainGain: 18, critIntimacyLoss: 8,
+      critThreshold: 80, type: 'train', goldReward: 4
     },
     // 强制类：forceMultiplier=属性变化额外倍率，forceBreakClothes=100%爆衣，forceExtraHunger=额外饱食/体力扣除
     强制鞭打: {
-      obedienceGain: 12, painGain: 30, intimacyLoss: 20, lewdGain: 8,
-      critObedienceGain: 24, critPainGain: 50, critIntimacyLoss: 35,
-      critThreshold: 0, type: 'force', goldReward: 15, forceMultiplier: 1.5, forceBreakClothes: true
+      obedienceGain: 10, painGain: 25, intimacyLoss: 18, lewdGain: 6,
+      critObedienceGain: 20, critPainGain: 40, critIntimacyLoss: 30,
+      critThreshold: 0, type: 'force', goldReward: 8, forceMultiplier: 1.5, forceBreakClothes: true
     },
     强制禁闭: {
-      obedienceGain: 15, satietyLoss: 30, energyLoss: 30, intimacyLoss: 25, lewdGain: 5,
-      critObedienceGain: 30, critIntimacyLoss: 40,
-      critThreshold: 0, type: 'force', goldReward: 20, forceMultiplier: 1.5, forceExtraHunger: 20
+      obedienceGain: 12, satietyLoss: 25, energyLoss: 25, intimacyLoss: 22, lewdGain: 4,
+      critObedienceGain: 24, critIntimacyLoss: 35,
+      critThreshold: 0, type: 'force', goldReward: 10, forceMultiplier: 1.5, forceExtraHunger: 20
     },
     强制羞辱: {
-      obedienceGain: 15, intimacyLoss: 20, lewdGain: 15,
-      critObedienceGain: 30, critIntimacyLoss: 35,
-      critThreshold: 0, type: 'force', goldReward: 15, forceMultiplier: 1.5
+      obedienceGain: 12, intimacyLoss: 18, lewdGain: 12,
+      critObedienceGain: 24, critIntimacyLoss: 30,
+      critThreshold: 0, type: 'force', goldReward: 8, forceMultiplier: 1.5
     },
     // 宠物自主指令（仅缔约后可用）
     撒娇: {
-      intimacyGain: 5,
-      critIntimacyGain: 10,
-      critThreshold: 85, type: 'pet', goldReward: 2
+      intimacyGain: 4,
+      critIntimacyGain: 7,
+      critThreshold: 80, type: 'pet', goldReward: 1
     },
     生气气: {
-      intimacyLoss: 3, satietyGain: 10,
-      critSatietyGain: 18,
-      critThreshold: 80, type: 'pet', goldReward: 2
+      intimacyLoss: 2, satietyGain: 8,
+      critSatietyGain: 14,
+      critThreshold: 75, type: 'pet', goldReward: 1
     },
     讨好: {
-      intimacyGain: 5, painLoss: 5,
-      critIntimacyGain: 10, critPainLoss: 10,
-      critThreshold: 85, type: 'pet', goldReward: 2
+      intimacyGain: 4, obedienceGain: 2, painLoss: 3,
+      critIntimacyGain: 7, critObedienceGain: 4, critPainLoss: 5,
+      critThreshold: 80, type: 'pet', goldReward: 1
     },
     献媚: {
-      intimacyGain: 3, lewdGain: 5,
-      critIntimacyGain: 6, critLewdGain: 10,
-      critThreshold: 85, type: 'pet', goldReward: 3
+      obedienceGain: 2, lewdGain: 4,
+      critObedienceGain: 4, critLewdGain: 8,
+      critThreshold: 80, type: 'pet', goldReward: 2
     },
     勾引: {
-      lewdGain: 5, intimacyGain: 3,
-      critLewdGain: 10, critIntimacyGain: 6,
-      critThreshold: 85, type: 'pet', goldReward: 5
+      lewdGain: 6, sensitivityGain: 4,
+      critLewdGain: 12, critSensitivityGain: 8,
+      critThreshold: 80, type: 'pet', goldReward: 3
     }
   },
 
   PET_ACTIONS: { // 宠物特殊指令（不走executePetInteraction）
-    求关注: { intimacyBonus: 3, cooldown: 30 * 1000 }, // @主人提醒互动
-    冷战: { intimacyLoss: 5, duration: 30 * 60 * 1000, cooldown: 30 * 1000 } // 切换冷战状态
+    求关注: { intimacyBonus: 2, cooldown: 30 * 1000 },
+    冷战: { intimacyLoss: 3, duration: 30 * 60 * 1000, cooldown: 30 * 1000 }
   },
 
   INTERACTION_TIME_COST: 15, // 每次互动消耗的游戏分钟数

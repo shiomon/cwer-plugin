@@ -1,11 +1,11 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import { CONFIG, getUserColor, CMD_PREFIX, NO_PET_MSG, GROUP_ONLY_MSG } from '../config/cfg.js'
 
-const ACTION_NAMES = '投喂|洗澡|陪玩|摸头|拥抱|送礼物|鞭打|打脸|打屁股|羞辱|禁闭|振动|狗叫|滴蜡|挠痒|强制鞭打|强制禁闭|强制羞辱'
+const ACTION_NAMES = '投喂|洗澡|陪玩|摸头|摸摸|亲亲|捏脸|抱抱|送礼物|鞭打|打脸|打屁股|羞辱|禁闭|振动|狗叫|滴蜡|挠痒|强制鞭打|强制禁闭|强制羞辱'
 const ACTION_REG = new RegExp(`^${CMD_PREFIX}(${ACTION_NAMES}).*`)
 const ACTION_EXTRACT = new RegExp(`(${ACTION_NAMES})`)
 
-const CARE_ACTIONS = new Set(['投喂', '洗澡', '陪玩', '摸头', '拥抱', '送礼物'])
+const CARE_ACTIONS = new Set(['投喂', '洗澡', '陪玩', '摸头', '摸摸', '亲亲', '捏脸', '抱抱', '送礼物'])
 const TRAIN_ACTIONS = new Set(['鞭打', '打脸', '打屁股', '羞辱', '禁闭', '振动', '狗叫', '滴蜡', '挠痒'])
 const FORCE_ACTIONS = new Set(['强制鞭打', '强制禁闭', '强制羞辱'])
 
@@ -73,11 +73,13 @@ class InteractApp extends plugin {
       return e.reply(`宠物在回味中...请${remain}秒后再来`)
     }
 
-    const evasionChance = this.sys.dm.getEvasionChance(o.obedience)
-    if (evasionChance > 0 && Math.random() * 100 < evasionChance) {
-      this.sys.dm.addLog(ownerData, `<span style="color:${getUserColor(userId)};font-weight:600">${userName}</span> 试图${action}，但宠物不配合！`, '#ff9900')
-      this.sys.dm.saveUserData(ownerData, groupId)
-      return e.reply(`宠物不配合！${action}失败了~`)
+    if (o.status !== 'bonded') {
+      const evasionChance = this.sys.dm.getEvasionChance(o.obedience)
+      if (evasionChance > 0 && Math.random() * 100 < evasionChance) {
+        this.sys.dm.addLog(ownerData, `<span style="color:${getUserColor(userId)};font-weight:600">${userName}</span> 试图${action}，但宠物不配合！`, '#ff9900')
+        this.sys.dm.saveUserData(ownerData, groupId)
+        return e.reply(`宠物不配合！${action}失败了~`)
+      }
     }
 
     o.petSys.lastInteractTime = now

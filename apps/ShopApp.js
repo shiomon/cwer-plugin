@@ -50,7 +50,10 @@ class ShopApp extends plugin {
     if (currentMoney < item.cost) return e.reply(`金币不足！需要 ${item.cost} 金币，当前只有 ${currentMoney} 金币。`)
 
     const petData = this.sys.dm.extractPetData(ownerData)
-    if (item.type === 'clothing' && !this.sys.shop.allCommonBroken(petData)) return e.reply('调教装尚未解锁！需所有普通装耐久归零后解锁')
+    if (item.type === 'clothing') {
+      if (ownerData.owner.status !== 'bonded') return e.reply('请先缔约后才能购买调教装！')
+      if (!this.sys.shop.allCommonBroken(petData)) return e.reply('调教装尚未解锁！需所有普通装耐久归零后解锁')
+    }
 
     const result = item.type === 'common_set' || item.type === 'clothing'
       ? this.sys.shop.executePurchase(petData, item, ownerData.owner.intimacy || 0)

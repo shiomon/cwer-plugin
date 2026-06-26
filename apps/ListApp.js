@@ -1,7 +1,7 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { HOUSES, CMD_PREFIX, GROUP_ONLY_MSG } from '../config/cfg.js'
+import { HOUSES, CMD_PREFIX, CONFIG, GROUP_ONLY_MSG } from '../config/cfg.js'
 import { renderTemplate } from '../model/html-inject.js'
 import { calculateDays } from '../model/utils.js'
 
@@ -32,6 +32,9 @@ class ListApp extends plugin {
     }
 
     const relList = []
+    let bondedCount = 0
+    let claimedCount = 0
+
     for (const rel of relations) {
       const ownerData = this.sys.dm.readUserData(groupId, rel.ownerId)
       if (!ownerData || !ownerData.owner) continue
@@ -39,29 +42,43 @@ class ListApp extends plugin {
       const o = ownerData.owner
       const isBonded = o.status === 'bonded'
       const intimacy = o.intimacy || 0
+      const obedience = o.obedience || 0
+      const lewd = o.lewd || 0
+
+      if (isBonded) bondedCount++
+      else claimedCount++
 
       relList.push({
         ownerName: o.ownerName || '主人',
         petName: o.petName || '宠物',
-        status: isBonded ? '缔约' : '领养',
+        status: isBonded ? 'bonded' : 'claimed',
         intimacyLevel: this.sys.dm.getIntimacyLevel(intimacy),
         intimacy,
+        obedience,
+        lewd,
         survivalDays: calculateDays(o.petSys?.startTimestamp),
         house: HOUSES[o.petHouse] ? HOUSES[o.petHouse].emoji + ' ' + HOUSES[o.petHouse].name : '破败小屋',
-        goldCoins: o.petSys?.goldCoins || 0
+        goldCoins: o.petSys?.goldCoins || 0,
+        coldWar: o.petSys?.coldWar || false,
+        evasion: isBonded ? 0 : this.sys.dm.getEvasionChance(obedience)
       })
     }
 
     relList.sort((a, b) => {
-      if (a.status === '缔约' && b.status !== '缔约') return -1
-      if (a.status !== '缔约' && b.status === '缔约') return 1
+      if (a.status === 'bonded' && b.status !== 'bonded') return -1
+      if (a.status !== 'bonded' && b.status === 'bonded') return 1
       return b.intimacy - a.intimacy
     })
 
     relList.forEach((r, i) => { r.rank = i + 1 })
 
     try {
-      await renderTemplate(e, listHtmlPath, '_list_temp.html', { relations: relList, totalCount: relList.length }, 'cwerList')
+      await renderTemplate(e, listHtmlPath, '_list_temp.html', {
+        relations: relList,
+        totalCount: relList.length,
+        bondedCount,
+        claimedCount
+      }, 'cwerList')
     } catch (error) {
       console.error('[Cwer] 列表面板渲染失败:', error)
       await e.reply('列表面板渲染失败，请稍后再试')

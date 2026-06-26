@@ -54,8 +54,10 @@ class EventSystem {
   applyTickDecay(ownerData) {
     const o = ownerData.owner
     if (!o) return
+    const isBonded = o.status === 'bonded'
     const decay = CONFIG.TICK_DECAY
     for (const [stat, value] of Object.entries(decay)) {
+      if (stat === 'pain' && !isBonded) continue
       if (o.petStats[stat] !== undefined) {
         o.petStats[stat] = this.dm.clampStat(stat, o.petStats[stat] + value)
       }
@@ -88,7 +90,9 @@ class EventSystem {
   applyEventEffect(ownerData, event) {
     const o = ownerData.owner
     if (!o || !event.effect) return
+    const isBonded = o.status === 'bonded'
     for (const [stat, value] of Object.entries(event.effect)) {
+      if (stat === 'pain' && !isBonded) continue
       if (o.petStats[stat] !== undefined) {
         o.petStats[stat] = this.dm.clampStat(stat, o.petStats[stat] + value)
       }
