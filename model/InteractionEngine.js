@@ -50,7 +50,8 @@ class InteractionEngine {
     const meta = ACTION_META[action]
     const logColor = isCrit ? meta.critColor : meta.normalColor
     const petName = o.petName || '宠物'
-    let logText = this.getLogText(userName, isCrit, isForce, petName, action, userId)
+    const replyText = this.getLogText(userName, isCrit, isForce, petName, action, userId)
+    let logText = replyText
 
     const diff = this._diffStats(before, o)
     if (diff) logText += `\n${diff}`
@@ -60,6 +61,7 @@ class InteractionEngine {
       if (broken.length > 0) {
         const names = broken.map(c => c.name).join('、')
         logText += `\n【爆衣警告】${names} 被彻底撕碎了！`
+        replyText += `\n【爆衣警告】${names} 被彻底撕碎了！`
       }
     }
 
@@ -67,6 +69,7 @@ class InteractionEngine {
       o.petStats.satiety = Math.max(0, o.petStats.satiety - config.forceExtraHunger)
       o.petStats.energy = Math.max(0, o.petStats.energy - config.forceExtraHunger)
       logText += `\n【禁闭惩罚】饱食和体力额外降低${config.forceExtraHunger}！`
+      replyText += `\n【禁闭惩罚】饱食和体力额外降低${config.forceExtraHunger}！`
     }
 
     if (config.goldReward) {
@@ -76,7 +79,7 @@ class InteractionEngine {
       o.petSys.goldCoins = Math.max(0, (o.petSys.goldCoins || 0) - config.goldCost)
     }
 
-    return { logText, replyText: logText, logColor, roll }
+    return { logText, replyText, logColor, roll }
   }
 
   executePetInteraction(ownerData, action, userName, userId) {
@@ -99,11 +102,11 @@ class InteractionEngine {
     const meta = ACTION_META[action]
     const logColor = isCrit ? (meta?.critColor || '#aaffaa') : (meta?.normalColor || '#aaffaa')
     const ownerName = o.ownerName || '主人'
-    let logText = this.getPetLogText(userName, isCrit, isForce, ownerName, action, userId)
+    const replyText = this.getPetLogText(userName, isCrit, isForce, ownerName, action, userId)
+    let logText = replyText
 
     const diff = this._diffStats(before, o)
     if (diff) logText += `\n${diff}`
-
 
     if (config.goldReward) {
       o.petSys.goldCoins = (o.petSys.goldCoins || 0) + config.goldReward
@@ -112,7 +115,7 @@ class InteractionEngine {
       o.petSys.goldCoins = Math.max(0, (o.petSys.goldCoins || 0) - config.goldCost)
     }
 
-    return { logText, replyText: logText, logColor, roll }
+    return { logText, replyText, logColor, roll }
   }
 
   getPetLogText(userName, isCrit, isForce, targetName, action, userId) {
