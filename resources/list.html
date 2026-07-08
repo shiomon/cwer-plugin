@@ -5,15 +5,7 @@
     <title>宠物列表</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- COMMON_CSS -->
-    <script>
-    window.__cwerReady = false;
-    Promise.all([
-        document.fonts.ready,
-        new Promise(r => { window.addEventListener('load', r); })
-    ]).then(() => {
-        requestAnimationFrame(() => { window.__cwerReady = true; });
-    });
-    </script>
+
     <style>
     body {
         font-family: 'Noto Sans SC', 'Noto Color Emoji', 'SF Pro', 'Inter', sans-serif;
@@ -86,17 +78,11 @@
     }
     .tag-bonded { background: #fce4ec; color: #c62828; }
     .tag-claimed { background: #e3f2fd; color: #1565c0; }
-    .tag-steal { background: #fff3e0; color: #e65100; }
-    .tag-nosteal { background: #e8f5e9; color: #2e7d32; }
-    .tag-coldwar { background: #e0e0e0; color: #616161; }
-    .tag-evasion { background: #fce4ec; color: #e91e63; }
     .rel-info { font-size: 13px; }
     .rel-info .level { font-weight: 600; color: #f57f17; }
     .rel-info .value { color: #999; }
     .rel-info .house { color: #666; }
     .rel-info .days { color: #999; }
-    .rel-info .obey { color: #e65100; }
-    .rel-info .lewd { color: #6200ea; }
     .empty-tip { text-align: center; padding: 20px 0; font-size: 15px; color: #999; }
     </style>
 </head>
@@ -133,19 +119,15 @@
 <div class="rel-right">
     {{if r.status === 'bonded'}}
     <span class="rel-tag tag-bonded">缔约</span>
-    <span class="rel-tag tag-nosteal">不可抢</span>
-    {{if r.coldWar}}<span class="rel-tag tag-coldwar">冷战</span>{{/if}}
+
     <span class="rel-info">
     <span class="house">{{r.house}}</span>
     <span class="level">{{r.intimacyLevel}}</span><span class="value">{{r.intimacy}}</span>
-    <span class="obey">服{{r.obedience}}</span>
-    <span class="lewd">涩{{r.lewd}}</span>
     <span class="days">&#x1F4C5;{{r.survivalDays}}天</span>
     </span>
     {{else}}
     <span class="rel-tag tag-claimed">领养</span>
-    <span class="rel-tag tag-steal">可抢</span>
-    {{if r.evasion > 0}}<span class="rel-tag tag-evasion">逃避{{r.evasion}}%</span>{{/if}}
+
     <span class="rel-info">
     <span class="house">{{r.house}}</span>
     <span class="level">{{r.intimacyLevel}}</span><span class="value">{{r.intimacy}}</span>

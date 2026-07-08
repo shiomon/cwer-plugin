@@ -25,10 +25,11 @@ class ShopApp extends plugin {
   }
 
   async showShop(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     try {
       await renderTemplate(e, shopHtmlPath, '_shop_temp.html', {}, 'cwerShop')
     } catch (error) {
-      console.error('[Cwer] 商店面板渲染失败:', error)
+      logger.error('[Cwer] 商店面板渲染失败:', error)
       await e.reply('商店面板渲染失败，请稍后再试')
     }
   }
@@ -46,17 +47,15 @@ class ShopApp extends plugin {
     const item = this.sys.shop.findShopItemByCode(itemText) || this.sys.shop.findShopItem(itemText)
     if (!item) return e.reply('商店里没有这件商品，发送 #宠物商店 查看目录。')
 
+    if (item.type === 'clothing' && ownerData.owner.status !== 'bonded') return e.reply('请先缔约后才能购买调教装！')
+
     const currentMoney = ownerData.owner.petSys.goldCoins || 0
     if (currentMoney < item.cost) return e.reply(`金币不足！需要 ${item.cost} 金币，当前只有 ${currentMoney} 金币。`)
 
     const petData = this.sys.dm.extractPetData(ownerData)
-    if (item.type === 'clothing') {
-      if (ownerData.owner.status !== 'bonded') return e.reply('请先缔约后才能购买调教装！')
-      if (!this.sys.shop.allCommonBroken(petData)) return e.reply('调教装尚未解锁！需所有普通装耐久归零后解锁')
-    }
 
     const result = item.type === 'common_set' || item.type === 'clothing'
-      ? this.sys.shop.executePurchase(petData, item, ownerData.owner.intimacy || 0)
+      ? this.sys.shop.executePurchase(petData, item)
       : { success: false, message: '未知的商品类型' }
 
     if (!result.success) return e.reply(result.message)

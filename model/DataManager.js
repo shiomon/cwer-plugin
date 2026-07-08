@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { CONFIG, CLOTHING_DB, CLOTHING_SLOTS, LOCATIONS, EQUIPMENT_RARITY, HOUSES, COMMON_SETS } from '../config/cfg.js'
+import { CONFIG, CLOTHING_DB, CLOTHING_SLOTS, LOCATIONS, HOUSES, COMMON_SETS, EQUIPMENT_RARITY, randomSkipSlots } from '../config/cfg.js'
 import { calculateDays, beijingNow } from './utils.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -33,12 +33,7 @@ function makeDefaultPetClothes() {
     fresh.effect = null
     clothes[slot] = fresh
   }
-  const allSlots = [...CLOTHING_SLOTS]
-  const shuffled = allSlots.sort(() => Math.random() - 0.5)
-  const skipSlots = new Set([shuffled[0], shuffled[1]])
-  for (const slot of skipSlots) {
-    clothes[slot] = makeEmptySlot()
-  }
+  randomSkipSlots(clothes, makeEmptySlot())
   return clothes
 }
 
@@ -57,10 +52,14 @@ function makeDefaultPetSys() {
 }
 
 function makeDefaultPetAchievements() {
-  return { totalPet: 0, totalTrain: 0, totalHeal: 0, survivalDays: 0, clothesBroken: 0, totalCharm: 0 }
+  return { totalPet: 0, totalTrain: 0, totalHeal: 0, survivalDays: 0, clothesBroken: 0, totalCharm: 0, destroyMasterCount: 0, nakedDays: 0, shopBuyCount: 0, shopBoughtItems: [], clothesCount: {} }
 }
 
 class DataManager {
+  _initDirs = new Set()
+  _relCache = new Map()
+  _REL_CACHE_TTL = 30 * 1000
+
   getDataDir(groupId) {
     return path.join(pluginRoot, 'data', groupId || 'default')
   }
@@ -77,10 +76,12 @@ class DataManager {
   }
 
   initGroupDir(groupId) {
+    if (this._initDirs.has(groupId)) return
     const dir = this.getDataDir(groupId)
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true })
     }
+    this._initDirs.add(groupId)
   }
 
   readUserData(groupId, userId) {
@@ -93,7 +94,7 @@ class DataManager {
       data._userId = userId
       return data
     } catch (error) {
-      console.error('[Cwer] 读取数据失败:', error)
+      logger.error('[Cwer] 读取数据失败:', error)
       return null
     }
   }
@@ -103,7 +104,7 @@ class DataManager {
       this.initGroupDir(groupId)
       const userId = data._userId
       if (!userId) {
-        console.error('[Cwer] 保存数据失败: 缺少_userId')
+        logger.error('[Cwer] 保存数据失败: 缺少_userId')
         return
       }
       if (data.owner && data.owner.petStats) {
@@ -114,7 +115,7 @@ class DataManager {
         }
         for (const s of ['intimacy', 'obedience', 'lewd']) {
           if (data.owner[s] !== undefined) {
-            data.owner[s] = Math.max(0, Math.min(1314, Math.round(data.owner[s])))
+            data.owner[s] = Math.max(0, Math.min(CONFIG.MAX_PROGRESS_STAT, Math.round(data.owner[s])))
           }
         }
       }
@@ -122,8 +123,9 @@ class DataManager {
       delete saveData._userId
       const dataPath = this.getDataPath(groupId, userId)
       fs.writeFileSync(dataPath, JSON.stringify(saveData, null, 2))
+      if (data.owner) this.invalidateRelCache(groupId)
     } catch (error) {
-      console.error('[Cwer] 保存数据失败:', error)
+      logger.error('[Cwer] 保存数据失败:', error)
     }
   }
 
@@ -186,13 +188,6 @@ class DataManager {
     return null
   }
 
-  findRelationByOwner(groupId, ownerId) {
-    const data = this.readUserData(groupId, ownerId)
-    if (data && data.owner && data.owner.petId) {
-      return { ownerId, petId: data.owner.petId }
-    }
-    return null
-  }
 
   findRelationByPet(groupId, petId) {
     const masterId = this.findMasterId(groupId, petId)
@@ -205,6 +200,12 @@ class DataManager {
   }
 
   findAllRelations(groupId) {
+    return this.findAllRelationsWithData(groupId).map(r => ({ ownerId: r.ownerId, petId: r.petId }))
+  }
+
+  findAllRelationsWithData(groupId) {
+    const cached = this._relCache.get(groupId)
+    if (cached && Date.now() - cached.time < this._REL_CACHE_TTL) return cached.data
     this.initGroupDir(groupId)
     const dir = this.getDataDir(groupId)
     const results = []
@@ -214,11 +215,16 @@ class DataManager {
         const userId = file.replace('.json', '')
         const data = this.readUserData(groupId, userId)
         if (data && data.owner && data.owner.petId) {
-          results.push({ ownerId: userId, petId: data.owner.petId })
+          results.push({ ownerId: userId, petId: data.owner.petId, ownerData: data })
         }
       }
     } catch {}
+    this._relCache.set(groupId, { data: results, time: Date.now() })
     return results
+  }
+
+  invalidateRelCache(groupId) {
+    this._relCache.delete(groupId)
   }
 
   setupOwnerRelation(ownerData, petData, ownerName, petName, petAvatar, ownerAvatar) {
@@ -272,9 +278,6 @@ class DataManager {
     data.owner = null
   }
 
-  clearPetRelation(data) {
-    data.masterId = null
-  }
 
   migrateData(data) {
     if (data.owner && data.owner.petStats) {
@@ -406,7 +409,24 @@ class DataManager {
     }
     parts.push(clothingBonus)
     const bonus = 1 + parts.reduce((a, b) => a + b, 0)
-    const detail = parts.map(p => (1 + p).toFixed(2))
+    const detailLabels = []
+    detailLabels.push(`体${(1 + parts[0]).toFixed(1)}`)
+    detailLabels.push(`饱${(1 + parts[1]).toFixed(1)}`)
+    let pi = 2
+    if (isBonded) {
+      detailLabels.push(`痛${(1 + parts[pi]).toFixed(1)}`)
+      pi++
+    }
+    detailLabels.push(`敏${(1 + parts[pi]).toFixed(1)}`)
+    pi++
+    detailLabels.push(`洁${(1 + parts[pi]).toFixed(1)}`)
+    pi++
+    detailLabels.push(`装${(1 + parts[pi]).toFixed(1)}`)
+    pi++
+    const houseObj = HOUSES[data.owner?.petHouse]
+    const houseTrainBonus = houseObj?.bonus?.intimacyPct ? 1 + houseObj.bonus.intimacyPct / 100 : 1.0
+    detailLabels.push(`房${houseTrainBonus.toFixed(1)}`)
+    const detail = detailLabels
     return { bonus, detail }
   }
 
@@ -431,7 +451,7 @@ class DataManager {
     if (!house || !house.bonus) return
     if (house.bonus.intimacyPct && data.owner.intimacy > 0) {
       const gain = Math.max(1, Math.floor(data.owner.intimacy * house.bonus.intimacyPct / 100))
-      data.owner.intimacy = Math.min(1314, data.owner.intimacy + gain)
+      data.owner.intimacy = Math.min(CONFIG.MAX_PROGRESS_STAT, data.owner.intimacy + gain)
     }
   }
 
@@ -439,4 +459,5 @@ class DataManager {
 
 }
 
+export { makeDefaultPetSys, makeDefaultPetAchievements }
 export default DataManager

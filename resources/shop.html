@@ -5,15 +5,7 @@
     <title>宠物商店</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- COMMON_CSS -->
-    <script>
-        window.__cwerReady = false;
-        Promise.all([
-            document.fonts.ready,
-            new Promise(r => { window.addEventListener('load', r); })
-        ]).then(() => {
-            requestAnimationFrame(() => { window.__cwerReady = true; });
-        });
-    </script>
+
     <style>
         body {
             font-family: 'Noto Sans SC', 'Noto Color Emoji', 'SF Pro', 'Inter', sans-serif;
@@ -79,9 +71,13 @@
         .tip-box {
             border-radius: 8px; padding: 10px 14px;
             font-size: 15px; color: #555; line-height: 1.6;
-
         }
         .tip-box strong { color: #6a1b9a; }
+        .tip-row {
+            display: flex; align-items: center; padding: 6px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .tip-row:last-child { border-bottom: none; }
         .section-rare .cmd-name { color: #1565c0; }
         .section-epic .cmd-name { color: #e65100; }
         .section-mythic .cmd-name { color: #e91e63; }
@@ -197,12 +193,12 @@
         <div class="card-title" style="color: #444;">📖 购买说明</div>
         <div class="card-inner">
             <div class="tip-box">
-                <strong>套装购买：</strong>#宠物购买t1 ~ t4<br>
-                <strong>换装购买：</strong>#宠物购买y1 ~ y35<br>
-                <strong>房子购买：</strong>#宠物买房f1 ~ f3 或 #宠物买房名称<br>
-                <strong>购买条件：</strong>稀有+换装需所有普通装破损<br>
-                <strong>金币获取：</strong>通过互动获取，初始99<br>
-                <strong>房子折旧：</strong>旧房原价60%抵扣新房，可跳级
+                <div class="tip-row"><strong>套装购买：</strong>$购买t1 ~ t4 或 $购买套装名</div>
+                <div class="tip-row"><strong>换装购买：</strong>$购买y1 ~ y35 或 $购买装备名</div>
+                <div class="tip-row"><strong>房子购买：</strong>$买房f1 ~ f3 或 $买房房屋名</div>
+                <div class="tip-row"><strong>购买条件：</strong>稀有+换装需所有普通装破损</div>
+                <div class="tip-row"><strong>金币获取：</strong>通过互动获取，初始99</div>
+                <div class="tip-row"><strong>房子折旧：</strong>旧房原价60%抵扣新房，可跳级</div>
             </div>
         </div>
     </div>

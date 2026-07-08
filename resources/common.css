@@ -1,7 +1,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     width: 850px; margin: 0; padding: 0 0 20px 0;
-    font-family: 'Noto Sans SC', 'Noto Color Emoji', sans-serif;
+    font-family: system-ui, -apple-system, 'Noto Sans SC', 'Noto Color Emoji', sans-serif;
     color: #1a1a2e; letter-spacing: -0.01em;
     position: relative;
 }

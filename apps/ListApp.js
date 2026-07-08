@@ -1,7 +1,7 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { HOUSES, CMD_PREFIX, CONFIG, GROUP_ONLY_MSG } from '../config/cfg.js'
+import { HOUSES, CMD_PREFIX, GROUP_ONLY_MSG } from '../config/cfg.js'
 import { renderTemplate } from '../model/html-inject.js'
 import { calculateDays } from '../model/utils.js'
 
@@ -25,25 +25,19 @@ class ListApp extends plugin {
   async showList(e) {
     if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const groupId = String(e.group_id)
-    const relations = this.sys.dm.findAllRelations(groupId)
-
-    if (relations.length === 0) {
-      return e.reply('本群还没有任何宠物关系~')
-    }
+    const relations = this.sys.dm.findAllRelationsWithData(groupId)
 
     const relList = []
     let bondedCount = 0
     let claimedCount = 0
 
-    for (const rel of relations) {
-      const ownerData = this.sys.dm.readUserData(groupId, rel.ownerId)
+    for (const { ownerData } of relations) {
       if (!ownerData || !ownerData.owner) continue
 
       const o = ownerData.owner
       const isBonded = o.status === 'bonded'
       const intimacy = o.intimacy || 0
       const obedience = o.obedience || 0
-      const lewd = o.lewd || 0
 
       if (isBonded) bondedCount++
       else claimedCount++
@@ -55,11 +49,11 @@ class ListApp extends plugin {
         intimacyLevel: this.sys.dm.getIntimacyLevel(intimacy),
         intimacy,
         obedience,
-        lewd,
+        lewd: o.lewd || 0,
         survivalDays: calculateDays(o.petSys?.startTimestamp),
         house: HOUSES[o.petHouse] ? HOUSES[o.petHouse].emoji + ' ' + HOUSES[o.petHouse].name : '破败小屋',
         goldCoins: o.petSys?.goldCoins || 0,
-        coldWar: o.petSys?.coldWar || false,
+
         evasion: isBonded ? 0 : this.sys.dm.getEvasionChance(obedience)
       })
     }
@@ -80,7 +74,7 @@ class ListApp extends plugin {
         claimedCount
       }, 'cwerList')
     } catch (error) {
-      console.error('[Cwer] 列表面板渲染失败:', error)
+      logger.error('[Cwer] 列表面板渲染失败:', error)
       await e.reply('列表面板渲染失败，请稍后再试')
     }
   }

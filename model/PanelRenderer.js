@@ -1,8 +1,10 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { CONFIG, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, HOUSES, LOCATIONS } from '../config/cfg.js'
+import { CONFIG, EQUIPMENT_RARITY, CLOTHING_SLOTS, SLOT_NAMES, HOUSES, LOCATIONS, avatarUrl } from '../config/cfg.js'
 import { calculateDays } from './utils.js'
 import { renderTemplate } from './html-inject.js'
+
+const _statusFnCache = new Map()
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const htmlSrc = path.join(__dirname, '..', 'resources', 'panel.html')
@@ -76,9 +78,9 @@ class PanelRenderer {
 
     return {
       petName: pet?.petName || '宠物',
-      petAvatar: pet?.petAvatar || (petData._userId ? `https://q1.qlogo.cn/g?b=qq&s=100&nk=${petData._userId}` : ''),
+      petAvatar: pet?.petAvatar || (petData._userId ? avatarUrl(petData._userId) : ''),
       ownerName: pet?.ownerName || '主人',
-      ownerAvatar: pet?.ownerAvatar || (pet?.ownerId ? `https://q1.qlogo.cn/g?b=qq&s=100&nk=${pet.ownerId}` : ''),
+      ownerAvatar: pet?.ownerAvatar || (pet?.ownerId ? avatarUrl(pet.ownerId) : ''),
       statusText,
       traits,
       stats: st,
@@ -93,7 +95,7 @@ class PanelRenderer {
       totalEffectText,
       logs: petData.diary || [],
       achievements: unlockedAchievements,
-      achievementsCount: (petData.sys.achievements || []).length,
+      achievementCount: (petData.sys.achievements || []).length,
       totalAchievements: Object.keys(CONFIG.ACHIEVEMENTS).length,
       goldCoins: petData.sys.goldCoins || 0,
       survivalDays: calculateDays(petData.sys.startTimestamp),
@@ -113,7 +115,11 @@ class PanelRenderer {
     }
     for (const entry of [...CONFIG.STATUS_TEXTS].sort((a, b) => b.priority - a.priority)) {
       try {
-        const fn = new Function(...Object.keys(mergedStats), `return (${entry.condition})`)
+        const fn = _statusFnCache.get(entry.condition) || (() => {
+          const f = new Function(...Object.keys(mergedStats), `return (${entry.condition})`)
+          _statusFnCache.set(entry.condition, f)
+          return f
+        })()
         if (fn(...Object.values(mergedStats))) return entry.text
       } catch { continue }
     }

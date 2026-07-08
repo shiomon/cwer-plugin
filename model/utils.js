@@ -1,5 +1,11 @@
+const _fnCache = new Map()
+
 export function evalCondition(condition, stats) {
-  const fn = new Function(...Object.keys(stats), `return (${condition})`)
+  let fn = _fnCache.get(condition)
+  if (!fn) {
+    fn = new Function(...Object.keys(stats), `return (${condition})`)
+    _fnCache.set(condition, fn)
+  }
   return fn(...Object.values(stats))
 }
 
@@ -9,10 +15,13 @@ export function calculateDays(startTimestamp) {
 }
 
 export function beijingNow() {
-  const offset = 8 * 60
-  const now = new Date()
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000
-  return new Date(utc + offset * 60000)
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+  }).formatToParts(new Date())
+  const get = (type) => parts.find(p => p.type === type)?.value || '0'
+  return new Date(`${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}:${get('second')}+08:00`)
 }
 
 export function beijingDateString() {

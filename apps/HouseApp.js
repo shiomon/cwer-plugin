@@ -1,7 +1,8 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import { HOUSES, CMD_PREFIX, NO_PET_MSG, GROUP_ONLY_MSG } from '../config/cfg.js'
+import { HOUSES, HOUSE_UPGRADE_ORDER, CMD_PREFIX, NO_PET_MSG, GROUP_ONLY_MSG } from '../config/cfg.js'
 
-const FLOOR_MAP = { 'f1': 'cozy', 'f2': 'luxury', 'f3': 'palace' }
+const FLOOR_MAP = {}
+HOUSE_UPGRADE_ORDER.forEach((key, i) => { if (key !== 'broken') FLOOR_MAP[`f${i}`] = key })
 const BUY_HOUSE_REG = new RegExp(`^${CMD_PREFIX}买房`)
 
 class HouseApp extends plugin {
@@ -26,6 +27,7 @@ class HouseApp extends plugin {
 
     const { ownerData, userData } = this.sys.dm.resolveOwnerData(groupId, userId)
     if (!ownerData || !ownerData.owner) return e.reply(NO_PET_MSG)
+    if (ownerData.owner.status !== 'bonded') return e.reply('请先缔约后才能买房！')
     ownerData._userId = userData.masterId || userId
 
     let targetKey = FLOOR_MAP[input] || null

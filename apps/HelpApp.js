@@ -1,7 +1,7 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { CMD_PREFIX } from '../config/cfg.js'
+import { CMD_PREFIX, GROUP_ONLY_MSG } from '../config/cfg.js'
 import { renderTemplate } from '../model/html-inject.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -22,10 +22,11 @@ class HelpApp extends plugin {
   }
 
   async showHelp(e) {
+    if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     try {
       await renderTemplate(e, helpHtmlPath, '_help_temp.html', {}, 'cwerHelp')
     } catch (error) {
-      console.error('[Cwer] 帮助面板渲染失败:', error)
+      logger.error('[Cwer] 帮助面板渲染失败:', error)
       await e.reply('帮助面板渲染失败，请稍后再试')
     }
   }

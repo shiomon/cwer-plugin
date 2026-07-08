@@ -42,7 +42,7 @@ class AchievementApp extends plugin {
     try {
       await renderTemplate(e, achHtmlPath, '_ach_temp.html', { achievements, unlockedCount: unlocked.length, achievementCount: total }, 'cwerAch')
     } catch (error) {
-      console.error('[Cwer] 成就面板渲染失败:', error)
+      logger.error('[Cwer] 成就面板渲染失败:', error)
       await e.reply('成就面板渲染失败，请稍后再试')
     }
   }

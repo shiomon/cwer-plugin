@@ -1,5 +1,5 @@
 import { CONFIG, LOCATIONS, RANDOM_EVENTS, CLOTHING_SLOTS } from '../config/cfg.js'
-import { evalCondition, beijingDateString } from './utils.js'
+import { evalCondition, beijingDateString, calculateDays } from './utils.js'
 
 function getRandomWeightedItem(items) {
   const totalWeight = items.reduce((sum, item) => sum + (item.weight || 1), 0)
@@ -12,13 +12,16 @@ function getRandomWeightedItem(items) {
 }
 
 class EventSystem {
-  constructor(dataManager) {
+  constructor(dataManager, achievementSystem) {
     this.dm = dataManager
-    this.shop = null
+    this.ach = achievementSystem
   }
 
-  tickTime(ownerData, minutes) {
-    this.applyTickDecay(ownerData)
+  tickTime(ownerData, minutes = 1) {
+    const decayTicks = Math.max(1, Math.floor(minutes / CONFIG.INTERACTION_TIME_COST))
+    for (let i = 0; i < decayTicks; i++) {
+      this.applyTickDecay(ownerData)
+    }
 
     this.updateTraits(ownerData)
     this.checkDailyEvents(ownerData)
@@ -30,7 +33,7 @@ class EventSystem {
     const today = beijingDateString()
     if (o.petSys.lastCheckDate !== today) {
       o.petSys.lastCheckDate = today
-      o.petAchievements.survivalDays = (o.petAchievements.survivalDays || 0) + 1
+      o.petAchievements.survivalDays = Math.max(o.petAchievements.survivalDays || 0, calculateDays(o.petSys.startTimestamp))
       this.dm.updateStatHistory(ownerData)
       o.petSys.location = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)].name
       o.petStats.energy = this.dm.clampStat('energy', o.petStats.energy + CONFIG.DAILY_ENERGY_RECOVERY)
@@ -39,14 +42,14 @@ class EventSystem {
         o.petStats[key] = this.dm.clampStat(key, o.petStats[key])
       }
       this.dm.addLog(ownerData, `新的一天开始了。在 [${o.petSys.location}] 醒来。`, '#aaa')
-      if (Math.random() < 0.4) {
+      if (Math.random() < CONFIG.LOCATION_EVENT_CHANCE) {
         this.triggerRandomEvent(ownerData, 'location')
       }
       if (Math.random() < CONFIG.NIGHT_EVENT_CHANCE) {
         this.triggerNightEvent(ownerData)
       }
-      if (this.shop) {
-        this.shop.checkAchievements(ownerData)
+      if (this.ach) {
+        this.ach.checkAchievements(ownerData)
       }
     }
   }
@@ -106,7 +109,7 @@ class EventSystem {
     if (!location || !location.modifier) return null
     const modifier = {}
     for (const [key, value] of Object.entries(location.modifier)) {
-      modifier[key] = Math.round(value * 0.3)
+      modifier[key] = Math.round(value * CONFIG.LOCATION_MODIFIER_FACTOR)
     }
     return modifier
   }

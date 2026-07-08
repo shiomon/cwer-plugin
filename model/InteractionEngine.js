@@ -2,18 +2,20 @@ import { CONFIG, EQUIPMENT_RARITY, CLOTHING_SLOTS, getUserColor } from '../confi
 
 const DUR_LOSS_ACTIONS = new Set(['鞭打', '打脸', '打屁股', '振动', '滴蜡'])
 
+const ACH_VALUES = { pet: 10, train: 8 }
+
+const SHARED_ACTIONS = new Set(['羞辱', '鞭打', '打脸', '打屁股', '禁闭', '振动', '滴蜡', '撒娇', '生气气', '讨好', '献媚', '勾引'])
+
 const ACTION_META = {
   投喂: { critColor: '#33cc33', normalColor: '#33cc33' },
   洗澡: { critColor: '#44aaff', normalColor: '#88ccff' },
   陪玩: { critColor: '#44ff44', normalColor: '#88cc44' },
-  摸头: { critColor: '#33cc33', normalColor: '#aaffaa' },
+  顺毛: { critColor: '#33cc33', normalColor: '#aaffaa' },
   摸摸: { critColor: '#33cc33', normalColor: '#aaffaa' },
   亲亲: { critColor: '#ff69b4', normalColor: '#ffb6c1' },
   捏脸: { critColor: '#ffab40', normalColor: '#ffe0b2' },
   抱抱: { critColor: '#44ff44', normalColor: '#aaffaa' },
   送礼物: { critColor: '#ff9900', normalColor: '#ffcc00' },
-  挠痒: { critColor: '#ff33ff', normalColor: '#ff66ff' },
-  狗叫: { critColor: '#ff9800', normalColor: '#ffcc80' },
   羞辱: { critColor: '#ff9900', normalColor: '#ffcc00' },
   鞭打: { critColor: '#ff3333', normalColor: '#ff6666' },
   打脸: { critColor: '#ff3333', normalColor: '#ff6666' },
@@ -21,9 +23,11 @@ const ACTION_META = {
   禁闭: { critColor: '#7b1fa2', normalColor: '#ab47bc' },
   振动: { critColor: '#e91e63', normalColor: '#ff66ff' },
   滴蜡: { critColor: '#ff5722', normalColor: '#ff8a65' },
-  强制鞭打: { critColor: '#ff0000', normalColor: '#cc0000' },
-  强制禁闭: { critColor: '#ff0000', normalColor: '#cc0000' },
-  强制羞辱: { critColor: '#ff0000', normalColor: '#cc0000' }
+  撒娇: { critColor: '#ff69b4', normalColor: '#ffb6c1' },
+  生气气: { critColor: '#ff3333', normalColor: '#ff6666' },
+  讨好: { critColor: '#33cc33', normalColor: '#aaffaa' },
+  献媚: { critColor: '#e91e63', normalColor: '#ff66ff' },
+  勾引: { critColor: '#ff5722', normalColor: '#ff8a65' }
 }
 
 class InteractionEngine {
@@ -32,69 +36,15 @@ class InteractionEngine {
     this.dm = dataManager
   }
 
-  executeOwnerInteraction(ownerData, action, userName, userId) {
-    const config = CONFIG.INTERACTION_EFFECTS[action]
-    if (!config) {
-      return { logText: '未知的互动方式', replyText: '未知的互动方式', logColor: '#ccc', roll: 0 }
-    }
-
-    const o = ownerData.owner
-    const isForce = config.type === 'force'
-    const roll = isForce ? 0 : Math.floor(Math.random() * 100) + 1
-    const isCrit = !isForce && config.critThreshold > 0 && roll >= config.critThreshold
-
-    const { bonus: baseBonus } = this.dm.getTrainBonusSync(ownerData)
-
-    const locationModifier = this.es.getLocationModifier(ownerData, action)
-
-    const before = this._snapshotStats(o)
-    this.applyAction(ownerData, action, config, isCrit, baseBonus, locationModifier)
-
-    const meta = ACTION_META[action]
-    const logColor = isCrit ? meta.critColor : meta.normalColor
-    const petName = o.petName || '宠物'
-    const replyText = this.getLogText(userName, isCrit, isForce, petName, action, userId)
-    let logText = replyText
-
-    const diff = this._diffStats(before, o)
-    if (diff) logText += `\n${diff}`
-
-    if (DUR_LOSS_ACTIONS.has(action)) {
-      const broken = this.damageRandomCommonClothing(ownerData, config.forceBreakClothes)
-      if (broken.length > 0) {
-        const names = broken.map(c => c.name).join('、')
-        logText += `\n【爆衣警告】${names} 被彻底撕碎了！`
-        replyText += `\n【爆衣警告】${names} 被彻底撕碎了！`
-      }
-    }
-
-    if (config.forceExtraHunger) {
-      o.petStats.satiety = Math.max(0, o.petStats.satiety - config.forceExtraHunger)
-      o.petStats.energy = Math.max(0, o.petStats.energy - config.forceExtraHunger)
-      logText += `\n【禁闭惩罚】饱食和体力额外降低${config.forceExtraHunger}！`
-      replyText += `\n【禁闭惩罚】饱食和体力额外降低${config.forceExtraHunger}！`
-    }
-
-    if (config.goldReward) {
-      o.petSys.goldCoins = (o.petSys.goldCoins || 0) + config.goldReward
-    }
-    if (config.goldCost) {
-      o.petSys.goldCoins = Math.max(0, (o.petSys.goldCoins || 0) - config.goldCost)
-    }
-
-    return { logText, replyText, logColor, roll }
-  }
-
-  executePetInteraction(ownerData, action, userName, userId) {
+  executeInteraction(ownerData, action, userName, userId, isOwner = true) {
     const config = CONFIG.INTERACTION_EFFECTS[action]
     if (!config || !ownerData.owner) {
       return { logText: '未知的互动方式', replyText: '未知的互动方式', logColor: '#ccc', roll: 0 }
     }
 
     const o = ownerData.owner
-    const isForce = config.type === 'force'
-    const roll = isForce ? 0 : Math.floor(Math.random() * 100) + 1
-    const isCrit = !isForce && config.critThreshold > 0 && roll >= config.critThreshold
+    const roll = Math.floor(Math.random() * 100) + 1
+    const isCrit = config.critThreshold > 0 && roll >= config.critThreshold
 
     const { bonus: baseBonus } = this.dm.getTrainBonusSync(ownerData)
     const locationModifier = this.es.getLocationModifier(ownerData, action)
@@ -104,12 +54,23 @@ class InteractionEngine {
 
     const meta = ACTION_META[action]
     const logColor = isCrit ? (meta?.critColor || '#aaffaa') : (meta?.normalColor || '#aaffaa')
-    const ownerName = o.ownerName || '主人'
-    const replyText = this.getPetLogText(userName, isCrit, isForce, ownerName, action, userId)
+    const targetName = isOwner ? (o.petName || '宠物') : (o.ownerName || '主人')
+    const replyText = this.getLogText(userName, isCrit, targetName, action, userId, isOwner)
     let logText = replyText
 
     const diff = this._diffStats(before, o)
     if (diff) logText += `\n${diff}`
+
+    if (isOwner) {
+      if (DUR_LOSS_ACTIONS.has(action)) {
+        const broken = this.damageRandomCommonClothing(ownerData, 0.1)
+        if (broken.length > 0) {
+          const names = broken.map(c => c.name).join('、')
+          logText += `\n【爆衣警告】${names} 被彻底撕碎了！`
+          replyText += `\n【爆衣警告】${names} 被彻底撕碎了！`
+        }
+      }
+    }
 
     if (config.goldReward) {
       o.petSys.goldCoins = (o.petSys.goldCoins || 0) + config.goldReward
@@ -119,31 +80,6 @@ class InteractionEngine {
     }
 
     return { logText, replyText, logColor, roll }
-  }
-
-  getPetLogText(userName, isCrit, isForce, targetName, action, userId) {
-    const u = `<span style="color:${getUserColor(userId)};font-weight:600">${userName}</span>：`
-    const logs = {
-      投喂: { crit: () => `${u} 给${targetName}做了丰盛大餐！自己也吃得好满足！`, normal: () => `${u} 给${targetName}做了点吃的，自己也恢复了饱食和体力。` },
-      洗澡: { crit: () => `${u} 帮${targetName}放好洗澡水，自己也洗得舒舒服服！`, normal: () => `${u} 帮${targetName}放好洗澡水，自己也顺便洗了个澡。` },
-      陪玩: { crit: () => `${u} 陪${targetName}玩出了【暴击】！开心极了！`, normal: () => `${u} 陪${targetName}玩耍，亲密度提升了不少。` },
-      摸头: { crit: () => `${u} 乖巧地把头凑过去，${targetName}温柔地摸了摸...`, normal: () => `${u} 凑过去让${targetName}摸了摸头。` },
-      摸摸: { crit: () => `${u} 凑过去让${targetName}摸摸...暴击！舒服得眯起了眼！`, normal: () => `${u} 凑过去让${targetName}摸了摸。` },
-      亲亲: { crit: () => `${u} 亲了${targetName}一口！暴击！脸红透了！`, normal: () => `${u} 亲了亲${targetName}。` },
-      捏脸: { crit: () => `${u} 让${targetName}捏脸...暴击！软软的！`, normal: () => `${u} 让${targetName}捏了捏脸。` },
-      抱抱: { crit: () => `${u} 扑进${targetName}怀里！暴击抱抱！温暖溢出！`, normal: () => `${u} 抱了抱${targetName}，好温暖。` },
-      送礼物: { crit: () => `${u} 精心准备了礼物送给${targetName}！${targetName}感动不已！`, normal: () => `${u} 送了礼物给${targetName}。` },
-      撒娇: { crit: () => `${u} 撒了个大娇！${targetName}心都化了！`, normal: () => `${u} 向${targetName}撒了个娇~` },
-      生气气: { crit: () => `${u} 气鼓鼓的！化悲愤为暴食！`, normal: () => `${u} 生气气了！化悲愤为食欲！` },
-      讨好: { crit: () => `${u} 极力讨好${targetName}！效果拔群！`, normal: () => `${u} 讨好${targetName}~` },
-      献媚: { crit: () => `${u} 献媚献出了【暴击】！${targetName}心跳加速！`, normal: () => `${u} 向${targetName}献媚~` },
-      勾引: { crit: () => `${u} 勾引出了【暴击】！${targetName}欲罢不能！`, normal: () => `${u} 勾引${targetName}~` }
-    }
-    const entry = logs[action]
-    if (!entry) return `${u} 对${targetName}使用了${action}~`
-    if (isForce) return entry.crit ? entry.crit() : `${u} 对${targetName}使用了${action}！`
-    if (isCrit && entry.crit) return entry.crit()
-    return entry.normal ? entry.normal() : `${u} 对${targetName}使用了${action}~`
   }
 
   applyAction(ownerData, action, config, isCrit, bonus, modifier) {
@@ -165,18 +101,24 @@ class InteractionEngine {
       o.petStats.satiety += base
     }
     if (config.satietyLoss) {
-      o.petStats.satiety -= config.satietyLoss
+      const base = isCrit ? (config.critSatietyLoss || config.satietyLoss) : config.satietyLoss
+      o.petStats.satiety -= base
     }
     if (config.energyGain) {
       const base = isCrit ? (config.critEnergyGain || config.energyGain) : config.energyGain
       o.petStats.energy += base
     }
     if (config.energyLoss) {
-      o.petStats.energy -= config.energyLoss
+      const base = isCrit ? (config.critEnergyLoss || config.energyLoss) : config.energyLoss
+      o.petStats.energy -= base
     }
     if (config.hygieneGain) {
       const base = isCrit ? (config.critHygieneGain || config.hygieneGain) : config.hygieneGain
       o.petStats.hygiene += base
+    }
+    if (config.hygieneLoss) {
+      const base = isCrit ? (config.critHygieneLoss || config.hygieneLoss) : config.hygieneLoss
+      o.petStats.hygiene -= base
     }
     if (config.sensitivityGain) {
       const base = isCrit ? (config.critSensitivityGain || config.sensitivityGain) : config.sensitivityGain
@@ -189,18 +131,19 @@ class InteractionEngine {
     }
     if (config.intimacyLoss) {
       const loss = isCrit ? (config.critIntimacyLoss || config.intimacyLoss) : config.intimacyLoss
-      o.intimacy -= Math.round(loss * (config.forceMultiplier || 1))
+      o.intimacy -= Math.round(loss)
     }
     if (config.obedienceGain) {
       const gain = isCrit ? (config.critObedienceGain || config.obedienceGain) : config.obedienceGain
-      o.obedience += Math.round(gain * bonus * (config.forceMultiplier || 1))
+      o.obedience += Math.round(gain * bonus)
     }
     if (config.lewdGain) {
       const gain = isCrit ? (config.critLewdGain || config.lewdGain) : config.lewdGain
-      o.lewd += Math.round(gain * bonus * (config.forceMultiplier || 1))
+      o.lewd += Math.round(gain * bonus)
     }
 
-    const achValue = config.type === 'pet' ? 10 : (config.type === 'train' ? 8 : 12)
+
+    const achValue = ACH_VALUES[config.type] || 8
     if (config.type === 'pet') {
       o.petAchievements.totalPet = (o.petAchievements.totalPet || 0) + achValue
       o.petAchievements.totalHeal = (o.petAchievements.totalHeal || 0) + achValue
@@ -220,7 +163,7 @@ class InteractionEngine {
   }
 
 
-  damageRandomCommonClothing(ownerData, forceBreak = false) {
+  damageRandomCommonClothing(ownerData, breakChance = 0.1) {
     const o = ownerData.owner
     const commonSlots = CLOTHING_SLOTS.filter(slot => {
       const item = o.petClothes[slot]
@@ -230,7 +173,7 @@ class InteractionEngine {
     const targetSlot = commonSlots[Math.floor(Math.random() * commonSlots.length)]
     const item = o.petClothes[targetSlot]
     const broken = []
-    if (forceBreak || Math.random() < 0.1) {
+    if (Math.random() < breakChance) {
       item.dur = 0
       o.petAchievements.destroyMasterCount = (o.petAchievements.destroyMasterCount || 0) + 1
     } else {
@@ -246,20 +189,18 @@ class InteractionEngine {
     return broken
   }
 
-  getLogText(userName, isCrit, isForce, targetName, action, userId) {
+  getLogText(userName, isCrit, targetName, action, userId, isOwner = true) {
     const u = `<span style="color:${getUserColor(userId)};font-weight:600">${userName}</span>：`
-    const logs = {
+    const ownerLogs = {
       投喂: { crit: () => `${u} 投喂了丰盛大餐！${targetName}吃得好满足！`, normal: () => `${u} 投喂了零食，${targetName}恢复了饱食和体力。` },
       洗澡: { crit: () => `${u} 小心翼翼帮${targetName}洗澡，非常舒适！`, normal: () => `${u} 帮${targetName}洗了个澡，清洁度恢复了。` },
       陪玩: { crit: () => `${u} 陪${targetName}玩出了【暴击】！开心极了！`, normal: () => `${u} 陪${targetName}玩耍，亲密度提升了不少。` },
-      摸头: { crit: () => `${u} 极其温柔地摸头...${targetName}发出了呼噜声！`, normal: () => `${u} 摸了摸${targetName}的头。` },
+      顺毛: { crit: () => `${u} 顺毛顺出了【暴击】！${targetName}舒服得打呼噜！`, normal: () => `${u} 顺着${targetName}的毛摸，好乖。` },
       摸摸: { crit: () => `${u} 温柔地摸摸${targetName}...暴击！${targetName}舒服地眯起了眼！`, normal: () => `${u} 摸了摸${targetName}，好乖。` },
       亲亲: { crit: () => `${u} 亲了${targetName}一口！暴击亲亲！${targetName}脸红透了！`, normal: () => `${u} 亲了亲${targetName}。` },
       捏脸: { crit: () => `${u} 捏${targetName}的脸捏出了【暴击】！软软的！`, normal: () => `${u} 捏了捏${targetName}的脸。` },
       抱抱: { crit: () => `${u} 给了${targetName}一个暴击抱抱！温暖溢出！`, normal: () => `${u} 给了${targetName}一个温暖的抱抱。` },
       送礼物: { crit: () => `${u} 送出了精美礼物！${targetName}感动不已！`, normal: () => `${u} 送了礼物给${targetName}。` },
-      挠痒: { crit: () => `${u} 挠痒挤出了【暴击】！${targetName}笑到窒息！`, normal: () => `${u} 疯狂挠${targetName}的痒！` },
-      狗叫: { crit: () => `${u}让${targetName}学出了【暴击狗叫】！彻底沦陷！`, normal: () => `${u}让${targetName}学了一声狗叫，害羞了。` },
       羞辱: { crit: () => `${u} 的羞辱让${targetName}深深恐惧！`, normal: () => `${u} 对${targetName}进行了严厉羞辱。` },
       鞭打: { crit: () => `${u} 挥鞭抽出了【暴击】！${targetName}皮开肉绽！`, normal: () => `${u} 狠狠鞭打了${targetName}。` },
       打脸: { crit: () => `${u} 一巴掌扇出了【暴击】！${targetName}脸都肿了！`, normal: () => `${u} 扇了${targetName}一巴掌。` },
@@ -267,13 +208,33 @@ class InteractionEngine {
       禁闭: { crit: () => `${u} 把${targetName}关进小黑屋，彻底屈服！`, normal: () => `${u} 把${targetName}关进了禁闭室。` },
       振动: { crit: () => `${u} 开启了【强力振动】！${targetName}身体颤抖不已！`, normal: () => `${u} 开启了振动模式，${targetName}敏感度大幅提升。` },
       滴蜡: { crit: () => `${u} 滴蜡滴出了【暴击】！${targetName}又痛又爽！`, normal: () => `${u} 在${targetName}身上滴下蜡烛。` },
-      强制鞭打: { crit: () => `${u} 强制鞭打！${targetName}无处可逃！`, normal: () => `${u} 强制鞭打！${targetName}无处可逃！` },
-      强制禁闭: { crit: () => `${u} 强制关禁闭！${targetName}被彻底锁住！`, normal: () => `${u} 强制关禁闭！${targetName}被彻底锁住！` },
-      强制羞辱: { crit: () => `${u} 强制羞辱！${targetName}尊严尽失！`, normal: () => `${u} 强制羞辱！${targetName}尊严尽失！` }
+      撒娇: { crit: () => `${u} 撒了个大娇！${targetName}心都化了！`, normal: () => `${u} 向${targetName}撒了个娇~` },
+      生气气: { crit: () => `${u} 气鼓鼓的！化悲愤为暴食！`, normal: () => `${u} 生气气了！化悲愤为食欲！` },
+      讨好: { crit: () => `${u} 极力讨好${targetName}！效果拔群！`, normal: () => `${u} 讨好${targetName}~` },
+      献媚: { crit: () => `${u} 献媚献出了【暴击】！${targetName}心跳加速！`, normal: () => `${u} 向${targetName}献媚~` },
+      勾引: { crit: () => `${u} 勾引出了【暴击】！${targetName}欲罢不能！`, normal: () => `${u} 勾引${targetName}~` }
+    }
+    const petLogs = {
+      投喂: { crit: () => `${u} 给${targetName}做了丰盛大餐！自己也吃得好满足！`, normal: () => `${u} 给${targetName}做了点吃的，自己也恢复了饱食和体力。` },
+      洗澡: { crit: () => `${u} 帮${targetName}放好洗澡水，自己也洗得舒舒服服！`, normal: () => `${u} 帮${targetName}放好洗澡水，自己也顺便洗了个澡。` },
+      陪玩: { crit: () => `${u} 陪${targetName}玩出了【暴击】！开心极了！`, normal: () => `${u} 陪${targetName}玩耍，亲密度提升了不少。` },
+      顺毛: { crit: () => `${u} 凑过去让${targetName}顺毛...暴击！舒服得打呼噜！`, normal: () => `${u} 凑过去让${targetName}顺了顺毛。` },
+      摸摸: { crit: () => `${u} 凑过去让${targetName}摸摸...暴击！舒服得眯起了眼！`, normal: () => `${u} 凑过去让${targetName}摸了摸。` },
+      亲亲: { crit: () => `${u} 亲了${targetName}一口！暴击！脸红透了！`, normal: () => `${u} 亲了亲${targetName}。` },
+      捏脸: { crit: () => `${u} 让${targetName}捏脸...暴击！软软的！`, normal: () => `${u} 让${targetName}捏了捏脸。` },
+      抱抱: { crit: () => `${u} 扑进${targetName}怀里！暴击抱抱！温暖溢出！`, normal: () => `${u} 抱了抱${targetName}，好温暖。` },
+      送礼物: { crit: () => `${u} 精心准备了礼物送给${targetName}！${targetName}感动不已！`, normal: () => `${u} 送了礼物给${targetName}。` }
+    }
+
+    let logs
+    if (SHARED_ACTIONS.has(action)) {
+      logs = ownerLogs
+    } else {
+      logs = isOwner ? ownerLogs : petLogs
     }
     const entry = logs[action]
     if (!entry) return `${u} 对${targetName}进行了${action}。`
-    if (isForce) return entry.crit ? entry.crit() : `${u} 强制对${targetName}进行了${action}！`
+
     if (isCrit && entry.crit) return entry.crit()
     return entry.normal ? entry.normal() : `${u} 对${targetName}进行了${action}。`
   }
@@ -303,7 +264,7 @@ class InteractionEngine {
     const parts = []
     for (const [k, label] of Object.entries(pctNames)) {
       const d = Math.round((o.petStats[k] - before[k]) * 10) / 10
-      if (Math.abs(d) > 0.01) parts.push(`${label}${d > 0 ? '+' : ''}${d}%`)
+      if (Math.abs(d) > 0.01) parts.push(`${label}${d > 0 ? '+' : ''}${d}`)
     }
     for (const [k, label] of Object.entries(progNames)) {
       const d = Math.round(o[k] - before[k])

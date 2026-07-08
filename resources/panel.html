@@ -5,15 +5,7 @@
     <title>宠物养成</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- COMMON_CSS -->
-    <script>
-        window.__cwerReady = false;
-        Promise.all([
-            document.fonts.ready,
-            new Promise(r => { window.addEventListener('load', r); })
-        ]).then(() => {
-            requestAnimationFrame(() => { window.__cwerReady = true; });
-        });
-    </script>
+
     <style>
         body {
             font-family: 'Noto Sans SC', 'Noto Color Emoji', 'SF Pro', 'Inter', sans-serif;
@@ -22,7 +14,7 @@
             width: 850px; padding: 24px 28px; margin: 0;
         }
         .card {
-            background: transparent;
+            background: rgba(255,255,255,0.08);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255,255,255,0.3);
             border-radius: 16px; padding: 0 20px 16px 20px; margin-bottom: 16px;
@@ -37,8 +29,8 @@
         .card-title {
             display: flex; align-items: center; justify-content: space-between;
             font-size: 18px; font-weight: 600; line-height: 1;
-            padding: 16px 0 8px 0;
-            margin: 0 0 10px 0;
+            padding: 10px 0 6px 0;
+            margin: 0 0 8px 0;
             border-bottom: 1px solid rgba(69,39,160,0.15);
             position: relative;
             text-shadow: 0 1px 3px rgba(0,0,0,0.3);
@@ -206,9 +198,25 @@
 <body id="container">
     <div class="bg-image" id="bgImage"></div>
     <!-- BG_LOADER -->
-    <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 16px;">
-    <div style="display: flex; flex-direction: column; align-items: center; width: 317px; margin: 0 8px 0 0; padding-top: 16px;">
-        <div style="position: relative; width: 130px;">
+
+    <!-- 第一行：双头像居中 -->
+    <div style="display: flex; align-items: center; justify-content: space-evenly; padding: 16px 0 8px 0;">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <div style="position: relative; width: 130px; height: 122px; background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2); border-radius: 44% 44% 50% 50% / 30% 30% 56% 56%; overflow: visible;">
+                <div style="position: absolute; top: -20px; left: 10px; width: 36px; height: 34px; background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); border-radius: 50% 50% 36% 36% / 50% 50% 20% 20%; transform: rotate(-22deg); box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2);">
+                    <div style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%); width: 20px; height: 18px; background: rgba(100,181,246,0.4); border-radius: 50% 50% 36% 36% / 50% 50% 20% 20%;"></div>
+                </div>
+                <div style="position: absolute; top: -20px; right: 10px; width: 36px; height: 34px; background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); border-radius: 50% 50% 36% 36% / 50% 50% 20% 20%; transform: rotate(22deg); box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2);">
+                    <div style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%); width: 20px; height: 18px; background: rgba(100,181,246,0.4); border-radius: 50% 50% 36% 36% / 50% 50% 20% 20%;"></div>
+                </div>
+                {{if ownerAvatar}}
+                <img src="{{ownerAvatar}}" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.6); box-shadow: 0 0 15px 5px rgba(0,0,0,0.2);" />
+                {{else}}
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, #e3f2fd, #e8eaf6); display: flex; align-items: center; justify-content: center; font-size: 44px; box-shadow: 0 0 15px 5px rgba(0,0,0,0.2);">&#x1F451;</div>
+                {{/if}}
+            </div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center;">
             <div style="position: relative; width: 130px; height: 122px; background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2); border-radius: 44% 44% 50% 50% / 30% 30% 56% 56%; overflow: visible;">
                 <div style="position: absolute; top: -20px; left: 10px; width: 36px; height: 34px; background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); border-radius: 50% 50% 36% 36% / 50% 50% 20% 20%; transform: rotate(-22deg); box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2);">
                     <div style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%); width: 20px; height: 18px; background: rgba(255,182,193,0.4); border-radius: 50% 50% 36% 36% / 50% 50% 20% 20%;"></div>
@@ -219,56 +227,41 @@
                 {{if petAvatar}}
                 <img src="{{petAvatar}}" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.6); box-shadow: 0 0 15px 5px rgba(0,0,0,0.2);" />
                 {{else}}
-                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, #fce4ec, #f3e5f5); display: flex; align-items: center; justify-content: center; font-size: 44px; box-shadow: 0 0 15px 5px rgba(0,0,0,0.2);">🐾</div>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, #fce4ec, #f3e5f5); display: flex; align-items: center; justify-content: center; font-size: 44px; box-shadow: 0 0 15px 5px rgba(0,0,0,0.2);">&#x1F43E;</div>
                 {{/if}}
             </div>
         </div>
-        <div class="card-inner" style="text-align: center; font-size: 11px; line-height: 1.4; padding: 6px 8px; margin-top: auto;">
-            <div class="sub-text" style="font-size: 11px; margin-bottom: 4px;">{{statusText}}</div>
-            <div style="line-height: 1.8;">
-                {{each traits t}}
-                <span class="trait-badge {{t.css}}" style="font-size: 10px;">{{t.name}}</span>
-                {{/each}}
-                {{if traits.length === 0}}<span class="dim-text" style="font-size:11px; font-weight:700;">(纯洁无瑕)</span>{{/if}}
-            </div>
-        </div>
-    </div>
-    <div class="card" style="padding: 0 20px 16px 20px; margin-bottom: 0; margin-left: 0; width: 469px;">
-        <div class="card-title"><span class="card-title-left" style="color: #ad1457;">🐾 {{petName}}</span><span class="card-title-right">$面板 $商店 $帮助 $成就 $列表</span></div>
-        <div class="card-inner" style="padding: 12px 20px 12px 20px;">
-
-        <div class="stat-row" style="margin-bottom: 6px;">
-            <div class="stat-label t-intimacy" style="font-size: 15px;"><span>亲密</span><span>{{intimacy}}/1314</span></div>
-            <div class="bar-bg" style="height: 16px;"><div class="bar-fill c-intimacy" style="width: {{(intimacy / 1314 * 100).toFixed(1)}}%;"></div></div>
-        </div>
-        <div class="stat-row" style="margin-bottom: 6px;">
-            <div class="stat-label t-obey" style="font-size: 15px;"><span>服从</span><span>{{obedience}}/1314</span></div>
-            <div class="bar-bg" style="height: 16px;"><div class="bar-fill c-obey" style="width: {{(obedience / 1314 * 100).toFixed(1)}}%;"></div></div>
-        </div>
-        <div class="stat-row" style="margin-bottom: 0;">
-            <div class="stat-label t-lewd" style="font-size: 15px;"><span>涩气</span><span>{{lewd}}/1314</span></div>
-            <div class="bar-bg" style="height: 16px;"><div class="bar-fill c-lewd" style="width: {{(lewd / 1314 * 100).toFixed(1)}}%;"></div></div>
-        </div>
-        </div>
-    </div>
     </div>
 
+    <!-- 第二行：名称标题 + 信息 -->
     <div class="card">
-        <div class="card-title"><span class="card-title-left" style="color: #2e7d32;">📍 状态</span></div>
-        <div class="card-inner">
-
-        <div style="margin-bottom: 6px; padding-left: 4px;">
-            {{if location}}
-            <div style="display: flex; gap: 16px; margin-bottom: 2px;">
-                <span style="font-size: 14px; font-weight: 600;">地点：{{location}}</span>
-                {{if locationModifier}}<span style="font-size: 14px; color: #42a5f5;">效果：{{locationModifier}}</span>{{/if}}
+        <div class="card-title" style="justify-content: center; gap: 16px;">
+            <span class="card-title-left" style="color: #1565c0;">{{ownerName}}</span>
+            <span style="color: #ad1457; font-size: 20px; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">&#x1F43E;</span>
+            <span class="card-title-left" style="color: #ad1457;">{{petName}}</span>
+        </div>
+        <div class="card-inner" style="padding: 12px 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: #757575; padding: 0 20px 0 18px; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <span>&#x1F4C5; 第<span style="font-weight: 600;">{{survivalDays}}</span>天</span>
+                <span>&#x1F4B0; <span style="color: #f9a825; font-weight: 600;">{{goldCoins}}</span></span>
             </div>
-            {{/if}}
-            <div style="font-size: 14px; line-height: 1.5;">
-                <strong style="color: #66bb6a;">加成:</strong> {{trainBonusDetail}} = x{{trainBonus.toFixed(2)}}<br>
-                <strong style="color: #66bb6a;">攻略:</strong> 首先提升状态, 状态好有加成, 着装效果也会提升加成, 调教会大增
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <span class="house-badge">{{house.emoji}} {{house.name}}</span>
+                <span>缔约：<span style="color: {{if bondLabel === '缔约'}}#e53935{{else}}#43a047{{/if}}; font-weight: 600;">{{if bondLabel === '缔约'}}已缔约，不可抢{{else}}未缔约，可以抢{{/if}}</span></span>
             </div>
         </div>
+        <div style="padding: 0 20px 0 18px; font-size: 14px; color: #757575;">
+            <span>成就：<span style="color: #f9a825; font-weight: 600;">{{achievementCount}}/{{totalAchievements}}</span></span>
+            {{each achievements a}}<span class="trait-badge {{a.cls}}" style="font-size: 13px;">{{a.name}}</span> {{/each}}{{if achievements.length === 0}}暂未获得{{/if}}
+        </div>
+        </div>
+    </div>
+
+    <!-- 第三行：📍 状态 -->
+    <div class="card">
+        <div class="card-title"><span class="card-title-left" style="color: #2e7d32;">&#x1F4CD; 状态</span></div>
+        <div class="card-inner">
 
         <div class="circle-row">
             <div class="li">
@@ -345,8 +338,55 @@
         </div>
     </div>
 
+    <!-- 第四行：信息 + 成长 并排 -->
+    <div style="display: flex; align-items: stretch; gap: 16px; margin-bottom: 16px;">
+        <div class="card" style="width: 50%; margin-bottom: 0;">
+            <div class="card-title"><span class="card-title-left" style="color: #ad1457;">&#x1F4CB; 信息</span></div>
+            <div class="card-inner" style="padding: 10px 14px;">
+            <div style="font-size: 13px; line-height: 1.6; margin-bottom: 4px;">
+                <strong style="color: #2e7d32;">状态：</strong><span class="sub-text">{{statusText}}</span>
+            </div>
+            <div style="font-size: 13px; line-height: 1.6; margin-bottom: 6px;">
+                <strong style="color: #7b1fa2;">特质：</strong>
+                {{each traits t}}
+                <span class="trait-badge {{t.css}}" style="font-size: 10px;">{{t.name}}</span>
+                {{/each}}
+                {{if traits.length === 0}}<span class="dim-text" style="font-size:11px; font-weight:700;">(纯洁无瑕)</span>{{/if}}
+            </div>
+            {{if location}}
+            <div style="font-size: 13px; line-height: 1.5; margin-bottom: 4px;">
+                <span style="font-weight: 600;">地点：{{location}}</span>
+                {{if locationModifier}}<span style="color: #42a5f5; margin-left: 8px;">效果：{{locationModifier}}</span>{{/if}}
+            </div>
+            {{/if}}
+            <div style="font-size: 12px; line-height: 1.5; color: #757575;">
+                <strong style="color: #66bb6a;">加成:</strong> {{trainBonusDetail}} = x{{trainBonus.toFixed(2)}}<br>
+                <strong style="color: #66bb6a;">攻略:</strong> 先提升到合适状态,买房屋,缔约解锁调教,买衣服
+            </div>
+            </div>
+        </div>
+        <div class="card" style="width: 50%; margin-bottom: 0;">
+            <div class="card-title"><span class="card-title-left" style="color: #ff6d00;">&#x1F4C8; 成长</span><span class="card-title-right">$面板 $商店 $帮助 $成就 $列表</span></div>
+            <div class="card-inner" style="padding: 12px 20px 12px 20px;">
+            <div class="stat-row" style="margin-bottom: 6px;">
+                <div class="stat-label t-intimacy" style="font-size: 15px;"><span>亲密</span><span>{{intimacy}}/1314</span></div>
+                <div class="bar-bg" style="height: 16px;"><div class="bar-fill c-intimacy" style="width: {{(intimacy / 1314 * 100).toFixed(1)}}%;"></div></div>
+            </div>
+            <div class="stat-row" style="margin-bottom: 6px;">
+                <div class="stat-label t-obey" style="font-size: 15px;"><span>服从</span><span>{{obedience}}/1314</span></div>
+                <div class="bar-bg" style="height: 16px;"><div class="bar-fill c-obey" style="width: {{(obedience / 1314 * 100).toFixed(1)}}%;"></div></div>
+            </div>
+            <div class="stat-row" style="margin-bottom: 0;">
+                <div class="stat-label t-lewd" style="font-size: 15px;"><span>涩气</span><span>{{lewd}}/1314</span></div>
+                <div class="bar-bg" style="height: 16px;"><div class="bar-fill c-lewd" style="width: {{(lewd / 1314 * 100).toFixed(1)}}%;"></div></div>
+            </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
-        <div class="card-title"><span class="card-title-left" style="color: #7b1fa2;">👗 着装</span></div>
+
+        <div class="card-title"><span class="card-title-left" style="color: #7b1fa2;">&#x1F457; 着装</span></div>
         <div class="card-inner">
         <div class="clothes-box">
             {{each slotList slot}}
@@ -391,29 +431,6 @@
             </div>
             {{/each}}
             {{if logs.length === 0}}<div class="dim-text" style="text-align: center; margin-top: 40px;">暂无事件记录</div>{{/if}}
-        </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-title">
-            <span class="card-title-left" style="color: #1565c0;">👑 主人</span>
-        </div>
-        <div class="card-inner" style="padding: 12px 0;">
-        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: #757575; padding: 0 20px 0 18px; margin-bottom: 8px;">
-            <div style="display: flex; align-items: center; gap: 14px;">
-                <span>主人：<span style="color: #1565c0; font-weight: 600;">{{ownerName}}</span></span>
-                <span class="house-badge">{{house.emoji}} {{house.name}}</span>
-                <span>💰 <span style="color: #f9a825; font-weight: 600;">{{goldCoins}}</span></span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 14px;">
-                <span>📅 第<span style="font-weight: 600;">{{survivalDays}}</span>天</span>
-                <span>宠物缔约：<span style="color: {{if bondLabel === '缔约'}}#e53935{{else}}#43a047{{/if}}; font-weight: 600;">{{if bondLabel === '缔约'}}已缔约，不可抢{{else}}未缔约，可以抢{{/if}}</span></span>
-            </div>
-        </div>
-        <div style="padding: 0 20px 0 18px; font-size: 14px; color: #757575;">
-            <span>成就：<span style="color: #f9a825; font-weight: 600;">{{achievementsCount}}/{{totalAchievements}}</span></span>
-            {{each achievements a}}<span class="trait-badge {{a.cls}}" style="font-size: 13px;">{{a.name}}</span> {{/each}}{{if achievements.length === 0}}暂未获得{{/if}}
         </div>
         </div>
     </div>
