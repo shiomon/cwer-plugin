@@ -96,49 +96,49 @@ const CONFIG = {
     // 百分比属性(饱食/体力/清洁/疼痛/敏感): 固定值，不受bonus影响
     // 成长值属性(亲密/服从/涩气): 受bonus加成
     投喂: {
-      satietyGain: 20, energyGain: 20, intimacyGain: 5,
-      critSatietyGain: 30, critEnergyGain: 30, critIntimacyGain: 8,
+      satietyGain: 40, energyGain: 40, intimacyGain: 5,
+      critSatietyGain: 50, critEnergyGain: 50, critIntimacyGain: 8,
       painLoss: 8, critPainLoss: 12,
       critThreshold: 75, type: 'pet', goldReward: 2
     },
     洗澡: {
-      hygieneGain: 40, energyGain: 16, lewdGain: 5,
-      critHygieneGain: 60, critEnergyGain: 24, critLewdGain: 8,
+      hygieneGain: 60, energyGain: 36, lewdGain: 5,
+      critHygieneGain: 80, critEnergyGain: 44, critLewdGain: 8,
       critThreshold: 70, type: 'pet', goldReward: 2
     },
     陪玩: {
-      intimacyGain: 6, satietyGain: 10, painLoss: 8,
-      critIntimacyGain: 10, critSatietyGain: 16, critPainLoss: 12,
+      intimacyGain: 6, satietyGain: 30, painLoss: 8,
+      critIntimacyGain: 10, critSatietyGain: 36, critPainLoss: 12,
       critThreshold: 80, type: 'pet', goldReward: 3
     },
     顺毛: {
-      lewdGain: 3, hygieneGain: 20, painLoss: 10,
-      critLewdGain: 5, critHygieneGain: 32, critPainLoss: 16,
+      lewdGain: 3, hygieneGain: 40, painLoss: 10,
+      critLewdGain: 5, critHygieneGain: 52, critPainLoss: 16,
       critThreshold: 85, type: 'pet', goldReward: 1
     },
     摸摸: {
-      intimacyGain: 3, energyGain: 12, painLoss: 8,
-      critIntimacyGain: 5, critEnergyGain: 18, critPainLoss: 12,
+      intimacyGain: 3, energyGain: 32, painLoss: 8,
+      critIntimacyGain: 5, critEnergyGain: 38, critPainLoss: 12,
       critThreshold: 82, type: 'pet', goldReward: 1
     },
     亲亲: {
-      intimacyGain: 6, lewdGain: 4, hygieneGain: 10,
-      critIntimacyGain: 10, critLewdGain: 7, critHygieneGain: 16,
+      intimacyGain: 6, lewdGain: 4, hygieneGain: 30,
+      critIntimacyGain: 10, critLewdGain: 7, critHygieneGain: 36,
       critThreshold: 78, type: 'pet', goldReward: 2
     },
     捏脸: {
-      lewdGain: 5, satietyGain: 12, intimacyGain: 5,
-      critLewdGain: 8, critSatietyGain: 18, critIntimacyGain: 8,
+      lewdGain: 5, satietyGain: 32, intimacyGain: 5,
+      critLewdGain: 8, critSatietyGain: 38, critIntimacyGain: 8,
       critThreshold: 85, type: 'pet', goldReward: 1
     },
     抱抱: {
-      intimacyGain: 4, energyGain: 15, painLoss: 8,
-      critIntimacyGain: 7, critEnergyGain: 22, critPainLoss: 12,
+      intimacyGain: 4, energyGain: 35, painLoss: 8,
+      critIntimacyGain: 7, critEnergyGain: 42, critPainLoss: 12,
       critThreshold: 80, type: 'pet', goldReward: 1
     },
     送礼物: {
-      intimacyGain: 10, hygieneGain: 15, satietyGain: 20,
-      critIntimacyGain: 16, critHygieneGain: 24, critSatietyGain: 30,
+      intimacyGain: 10, hygieneGain: 35, satietyGain: 40,
+      critIntimacyGain: 16, critHygieneGain: 44, critSatietyGain: 50,
       critThreshold: 90, type: 'pet', goldReward: 0, goldCost: 15
     },
 
@@ -148,45 +148,44 @@ const CONFIG = {
       critThreshold: 82, type: 'train', goldReward: 3
     },
     鞭打: {
-      obedienceGain: 6, painGain: 15, energyLoss: 8,
-      critObedienceGain: 12, critPainGain: 24, critEnergyLoss: 14,
+      obedienceGain: 6, painGain: 35, energyLoss: 8,
+      critObedienceGain: 12, critPainGain: 44, critEnergyLoss: 14,
       critThreshold: 92, type: 'train', goldReward: 4
     },
     打脸: {
-      obedienceGain: 5, painGain: 12, hygieneLoss: 10,
-      critObedienceGain: 10, critPainGain: 20, critHygieneLoss: 16,
+      obedienceGain: 5, painGain: 32, hygieneLoss: 10,
+      critObedienceGain: 10, critPainGain: 40, critHygieneLoss: 16,
       critThreshold: 85, type: 'train', goldReward: 3
     },
     打屁股: {
-      lewdGain: 5, painGain: 12, energyLoss: 10,
-      critLewdGain: 10, critPainGain: 20, critEnergyLoss: 16,
+      lewdGain: 5, painGain: 32, energyLoss: 10,
+      critLewdGain: 10, critPainGain: 40, critEnergyLoss: 16,
       critThreshold: 80, type: 'train', goldReward: 4
     },
     禁闭: {
-      obedienceGain: 6, sensitivityGain: 12, energyLoss: 15,
-      critObedienceGain: 12, critSensitivityGain: 20, critEnergyLoss: 24,
+      obedienceGain: 6, sensitivityGain: 32, energyLoss: 15,
+      critObedienceGain: 12, critSensitivityGain: 40, critEnergyLoss: 24,
       critThreshold: 82, type: 'train', goldReward: 5
     },
     振动: {
-      lewdGain: 4, sensitivityGain: 12, hygieneLoss: 8,
-      critLewdGain: 8, critSensitivityGain: 20, critHygieneLoss: 14,
+      lewdGain: 4, sensitivityGain: 32, hygieneLoss: 8,
+      critLewdGain: 8, critSensitivityGain: 40, critHygieneLoss: 14,
       critThreshold: 85, type: 'train', goldReward: 4
     },
     滴蜡: {
-      obedienceGain: 4, lewdGain: 2, painGain: 12,
-      critObedienceGain: 8, critLewdGain: 4, critPainGain: 20,
+      obedienceGain: 4, lewdGain: 2, painGain: 32,
+      critObedienceGain: 8, critLewdGain: 4, critPainGain: 40,
       critThreshold: 80, type: 'train', goldReward: 4
     },
 
-    // 宠物自主指令（仅缔约后可用）
     撒娇: {
       intimacyGain: 4,
       critIntimacyGain: 7,
       critThreshold: 80, type: 'pet', goldReward: 1
     },
     生气气: {
-      intimacyLoss: 2, satietyGain: 8,
-      critSatietyGain: 14,
+      intimacyLoss: 2, satietyGain: 28,
+      critSatietyGain: 34,
       critThreshold: 75, type: 'pet', goldReward: 1
     },
     讨好: {
@@ -200,8 +199,8 @@ const CONFIG = {
       critThreshold: 80, type: 'pet', goldReward: 2
     },
     勾引: {
-      lewdGain: 6, sensitivityGain: 4,
-      critLewdGain: 12, critSensitivityGain: 8,
+      lewdGain: 6, sensitivityGain: 24,
+      critLewdGain: 12, critSensitivityGain: 28,
       critThreshold: 80, type: 'pet', goldReward: 3
     }
   },
