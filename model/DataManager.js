@@ -410,8 +410,8 @@ class DataManager {
     parts.push(clothingBonus)
     const bonus = 1 + parts.reduce((a, b) => a + b, 0)
     const detailLabels = []
-    detailLabels.push(`体${(1 + parts[0]).toFixed(1)}`)
-    detailLabels.push(`饱${(1 + parts[1]).toFixed(1)}`)
+    detailLabels.push(`饱${(1 + parts[0]).toFixed(1)}`)
+    detailLabels.push(`体${(1 + parts[1]).toFixed(1)}`)
     let pi = 2
     if (isBonded) {
       detailLabels.push(`痛${(1 + parts[pi]).toFixed(1)}`)
@@ -424,8 +424,11 @@ class DataManager {
     detailLabels.push(`装${(1 + parts[pi]).toFixed(1)}`)
     pi++
     const houseObj = HOUSES[data.owner?.petHouse]
-    const houseTrainBonus = houseObj?.bonus?.intimacyPct ? 1 + houseObj.bonus.intimacyPct / 100 : 1.0
-    detailLabels.push(`房${houseTrainBonus.toFixed(1)}`)
+    const houseGoldBonus = houseObj?.bonus?.goldBonus || 0
+    const houseIntimacyPct = houseObj?.bonus?.intimacyPct || 0
+    if (houseGoldBonus || houseIntimacyPct) {
+      detailLabels.push(`房+${houseGoldBonus}金${houseIntimacyPct ? `/${houseIntimacyPct}%亲` : ''}`)
+    }
     const detail = detailLabels
     return { bonus, detail }
   }
