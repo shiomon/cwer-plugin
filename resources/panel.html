@@ -200,7 +200,7 @@
     <!-- BG_LOADER -->
 
     <!-- 第一行：双头像居中 -->
-    <div style="display: flex; align-items: center; justify-content: space-evenly; padding: 16px 0 8px 0;">
+    <div style="display: flex; align-items: center; justify-content: space-evenly; padding: 16px 0 28px 0;">
         <div style="display: flex; flex-direction: column; align-items: center;">
             <div style="position: relative; width: 130px; height: 122px; background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2); border-radius: 44% 44% 50% 50% / 30% 30% 56% 56%; overflow: visible;">
                 <div style="position: absolute; top: -20px; left: 10px; width: 36px; height: 34px; background: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); border-radius: 50% 50% 36% 36% / 50% 50% 20% 20%; transform: rotate(-22deg); box-shadow: 0 0 20px 8px rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2);">
@@ -235,10 +235,13 @@
 
     <!-- 第二行：名称标题 + 信息 -->
     <div class="card">
-        <div class="card-title" style="justify-content: center; gap: 16px;">
-            <span class="card-title-left" style="color: #1565c0;">{{ownerName}}</span>
-            <span style="color: #ad1457; font-size: 20px; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">&#x1F43E;</span>
-            <span class="card-title-left" style="color: #ad1457;">{{petName}}</span>
+        <div class="card-title" style="justify-content: space-between; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <span class="card-title-left" style="color: #1565c0;">{{ownerName}}</span>
+                <span style="color: #ad1457; font-size: 20px; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">&#x1F43E;</span>
+                <span class="card-title-left" style="color: #ad1457;">{{petName}}</span>
+            </div>
+            <span class="card-title-right"><!-- SUBTITLE --></span>
         </div>
         <div class="card-inner" style="padding: 12px 0;">
         <div style="display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: #757575; padding: 0 20px 0 18px; margin-bottom: 8px;">

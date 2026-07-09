@@ -70,7 +70,8 @@
         white-space: nowrap;
     }
     .rel-right {
-        width: 55%; display: flex; align-items: center; gap: 6px; justify-content: flex-start; flex-wrap: wrap;
+        width: 55%; display: flex; align-items: center; gap: 10px; justify-content: flex-start; flex-wrap: wrap;
+        padding-left: 5%;
     }
     .rel-tag {
         font-size: 12px; padding: 1px 6px; border-radius: 8px; font-weight: 500;
@@ -78,7 +79,8 @@
     }
     .tag-bonded { background: #fce4ec; color: #c62828; }
     .tag-claimed { background: #e3f2fd; color: #1565c0; }
-    .rel-info { font-size: 13px; }
+    .rel-info { font-size: 13px; display: flex; align-items: center; gap: 10px; }
+    .rel-level-val { display: inline-flex; align-items: center; gap: 2px; }
     .rel-info .level { font-weight: 600; color: #f57f17; }
     .rel-info .value { color: #999; }
     .rel-info .house { color: #666; }
@@ -122,7 +124,7 @@
 
     <span class="rel-info">
     <span class="house">{{r.house}}</span>
-    <span class="level">{{r.intimacyLevel}}</span><span class="value">{{r.intimacy}}</span>
+    <span class="rel-level-val"><span class="level">{{r.intimacyLevel}}</span><span class="value">{{r.intimacy}}</span></span>
     <span class="days">&#x1F4C5;{{r.survivalDays}}天</span>
     </span>
     {{else}}
@@ -130,7 +132,7 @@
 
     <span class="rel-info">
     <span class="house">{{r.house}}</span>
-    <span class="level">{{r.intimacyLevel}}</span><span class="value">{{r.intimacy}}</span>
+    <span class="rel-level-val"><span class="level">{{r.intimacyLevel}}</span><span class="value">{{r.intimacy}}</span></span>
     <span class="days">&#x1F4C5;{{r.survivalDays}}天</span>
     </span>
     {{/if}}

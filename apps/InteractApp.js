@@ -87,11 +87,13 @@ class InteractApp extends plugin {
     if (!ownerData || !ownerData.owner) return e.reply(NO_PET_MSG)
     if (ownerData.owner.status !== 'bonded') return e.reply('请先缔约后才能使用此指令！')
     ownerData._userId = userData.masterId || userId
+    const isOwner = !userData.masterId
+    const targetId = isOwner ? ownerData.owner.petId : userData.masterId
 
     if (action === '求关注') {
       this.sys.dm.addLog(ownerData, `<span style="color:${getUserColor(userId)};font-weight:600">${userName}</span> 求关注！`, '#66ccff')
       this.sys.postInteraction(ownerData, null, groupId)
-      return await e.reply([`${userName} 求关注！`, safeAt(ownerData.owner.petId), ` 你的宠物在等你互动哦~`])
+      return await e.reply([safeAt(targetId), ` ${userName} 求关注！你的宠物在等你互动哦~`])
     }
 
     if (action === '嘲讽') {
@@ -101,7 +103,7 @@ class InteractApp extends plugin {
       const taunt = taunts[Math.floor(Math.random() * taunts.length)]
       this.sys.dm.addLog(ownerData, `<span style="color:${getUserColor(userId)};font-weight:600">${userName}</span>：${taunt}`, '#ff69b4')
       this.sys.dm.saveUserData(ownerData, groupId)
-      return await e.reply([`${userName}：${taunt}`, safeAt(ownerData.owner.petId)])
+      return await e.reply([safeAt(targetId), ` ${userName}：${taunt}`])
     }
   }
 
