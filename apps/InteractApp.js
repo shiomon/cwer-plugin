@@ -114,12 +114,14 @@ class InteractApp extends plugin {
     const remain = this.sys.checkCooldown(o.petSys)
     if (remain !== null) return e.reply(`宠物在回味中...请${remain}秒后再来`)
 
+    const config = CONFIG.INTERACTION_EFFECTS[action]
+    const gainMap = { satiety: 'satietyGain', energy: 'energyGain', hygiene: 'hygieneGain', sensitivity: 'sensitivityGain', pain: 'painGain' }
     const zeroStats = []
-    if (o.petStats.satiety <= 0) zeroStats.push('饱食')
-    if (o.petStats.energy <= 0) zeroStats.push('体力')
-    if (o.petStats.hygiene <= 0) zeroStats.push('清洁')
-    if (o.petStats.sensitivity <= 0) zeroStats.push('敏感')
-    if (o.status === 'bonded' && o.petStats.pain <= 0) zeroStats.push('疼痛')
+    if (o.petStats.satiety <= 0 && !config?.satietyGain) zeroStats.push('饱食')
+    if (o.petStats.energy <= 0 && !config?.energyGain) zeroStats.push('体力')
+    if (o.petStats.hygiene <= 0 && !config?.hygieneGain) zeroStats.push('清洁')
+    if (o.petStats.sensitivity <= 0 && !config?.sensitivityGain) zeroStats.push('敏感')
+    if (o.status === 'bonded' && o.petStats.pain <= 0 && !config?.painGain) zeroStats.push('疼痛')
 
     if (isOwner && o.status !== 'bonded') {
       const evasionChance = this.sys.dm.getEvasionChance(o.obedience)
