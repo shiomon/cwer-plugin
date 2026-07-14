@@ -1,4 +1,4 @@
-# cwer-plugin v3.0.1
+# cwer-plugin v3.0.2
 
 群聊宠物养成，Yunzai框架的1对1养成插件
 
