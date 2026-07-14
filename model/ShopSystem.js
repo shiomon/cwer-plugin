@@ -9,7 +9,7 @@ class ShopSystem {
   allCommonBroken(data) {
     return CLOTHING_SLOTS.every(slot => {
       const c = data.clothes?.[slot]
-      return !c || c.rarity === 'none' || (c.rarity === 'common' && (c.dur === undefined || c.dur <= 0))
+      return !c || c.rarity === 'none' || c.rarity !== 'common' || (c.dur !== undefined && c.dur <= 0)
     })
   }
 
@@ -83,7 +83,7 @@ class ShopSystem {
     if (!this.allCommonBroken(data)) {
       const wornSlots = CLOTHING_SLOTS.filter(slot => {
         const c = data.clothes[slot]
-        return c && c.rarity === 'common' && (c.dur === undefined || c.dur > 0)
+        return c && c.rarity === 'common' && c.dur !== undefined && c.dur > 0
       })
       const wornNames = wornSlots.map(s => SLOT_NAMES[s]).join('、')
       return {
