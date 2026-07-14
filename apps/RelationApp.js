@@ -323,7 +323,7 @@ class RelationApp extends plugin {
     if (userPhase.phase === 'claimed' && userPhase.role === 'owner') {
       const petId = userData.owner.petId
       if (userData.owner.intimacy < 99) {
-        return e.reply(`亲密度不足99，当前等级：${this.sys.dm.getIntimacyLevel(userData.owner.intimacy)}`)
+        return e.reply(`亲密度不足99，当前等级：${this.sys.dm.getIntimacyLevel(userData.owner.intimacy)}\n💡 多用宠爱指令增加亲密度`)
       }
 
       const key = `${groupId}_${petId}`
@@ -369,7 +369,7 @@ class RelationApp extends plugin {
     ownerData._userId = ownerId
 
     if (ownerData.owner.intimacy < 99) {
-      return e.reply(`亲密度不足99，当前等级：${this.sys.dm.getIntimacyLevel(ownerData.owner.intimacy)}`)
+      return e.reply(`亲密度不足99，当前等级：${this.sys.dm.getIntimacyLevel(ownerData.owner.intimacy)}\n💡 多用宠爱指令增加亲密度`)
     }
 
     const notifications = this.executeBond(groupId, ownerData, userData, ownerId, userId)

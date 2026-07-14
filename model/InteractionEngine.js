@@ -55,7 +55,7 @@ class InteractionEngine {
     const meta = ACTION_META[action]
     const logColor = isCrit ? (meta?.critColor || '#aaffaa') : (meta?.normalColor || '#aaffaa')
     const targetName = isOwner ? (o.petName || '宠物') : (o.ownerName || '主人')
-    const replyText = this.getLogText(userName, isCrit, targetName, action, userId, isOwner)
+    let replyText = this.getLogText(userName, isCrit, targetName, action, userId, isOwner)
     let logText = replyText
 
     const diff = this._diffStats(before, o)

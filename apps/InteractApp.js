@@ -52,7 +52,7 @@ class InteractApp extends plugin {
 
     if (isTrain || isBondOnly) {
       if (userData.owner && userData.owner.petId) {
-        if (userData.owner.status !== 'bonded') return e.reply(isTrain ? '请先与宠物缔约后才能使用调教指令！' : '请先缔约后才能使用此指令！')
+        if (userData.owner.status !== 'bonded') return e.reply(isTrain ? '领养阶段仅可用宠爱指令，$缔约 后才可用调教指令！' : '请先$缔约 后才能使用此指令！')
         return this.executeAction(e, userData, action, userName, userId, groupId, true)
       }
       if (userData.masterId) {
@@ -85,7 +85,7 @@ class InteractApp extends plugin {
   async handleSpecial(e, action, groupId, userId, userName) {
     const { ownerData, userData } = this.sys.dm.resolveOwnerData(groupId, userId)
     if (!ownerData || !ownerData.owner) return e.reply(NO_PET_MSG)
-    if (ownerData.owner.status !== 'bonded') return e.reply('请先缔约后才能使用此指令！')
+    if (ownerData.owner.status !== 'bonded') return e.reply('请先$缔约 后才能使用此指令！')
     ownerData._userId = userData.masterId || userId
     const isOwner = !userData.masterId
     const targetId = isOwner ? ownerData.owner.petId : userData.masterId
@@ -113,6 +113,19 @@ class InteractApp extends plugin {
 
     const remain = this.sys.checkCooldown(o.petSys)
     if (remain !== null) return e.reply(`宠物在回味中...请${remain}秒后再来`)
+
+    const zeroStats = []
+    if (o.petStats.satiety <= 0) zeroStats.push('饱食')
+    if (o.petStats.energy <= 0) zeroStats.push('体力')
+    if (o.petStats.hygiene <= 0) zeroStats.push('清洁')
+    if (o.petStats.sensitivity <= 0) zeroStats.push('敏感')
+    if (o.status === 'bonded' && o.petStats.pain <= 0) zeroStats.push('疼痛')
+    if (zeroStats.length > 0) {
+      if (o.petStats.satiety <= 0 && o.petStats.energy <= 0) {
+        return e.reply(`宠物奄奄一息...请先恢复饱食或体力！\n💡 投喂可恢复饱食+体力，陪玩/摸摸/抱抱可恢复体力`)
+      }
+      return e.reply(`宠物状态不足，无法互动！\n请先恢复：${zeroStats.join('、')}`)
+    }
 
     if (isOwner && o.status !== 'bonded') {
       const evasionChance = this.sys.dm.getEvasionChance(o.obedience)
