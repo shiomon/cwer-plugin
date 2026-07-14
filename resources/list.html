@@ -51,35 +51,41 @@
     }
     .rel-row:last-child { border-bottom: none; }
     .rel-left {
-        display: flex; align-items: center; width: 45%;
+        display: flex; align-items: center; width: 40%;
     }
     .rel-rank {
         font-weight: 700; font-size: 18px; color: #f57f17;
-        min-width: 36px; text-align: center; padding-right: 4px;
+        min-width: 36px; text-align: center; padding-right: 4px; align-self: flex-start; margin-top: 2px;
     }
     .rel-rank.top1 { color: #ffd700; }
     .rel-rank.top2 { color: #c0c0c0; }
     .rel-rank.top3 { color: #cd7f32; }
+    .rel-name-wrap {
+        display: flex; flex-direction: column; gap: 2px;
+    }
     .rel-owner {
         font-weight: 600; font-size: 15px; color: #1565c0;
-        min-width: 60px; text-align: right; padding-right: 4px;
+        white-space: nowrap;
     }
-    .rel-paw { font-size: 16px; padding: 0 3px; }
+    .rel-pet-line {
+        display: flex; align-items: center; gap: 3px;
+    }
+    .rel-paw { font-size: 14px; }
     .rel-pet {
         font-weight: 600; font-size: 15px; color: #e91e63;
         white-space: nowrap;
     }
     .rel-right {
-        width: 55%; display: flex; align-items: center; gap: 10px; justify-content: flex-start; flex-wrap: wrap;
-        padding-left: 10%;
+        width: 60%; display: flex; align-items: center; gap: 10px; justify-content: flex-start; flex-wrap: wrap;
+        padding-left: 6%;
     }
     .rel-tag {
-        font-size: 12px; padding: 1px 6px; border-radius: 8px; font-weight: 500;
+        font-size: 13px; padding: 2px 8px; border-radius: 8px; font-weight: 600;
         white-space: nowrap;
     }
     .tag-bonded { background: #fce4ec; color: #c62828; }
     .tag-claimed { background: #e3f2fd; color: #1565c0; }
-    .rel-info { font-size: 13px; display: flex; align-items: center; gap: 10px; }
+    .rel-info { font-size: 15px; display: flex; align-items: center; gap: 10px; }
     .rel-level-val { display: inline-flex; align-items: center; gap: 2px; }
     .rel-info .level { font-weight: 600; color: #f57f17; }
     .rel-info .value { color: #999; }
@@ -114,9 +120,10 @@
 <div class="rel-row">
 <div class="rel-left">
     <span class="rel-rank {{if r.rank <= 3}}top{{r.rank}}{{/if}}">{{if r.rank === 1}}&#x1F947;{{else if r.rank === 2}}&#x1F948;{{else if r.rank === 3}}&#x1F949;{{else}}{{r.rank}}{{/if}}</span>
-    <span class="rel-owner">{{r.ownerName}}</span>
-    <span class="rel-paw">&#x1F43E;</span>
-    <span class="rel-pet">{{r.petName}}</span>
+    <div class="rel-name-wrap">
+        <span class="rel-owner">{{r.ownerName}}</span>
+        <span class="rel-pet-line"><span class="rel-paw">&#x1F43E;</span><span class="rel-pet">{{r.petName}}</span></span>
+    </div>
 </div>
 <div class="rel-right">
     {{if r.status === 'bonded'}}
