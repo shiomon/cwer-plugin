@@ -118,14 +118,14 @@ class InteractApp extends plugin {
     if (o.petStats.satiety <= 0) zeroStats.push('饱食')
     if (o.petStats.energy <= 0) zeroStats.push('体力')
     if (o.petStats.hygiene <= 0) zeroStats.push('清洁')
-    if (o.petStats.sensitivity <= 0) zeroStats.push('敏感')
-    if (o.status === 'bonded' && o.petStats.pain <= 0) zeroStats.push('疼痛')
     if (zeroStats.length > 0) {
       if (o.petStats.satiety <= 0 && o.petStats.energy <= 0) {
         return e.reply(`宠物奄奄一息...请先恢复饱食或体力！\n💡 投喂可恢复饱食+体力，陪玩/摸摸/抱抱可恢复体力`)
       }
       return e.reply(`宠物状态不足，无法互动！\n请先恢复：${zeroStats.join('、')}`)
     }
+    const lowSens = o.petStats.sensitivity <= 0
+    const lowPain = o.status === 'bonded' && o.petStats.pain <= 0
 
     if (isOwner && o.status !== 'bonded') {
       const evasionChance = this.sys.dm.getEvasionChance(o.obedience)
@@ -138,7 +138,11 @@ class InteractApp extends plugin {
 
     o.petSys.lastInteractTime = Date.now()
     const result = this.sys.ie.executeInteraction(ownerData, action, userName, userId, isOwner)
-    const reply = this.sys.ie.formatInteractionReply(result)
+    let reply = this.sys.ie.formatInteractionReply(result)
+    const tips = []
+    if (lowSens) tips.push('敏感过低，无加成')
+    if (lowPain) tips.push('疼痛过低，无加成')
+    if (tips.length > 0) reply += `\n⚠ ${tips.join('，')}`
 
     this.sys.postInteraction(ownerData, result, groupId)
 
