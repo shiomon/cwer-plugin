@@ -95,7 +95,7 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/smer-plugin.gi
 | `$求关注` | @对方提醒互动 |
 | `$嘲讽` | 嘲讽对方 |
 
-> 宠物自主指令30秒冷却
+> 所有互动指令共用30秒全局冷却
 
 ### 查看指令
 
