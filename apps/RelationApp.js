@@ -100,7 +100,8 @@ class RelationApp extends plugin {
     if (!e.group_id) return e.reply(GROUP_ONLY_MSG)
     const at = e.message?.find(m => m.type === 'at')
     const targetId = String(e.at || at?.qq || at?.id || '')
-    if (targetId && targetId !== '0' && targetId !== String(e.user_id)) {
+    if (targetId && targetId !== '0') {
+      if (targetId === String(e.user_id)) return e.reply('不能领养自己哦~')
       return this.adoptTarget(e, targetId)
     }
     return this.adoptRandom(e)
