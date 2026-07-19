@@ -15,7 +15,7 @@ const js = fs.readFileSync(jsPath, 'utf8')
 
 htmlContent = htmlContent.replace('<!-- COMMON_CSS -->', `<style>${css}</style>`)
 htmlContent = htmlContent.replace('<!-- BG_LOADER -->', `<script>${js}</script>`)
-htmlContent = htmlContent.replace('<!-- FOOTER -->', 'Created By Yunzai &amp; cwer-plugin 3.0.1')
+htmlContent = htmlContent.replace('<!-- FOOTER -->', 'Created By Yunzai &amp; cwer-plugin 3.0.2')
 
 const testData = {
   petName: '初ོ夏ꦿ℘ღ',
@@ -66,11 +66,34 @@ const testData = {
     { time: '06-29 13:30', text: '阿初给初ོ夏ꦿ℘ღ买了项圈', color: '#ff9800' }
   ],
   achievements: [
-    { name: '初见', cls: 'ach-special' },
-    { name: '依恋', cls: 'ach-special' }
+    { name: '初次宠爱', cls: 'ach-pet' },
+    { name: '麻木', cls: 'ach-special' },
+    { name: '奄奄一息', cls: 'ach-special' },
+    { name: '温柔之手', cls: 'ach-pet' },
+    { name: '温馨之家', cls: 'ach-survive' },
+    { name: '阎王不收', cls: 'ach-special' },
+    { name: '饥肠辘辘', cls: 'ach-special' },
+    { name: '我饿死也不', cls: 'ach-special' },
+    { name: '黏人的宠物', cls: 'ach-survive' },
+    { name: '涩气初绽', cls: 'ach-lewd' },
+    { name: '豪宅梦', cls: 'ach-shop' },
+    { name: '依恋之心', cls: 'ach-intimacy' },
+    { name: '千宠百爱', cls: 'ach-pet' },
+    { name: '初识顺从', cls: 'ach-obey' },
+    { name: 'M显现', cls: 'ach-lewd' },
+    { name: '告白时刻', cls: 'ach-intimacy' },
+    { name: '衣不蔽体', cls: 'ach-shop' },
+    { name: '善解人衣', cls: 'ach-shop' },
+    { name: '初入衣柜', cls: 'ach-shop' },
+    { name: '非你不可', cls: 'ach-intimacy' },
+    { name: '深情不悔', cls: 'ach-intimacy' },
+    { name: '一生一世', cls: 'ach-intimacy' },
+    { name: '帝王享受', cls: 'ach-shop' },
+    { name: '欲念渐起', cls: 'ach-lewd' },
+    { name: '小妖精', cls: 'ach-charm' }
   ],
-  achievementsCount: 2,
-  totalAchievements: 15,
+  achievementCount: 25,
+  totalAchievements: 51,
   goldCoins: 156,
   survivalDays: 31,
   location: '卧室',

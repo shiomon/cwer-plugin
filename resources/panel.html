@@ -168,11 +168,19 @@
         .rarity-badge { padding: 1px 6px; font-size: 12px; border-radius: 4px; font-weight: 600; }
         .clothes-effect { font-size: 13px; color: #5c6bc0; }
 
-        .traits { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-        .trait-badge { padding: 3px 8px; font-size: 13px; border-radius: 6px; background: rgba(0,0,0,0.04); font-weight: 500; }
+        .traits { display: flex; flex-wrap: wrap; width: 100%; }
+        .trait-badge { background: rgba(255,255,255,0.92); border-radius: 6px; padding: 3px 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; line-height: 1.5; margin: 3px; white-space: normal; flex-shrink: 0; }
         .trait-bad { background: rgba(229,57,53,0.1); color: #c62828; }
         .trait-lewd { background: rgba(156,39,176,0.1); color: #7b1fa2; }
         .trait-good { background: rgba(67,160,71,0.1); color: #2e7d32; }
+        .ach-pet { background: rgba(67,160,71,0.1); color: #43a047; }
+        .ach-obey { background: rgba(21,101,192,0.1); color: #1565c0; }
+        .ach-lewd { background: rgba(173,20,87,0.1); color: #ad1457; }
+        .ach-intimacy { background: rgba(233,30,99,0.1); color: #e91e63; }
+        .ach-special { background: rgba(245,127,23,0.1); color: #f57f17; }
+        .ach-survive { background: rgba(46,125,50,0.1); color: #2e7d32; }
+        .ach-shop { background: rgba(0,131,143,0.1); color: #00838f; }
+        .ach-charm { background: rgba(233,30,99,0.1); color: #e91e63; }
 
         .log-box {
             padding: 0 16px 0px 4px; height: 168px; overflow: hidden;
@@ -256,7 +264,7 @@
         </div>
         <div style="padding: 0 20px 0 18px; font-size: 14px; color: #757575;">
             <span>成就：<span style="color: #f9a825; font-weight: 600;">{{achievementCount}}/{{totalAchievements}}</span></span>
-            {{each achievements a}}<span class="trait-badge {{a.cls}}" style="font-size: 13px;">{{a.name}}</span> {{/each}}{{if achievements.length === 0}}暂未获得{{/if}}
+            <div class="traits"></div>{{each achievements a}}<span class="trait-badge {{a.cls}}">{{a.name}}</span>{{/each}}{{if achievements.length === 0}}暂未获得{{/if}}</div>
         </div>
         </div>
     </div>

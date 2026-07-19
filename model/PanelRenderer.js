@@ -128,9 +128,17 @@ class PanelRenderer {
 
   getUnlockedAchievements(data) {
     const result = []
+    const keyToCls = {
+      first_pet: 'ach-pet', pet_200: 'ach-pet', pet_500: 'ach-pet',
+      obedience_66: 'ach-obey', obedience_299: 'ach-obey', obedience_520: 'ach-obey', obedience_888: 'ach-obey', obedience_1314: 'ach-obey',
+      lewd_66: 'ach-lewd', lewd_299: 'ach-lewd', lewd_520: 'ach-lewd', lewd_888: 'ach-lewd', lewd_1314: 'ach-lewd',
+      intimacy_299: 'ach-intimacy', intimacy_520: 'ach-intimacy', intimacy_666: 'ach-intimacy', intimacy_999: 'ach-intimacy', intimacy_1314: 'ach-intimacy',
+      survivor_3: 'ach-survive', survivor_30: 'ach-survive', survivor_99: 'ach-survive', survivor_520: 'ach-survive', survivor_1314: 'ach-survive',
+      charm_520: 'ach-charm', charm_1314: 'ach-charm', charm_3640: 'ach-charm'
+    }
     for (const key of (data.sys.achievements || [])) {
       const ach = CONFIG.ACHIEVEMENTS[key]
-      if (ach) result.push({ name: ach.name, cls: 'ach-special' })
+      if (ach) result.push({ name: ach.name, cls: keyToCls[key] || 'ach-special' })
     }
     return result
   }

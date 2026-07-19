@@ -120,7 +120,7 @@ class InteractApp extends plugin {
     if (o.petStats.satiety <= 0 && !config?.satietyGain) zeroStats.push('饱食')
     if (o.petStats.energy <= 0 && !config?.energyGain) zeroStats.push('体力')
     if (o.petStats.hygiene <= 0 && !config?.hygieneGain) zeroStats.push('清洁')
-    if (o.petStats.sensitivity <= 0 && !config?.sensitivityGain) zeroStats.push('敏感')
+    if (o.petStats.sensitivity <= 0 && !config?.sensitivityGain && o.status === 'bonded') zeroStats.push('敏感')
     if (o.status === 'bonded' && o.petStats.pain <= 0 && !config?.painGain) zeroStats.push('疼痛')
 
     if (isOwner && o.status !== 'bonded') {

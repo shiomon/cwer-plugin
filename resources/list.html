@@ -51,32 +51,26 @@
     }
     .rel-row:last-child { border-bottom: none; }
     .rel-left {
-        display: flex; align-items: center; width: 40%;
+        display: flex; align-items: center; width: 55%;
     }
     .rel-rank {
         font-weight: 700; font-size: 18px; color: #f57f17;
-        min-width: 36px; text-align: center; padding-right: 4px; align-self: flex-start; margin-top: 2px;
+        min-width: 36px; text-align: center; padding-right: 4px;
     }
     .rel-rank.top1 { color: #ffd700; }
     .rel-rank.top2 { color: #c0c0c0; }
     .rel-rank.top3 { color: #cd7f32; }
-    .rel-name-wrap {
-        display: flex; flex-direction: column; gap: 2px;
-    }
     .rel-owner {
         font-weight: 600; font-size: 15px; color: #1565c0;
         white-space: nowrap;
     }
-    .rel-pet-line {
-        display: flex; align-items: center; gap: 3px;
-    }
-    .rel-paw { font-size: 14px; }
+    .rel-paw { font-size: 14px; padding: 0 3px; }
     .rel-pet {
         font-weight: 600; font-size: 15px; color: #e91e63;
         white-space: nowrap;
     }
     .rel-right {
-        width: 60%; display: flex; align-items: center; gap: 10px; justify-content: flex-start; flex-wrap: wrap;
+        width: 45%; display: flex; align-items: center; gap: 10px; justify-content: flex-start; flex-wrap: wrap;
         padding-left: 6%;
     }
     .rel-tag {
@@ -120,10 +114,9 @@
 <div class="rel-row">
 <div class="rel-left">
     <span class="rel-rank {{if r.rank <= 3}}top{{r.rank}}{{/if}}">{{if r.rank === 1}}&#x1F947;{{else if r.rank === 2}}&#x1F948;{{else if r.rank === 3}}&#x1F949;{{else}}{{r.rank}}{{/if}}</span>
-    <div class="rel-name-wrap">
-        <span class="rel-owner">{{r.ownerName}}</span>
-        <span class="rel-pet-line"><span class="rel-paw">&#x1F43E;</span><span class="rel-pet">{{r.petName}}</span></span>
-    </div>
+    <span class="rel-owner">{{r.ownerName}}</span>
+    <span class="rel-paw">&#x1F43E;</span>
+    <span class="rel-pet">{{r.petName}}</span>
 </div>
 <div class="rel-right">
     {{if r.status === 'bonded'}}

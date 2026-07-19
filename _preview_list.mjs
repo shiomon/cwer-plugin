@@ -16,7 +16,7 @@ const js = fs.readFileSync(jsPath, 'utf8')
 htmlContent = htmlContent.replace('<!-- COMMON_CSS -->', `<style>${css}</style>`)
 htmlContent = htmlContent.replace('<!-- BG_LOADER -->', `<script>${js}</script>`)
 htmlContent = htmlContent.replace('<!-- SUBTITLE -->', '$面板 $商店 $帮助 $成就 $列表丨#宠物面板/商店/帮助/成就/列表')
-htmlContent = htmlContent.replace('<!-- FOOTER -->', 'Created By Yunzai &amp; cwer-plugin 3.0.1')
+htmlContent = htmlContent.replace('<!-- FOOTER -->', 'Created By Yunzai &amp; cwer-plugin 3.0.2')
 
 const testData = {
   totalCount: 5,

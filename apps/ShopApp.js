@@ -45,7 +45,7 @@ class ShopApp extends plugin {
     ownerData._userId = userData.masterId || userId
 
     const item = this.sys.shop.findShopItemByCode(itemText) || this.sys.shop.findShopItem(itemText)
-    if (!item) return e.reply('商店里没有这件商品，发送 #宠物商店 查看目录。')
+    if (!item) return e.reply('商店里没有这件商品，发送 $商店 查看目录。')
 
     if (item.type === 'clothing' && ownerData.owner.status !== 'bonded') return e.reply('请先缔约后才能购买调教装！')
 
